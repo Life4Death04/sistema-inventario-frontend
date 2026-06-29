@@ -9,6 +9,7 @@ export interface User {
   active: boolean
   phone: string
   createdAt: string
+  lastAccess?: string
 }
 
 export interface Category {
@@ -21,7 +22,10 @@ export interface Supplier {
   id: string
   name: string
   rif: string
+  contactName: string
   whatsapp: string
+  altPhone?: string
+  email?: string
   address: string
   active: boolean
 }
