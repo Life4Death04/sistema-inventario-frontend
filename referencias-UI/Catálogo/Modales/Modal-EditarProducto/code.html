@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>High Meds C.A. - Detalle de Producto</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#924b00",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#a0f3d4",
+                      "secondary-container": "#a0f3d4",
+                      "blue-tint-text": "#0F4C81",
+                      "secondary": "#086b53",
+                      "on-primary-fixed": "#001c39",
+                      "on-primary-container": "#c1d9ff",
+                      "badge-out-bg": "#FBE7E4",
+                      "inverse-on-surface": "#e5f3ff",
+                      "badge-normal-text": "#0F7C5C",
+                      "on-secondary-container": "#167159",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d5e5f2",
+                      "surface-container-high": "#daeaf8",
+                      "on-background": "#0e1d27",
+                      "error-container": "#ffdad6",
+                      "blue-tint-bg": "#E8F1FA",
+                      "on-tertiary-container": "#ffceac",
+                      "on-secondary-fixed": "#002117",
+                      "surface-dim": "#ccdcea",
+                      "badge-critical-bg": "#FBEFD9",
+                      "surface-container-low": "#eaf5ff",
+                      "on-error": "#ffffff",
+                      "surface": "#FFFFFF",
+                      "on-secondary-fixed-variant": "#00513e",
+                      "primary-fixed": "#d4e3ff",
+                      "inverse-primary": "#a4c9ff",
+                      "tertiary-fixed-dim": "#ffb781",
+                      "on-primary-fixed-variant": "#004883",
+                      "surface-bright": "#f6faff",
+                      "tertiary-fixed": "#ffdcc4",
+                      "outline-variant": "#c2c6d2",
+                      "inverse-surface": "#23323d",
+                      "on-surface-variant": "#424751",
+                      "secondary-fixed-dim": "#84d6b9",
+                      "surface-variant": "#d5e5f2",
+                      "badge-normal-bg": "#E2F4EE",
+                      "outline": "#727782",
+                      "on-tertiary-fixed-variant": "#703800",
+                      "page-bg": "#F5F8FB",
+                      "badge-out-text": "#B0301F",
+                      "text-secondary": "#5C6B78",
+                      "teal-bg": "#E1F5EE",
+                      "background": "#f6faff",
+                      "text-muted": "#95A3AE",
+                      "on-surface": "#0e1d27",
+                      "primary-container": "#185fa5",
+                      "on-tertiary": "#ffffff",
+                      "tertiary": "#6f3800",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#a4c9ff",
+                      "primary": "#004782",
+                      "border-hairline": "#E5ECF1",
+                      "surface-container": "#e0f0fe",
+                      "surface-tint": "#1960a6",
+                      "badge-critical-text": "#9A5B00",
+                      "on-tertiary-fixed": "#2f1400",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "base": "4px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "32px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-caps": ["IBM Plex Sans"],
+                      "headline-sm": ["IBM Plex Sans"],
+                      "headline-lg": ["IBM Plex Sans"],
+                      "body-md": ["IBM Plex Sans"],
+                      "body-lg": ["IBM Plex Sans"],
+                      "headline-md": ["IBM Plex Sans"],
+                      "data-mono-sm": ["IBM Plex Mono"],
+                      "data-mono": ["IBM Plex Mono"],
+                      "body-sm": ["IBM Plex Sans"]
+              },
+              "fontSize": {
+                      "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                      "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                      "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                      "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "data-mono-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                      "data-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.02em", "fontWeight": "500" }],
+                      "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-page-bg font-body-md text-on-surface h-screen overflow-hidden flex">
+<!-- OVERLAY & MODAL -->
+<div class="fixed inset-0 z-40 bg-on-background/40 backdrop-blur-[2px] flex justify-center items-center">
+<!-- Product Detail Modal -->
+<div class="bg-surface w-[520px] rounded-xl border border-border-hairline shadow-lg flex flex-col max-h-[921px] z-50">
+<!-- Modal Header -->
+<div class="px-6 py-5 border-b border-border-hairline flex flex-col gap-3 relative">
+<button aria-label="Cerrar" class="absolute top-5 right-6 text-text-muted hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+<div class="pr-8">
+<div class="flex items-center gap-3 mb-1">
+<h2 class="text-[18px] font-medium text-on-surface">Editar Producto</h2>
+<div class="flex gap-2">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-label-caps uppercase tracking-wider">Antibióticos</span>
+<span class="bg-badge-critical-bg text-badge-critical-text px-2 py-0.5 rounded text-label-caps uppercase tracking-wider">Crítico</span>
+</div>
+</div>
+<p class="font-data-mono text-text-muted">SKU-0317</p>
+</div>
+</div>
+<!-- Modal Body -->
+<div class="p-6 overflow-y-auto flex flex-col gap-8 flex-1">
+<!-- Summary Cards -->
+<div class="grid gap-4"><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Nombre del producto</label><input class="px-3 py-2 rounded border border-border-hairline focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright text-on-surface font-medium" type="text" value="Amoxicilina 500mg"></div><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Stock Actual (Lectura)</label><div class="px-3 py-2 rounded border border-border-hairline bg-surface-variant/30 font-data-mono text-on-surface">8</div></div><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Stock Mínimo</label><input class="px-3 py-2 rounded border border-border-hairline focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright font-data-mono text-on-surface" type="number" value="15"></div></div>
+<!-- Info Block -->
+<div class="grid grid-cols-2 gap-y-6 gap-x-8"><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Categoría</label><select class="px-3 py-2 rounded border border-border-hairline focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright text-on-surface"><option selected="">Antibióticos</option><option>Analgésicos</option><option>Antiinflamatorios</option></select></div><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Precio unitario</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-data-mono">$</span><input class="pl-7 pr-3 py-2 w-full rounded border border-border-hairline focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright font-data-mono text-on-surface" type="text" value="4,50"></div></div><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Proveedor</label><select class="px-3 py-2 rounded border border-border-hairline focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright text-on-surface"><option selected="">Distribuidora MedSalud C.A.</option><option>FarmaRed S.A.</option></select></div><div class="flex flex-col gap-1"><label class="text-text-secondary text-body-sm">Última actualización</label><div class="px-3 py-2 rounded border border-border-hairline bg-surface-variant/30 font-data-mono text-text-muted">08/06/2026</div></div></div>
+<!-- Movimientos Recientes -->
+</div>
+<!-- Modal Footer -->
+<div class="p-5 border-t border-border-hairline bg-surface-bright flex justify-between items-center rounded-b-xl"><button class="flex items-center gap-2 px-4 py-2 text-error font-medium hover:bg-badge-out-bg rounded-lg transition-colors border border-transparent"><span class="material-symbols-outlined text-sm">delete</span><span class="text-sm">Eliminar producto</span></button><div class="flex items-center gap-3"><button class="px-4 py-2 text-text-secondary font-medium hover:bg-surface-variant rounded-lg transition-colors text-sm">Cancelar</button><button class="px-5 py-2 bg-primary-container text-on-primary-container font-medium hover:opacity-90 rounded-lg transition-opacity text-sm shadow-sm">Guardar cambios</button></div></div>
+</div>
+</div>
+<!-- BACKGROUND SYSTEM SCREENS (Visible behind overlay) -->
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[190px] bg-surface dark:bg-surface-dim border-r border-border-hairline flex flex-col h-full overflow-y-auto z-10">
+<div class="p-4 flex items-center gap-3 border-b border-border-hairline mb-4">
+<div class="w-8 h-8 rounded bg-blue-tint-bg flex items-center justify-center text-primary font-bold">H</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed text-sm">High Meds C.A.</span>
+<span class="text-[10px] text-text-muted uppercase tracking-wider">Gestión Farmacéutica</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="font-body-md text-body-md">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed bg-blue-tint-bg dark:bg-primary-container font-semibold border-r-4 border-primary cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-body-md text-body-md">Catálogo</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="font-body-md text-body-md">Existencias</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+<span class="font-body-md text-body-md">Movimientos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="font-body-md text-body-md">Alertas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">package_2</span>
+<span class="font-body-md text-body-md">Reposición</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+<span class="font-body-md text-body-md">Proveedores</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-body-md text-body-md">Usuarios</span>
+</a>
+</div>
+<div class="border-t border-border-hairline py-2 mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">account_circle</span>
+<span class="font-body-md text-body-md">Perfil</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-body-md text-body-md">Cerrar Sesión</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-[190px] flex-1 flex flex-col relative w-[calc(100%-190px)]">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-[190px] z-10 bg-surface dark:bg-surface-dim border-b border-border-hairline flex justify-between items-center px-gutter h-16 w-full shadow-sm">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed">High Meds C.A.</h1>
+<nav class="hidden md:flex ml-8 gap-6 h-full items-end pb-1">
+<a class="text-text-secondary dark:text-text-muted hover:text-primary dark:hover:text-primary-fixed transition-all font-body-md text-body-md" href="#">Dashboard</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 rounded-full border border-border-hairline text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 bg-surface-bright" placeholder="Buscar en catálogo..." type="text">
+</div>
+<button class="text-text-secondary hover:text-primary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-text-secondary hover:text-primary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-blue-tint-bg border border-border-hairline overflow-hidden ml-2">
+<img alt="Usuario Admin" class="w-full h-full object-cover" data-alt="A professional headshot of a female pharmacy administrator in her late 30s, wearing minimal makeup and glasses, captured in bright, clean light-mode clinic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxPOx7QpPwMuZUKTwxJoBPuT6Jltq_E7Lzacz_GCUM0pHZ0d-Kgo78LWdCmenSR2ZV5w0unyzTUv2yLK9N5oHVm1n3BkoDtC8pT7EL1gIe4L_NL7VL7C0wPMCgHaXOOFWc4xnPfR5f48wf5qCltqlq6R_kTf_SjEmIQrZuAPa2N1XxH_EVnuAsePNbI_WMlNas8zkmqsfsZ6e3jlFGjnKi7S6pYnIDd8zbvPd4twadQ_ZmeRxbdTo387u7ByGKsjrjExMlPLlbqYo">
+</div>
+</div>
+</header>
+<!-- Dummy Catalog Grid (Dimmed behind overlay) -->
+<main class="mt-16 p-gutter h-[calc(100vh-64px)] overflow-y-auto">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Catálogo de Productos</h2>
+<p class="text-text-secondary mt-1">Gestión de inventario y medicamentos.</p>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span> Nuevo Producto
+                </button>
+</div>
+<!-- Abstracted Grid items for visual context -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Mock Card 1 (The one being viewed) -->
+<div class="bg-surface border-2 border-primary rounded-xl p-5 shadow-sm opacity-50 pointer-events-none">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-badge-critical-bg text-badge-critical-text px-2 py-0.5 rounded text-[10px] font-bold uppercase">Crítico</span>
+<span class="material-symbols-outlined text-text-muted">more_vert</span>
+</div>
+<h3 class="font-medium text-lg mb-1">Amoxicilina 500mg</h3>
+<p class="font-data-mono text-text-muted text-sm mb-4">SKU-0317</p>
+<div class="flex justify-between items-end border-t border-border-hairline pt-3 mt-auto">
+<span class="text-text-secondary text-sm">Stock: <strong class="font-data-mono text-error">8</strong></span>
+<span class="font-data-mono font-medium">$4.50</span>
+</div>
+</div>
+<!-- Mock Card 2 -->
+<div class="bg-surface border border-border-hairline rounded-xl p-5 shadow-sm opacity-50 pointer-events-none">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-badge-normal-bg text-badge-normal-text px-2 py-0.5 rounded text-[10px] font-bold uppercase">Normal</span>
+</div>
+<h3 class="font-medium text-lg mb-1">Ibuprofeno 400mg</h3>
+<p class="font-data-mono text-text-muted text-sm mb-4">SKU-0102</p>
+<div class="flex justify-between items-end border-t border-border-hairline pt-3 mt-auto">
+<span class="text-text-secondary text-sm">Stock: <strong class="font-data-mono">145</strong></span>
+<span class="font-data-mono font-medium">$2.20</span>
+</div>
+</div>
+<!-- Mock Card 3 -->
+<div class="bg-surface border border-border-hairline rounded-xl p-5 shadow-sm opacity-50 pointer-events-none">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-badge-normal-bg text-badge-normal-text px-2 py-0.5 rounded text-[10px] font-bold uppercase">Normal</span>
+</div>
+<h3 class="font-medium text-lg mb-1">Paracetamol 500mg</h3>
+<p class="font-data-mono text-text-muted text-sm mb-4">SKU-0105</p>
+<div class="flex justify-between items-end border-t border-border-hairline pt-3 mt-auto">
+<span class="text-text-secondary text-sm">Stock: <strong class="font-data-mono">89</strong></span>
+<span class="font-data-mono font-medium">$1.15</span>
+</div>
+</div>
+<!-- Mock Card 4 -->
+<div class="bg-surface border border-border-hairline rounded-xl p-5 shadow-sm opacity-50 pointer-events-none">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-badge-out-bg text-badge-out-text px-2 py-0.5 rounded text-[10px] font-bold uppercase">Agotado</span>
+</div>
+<h3 class="font-medium text-lg mb-1">Loratadina 10mg</h3>
+<p class="font-data-mono text-text-muted text-sm mb-4">SKU-0422</p>
+<div class="flex justify-between items-end border-t border-border-hairline pt-3 mt-auto">
+<span class="text-text-secondary text-sm">Stock: <strong class="font-data-mono text-error">0</strong></span>
+<span class="font-data-mono font-medium">$3.00</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

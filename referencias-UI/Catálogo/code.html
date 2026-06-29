@@ -1,0 +1,345 @@
+<!DOCTYPE html><html class="light" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Catálogo - High Meds C.A.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#ffceac",
+                      "on-primary-fixed-variant": "#004883",
+                      "surface-tint": "#1960a6",
+                      "on-surface-variant": "#424751",
+                      "outline-variant": "#c2c6d2",
+                      "surface-container-low": "#eaf5ff",
+                      "badge-critical-bg": "#FBEFD9",
+                      "on-tertiary": "#ffffff",
+                      "badge-critical-text": "#9A5B00",
+                      "tertiary-fixed": "#ffdcc4",
+                      "blue-tint-bg": "#E8F1FA",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#2f1400",
+                      "surface-variant": "#d5e5f2",
+                      "on-surface": "#0e1d27",
+                      "tertiary": "#6f3800",
+                      "surface-container-highest": "#d5e5f2",
+                      "secondary-fixed": "#a0f3d4",
+                      "on-primary-fixed": "#001c39",
+                      "inverse-on-surface": "#e5f3ff",
+                      "text-muted": "#95A3AE",
+                      "on-secondary-container": "#167159",
+                      "secondary-container": "#a0f3d4",
+                      "tertiary-fixed-dim": "#ffb781",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#84d6b9",
+                      "on-primary-container": "#c1d9ff",
+                      "on-tertiary-fixed-variant": "#703800",
+                      "badge-out-bg": "#FBE7E4",
+                      "primary-container": "#185fa5",
+                      "surface-bright": "#f6faff",
+                      "error-container": "#ffdad6",
+                      "secondary": "#086b53",
+                      "outline": "#727782",
+                      "surface-dim": "#ccdcea",
+                      "badge-out-text": "#B0301F",
+                      "page-bg": "#F5F8FB",
+                      "badge-normal-bg": "#E2F4EE",
+                      "border-hairline": "#E5ECF1",
+                      "surface-container": "#e0f0fe",
+                      "badge-normal-text": "#0F7C5C",
+                      "text-secondary": "#5C6B78",
+                      "teal-bg": "#E1F5EE",
+                      "primary": "#004782",
+                      "tertiary-container": "#924b00",
+                      "primary-fixed": "#d4e3ff",
+                      "primary-fixed-dim": "#a4c9ff",
+                      "on-secondary-fixed": "#002117",
+                      "inverse-primary": "#a4c9ff",
+                      "on-primary": "#ffffff",
+                      "surface": "#FFFFFF",
+                      "on-background": "#0e1d27",
+                      "on-error": "#ffffff",
+                      "background": "#f6faff",
+                      "on-secondary-fixed-variant": "#00513e",
+                      "surface-container-high": "#daeaf8",
+                      "on-error-container": "#93000a",
+                      "blue-tint-text": "#0F4C81",
+                      "inverse-surface": "#23323d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "margin-desktop": "32px",
+                      "base": "4px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "data-mono": ["IBM Plex Mono"],
+                      "label-caps": ["IBM Plex Sans"],
+                      "body-sm": ["IBM Plex Sans"],
+                      "headline-md": ["IBM Plex Sans"],
+                      "data-mono-sm": ["IBM Plex Mono"],
+                      "body-md": ["IBM Plex Sans"],
+                      "headline-sm": ["IBM Plex Sans"],
+                      "headline-lg": ["IBM Plex Sans"],
+                      "body-lg": ["IBM Plex Sans"]
+              },
+              "fontSize": {
+                      "data-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "data-mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-page-bg text-on-surface font-body-md min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-[190px] z-10 bg-surface dark:bg-surface-dim border-b border-border-hairline flex justify-between items-center px-gutter h-16 w-[calc(100%-190px)]">
+<div class="flex items-center gap-6">
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed">High Meds C.A.</h1>
+<nav class="hidden md:flex gap-4">
+<a class="text-text-secondary dark:text-text-muted hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">Dashboard</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-text-secondary hover:text-primary cursor-pointer transition-transform duration-200 active:scale-95">notifications</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined text-text-secondary hover:text-primary cursor-pointer transition-transform duration-200 active:scale-95">help_outline</span>
+</div>
+<img alt="Usuario Admin" class="w-8 h-8 rounded-full border border-border-hairline object-cover" data-alt="A small, professional headshot of an administrative user, suitable for a corporate medical application. The photo should be clear, high quality, and well-lit." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6UCgfdRKD-AstchaqAMZT6tMpyLpsmu7NXEppJnmwjUsh0vbhDYe0FeGmt2NpKehDbiOfnbCWGWj_o3ayTxmNHDYj2Ac4Tl03_xT0j7GyoXW2mZFTBTJ9_Vm3rQma-E9UThxHwKrKgKp1RJfYKR5CIMMT6hqVW2NYmeGkPxeXGyxFmjFd3XsqHMRwTLM6BnLQDAFpJwrstrwBgqKw8r87GKz-N-M1ooheNFAgsOgqd77wZjRHCymOIo6IPsmbWyhOXJfhQmTcE8I">
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[190px] bg-surface dark:bg-surface-dim border-r border-border-hairline flex flex-col h-full overflow-y-auto z-20">
+<div class="p-6 border-b border-border-hairline">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed mb-1">High Meds C.A.</h2>
+<p class="font-body-sm text-body-sm text-text-secondary">Gestión Farmacéutica</p>
+</div>
+<nav class="flex-1 py-4">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-body-md text-body-md">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed bg-blue-tint-bg dark:bg-primary-container font-semibold border-r-4 border-primary cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" data-weight="fill">inventory_2</span>
+<span class="font-body-md text-body-md">Catálogo</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-md text-body-md">Existencias</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+<span class="font-body-md text-body-md">Movimientos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-body-md text-body-md">Alertas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-body-md text-body-md">Reposición</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="font-body-md text-body-md">Proveedores</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary dark:text-text-muted hover:bg-surface-bright dark:hover:bg-surface-variant transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Usuarios</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-border-hairline py-4">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-body-md text-body-md">Perfil</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-md text-body-md">Cerrar Sesión</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[190px] mt-16 p-margin-desktop min-h-[calc(100vh-64px)] relative">
+<!-- Header Section -->
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Catálogo de Productos</h2>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Gestione y visualice el inventario general.</p>
+</div>
+<div class="flex gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+<input class="pl-10 pr-4 py-2 border border-border-hairline rounded-DEFAULT w-80 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm" placeholder="Buscar por código, nombre o principio activo..." type="text">
+</div>
+<button class="bg-primary text-white font-label-caps text-label-caps px-4 py-[10px] rounded-DEFAULT hover:bg-surface-tint transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    NUEVO PRODUCTO
+                </button>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface rounded-xl border border-border-hairline overflow-visible relative">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="border-b border-border-hairline bg-surface-bright">
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold">CÓDIGO</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold">PRODUCTO</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold">PRINCIPIO ACTIVO</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold">CATEGORÍA</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold text-right">STOCK</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary font-semibold">ESTADO</th>
+<th class="py-3 px-4 w-12"></th>
+</tr>
+</thead>
+<tbody>
+<!-- Row 1: Active with Context Menu -->
+<tr class="border-b border-border-hairline hover:bg-surface-bright transition-colors relative z-10 bg-blue-tint-bg/30">
+<td class="py-4 px-4 font-data-mono text-data-mono text-on-surface">MED-0102</td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md font-semibold text-on-surface">Amoxicilina 500mg</div>
+<div class="font-body-sm text-body-sm text-text-secondary">Caja x 50 cápsulas</div>
+</td>
+<td class="py-4 px-4 font-body-sm text-body-sm text-text-secondary">Amoxicilina trihidrato</td>
+<td class="py-4 px-4">
+<div class="inline-flex items-center gap-1 bg-teal-bg text-secondary px-2 py-1 rounded-[4px]">
+<span class="material-symbols-outlined text-[14px]">medication</span>
+<span class="font-label-caps text-label-caps">Antibiótico</span>
+</div>
+</td>
+<td class="py-4 px-4 font-data-mono text-data-mono text-on-surface text-right">1,240</td>
+<td class="py-4 px-4">
+<span class="bg-badge-normal-bg text-badge-normal-text font-label-caps text-label-caps px-2 py-1 rounded-[4px]">ÓPTIMO</span>
+</td>
+<td class="py-4 px-4 relative text-right">
+<button class="p-1 rounded hover:bg-surface-variant text-text-secondary hover:text-primary transition-colors bg-surface-variant text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+<!-- Context Menu -->
+<div class="absolute right-10 top-4 w-48 bg-surface rounded-lg border border-border-hairline shadow-[0_4px_12px_rgba(0,0,0,0.05)] py-1 z-50 overflow-hidden">
+<a class="flex items-center gap-3 px-4 py-2 hover:bg-surface-bright transition-colors text-on-surface font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">visibility</span>
+                                        Ver detalle
+                                    </a>
+<a class="flex items-center gap-3 px-4 py-2 hover:bg-surface-bright transition-colors text-on-surface font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">edit</span>
+                                        Editar
+                                    </a>
+<a class="flex items-center gap-3 px-4 py-2 hover:bg-surface-bright transition-colors text-on-surface font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">swap_horiz</span>
+                                        Registrar movimiento
+                                    </a>
+<a class="flex items-center gap-3 px-4 py-2 hover:bg-surface-bright transition-colors text-on-surface font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">package_2</span>
+                                        Generar reposición
+                                    </a>
+<div class="h-px bg-border-hairline my-1"></div>
+<a class="flex items-center gap-3 px-4 py-2 hover:bg-badge-out-bg transition-colors text-error font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-error text-[18px]">block</span>
+                                        Desactivar
+                                    </a>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-border-hairline hover:bg-surface-bright transition-colors opacity-60">
+<td class="py-4 px-4 font-data-mono text-data-mono text-on-surface">MED-0845</td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md font-semibold text-on-surface">Ibuprofeno 400mg</div>
+<div class="font-body-sm text-body-sm text-text-secondary">Caja x 20 tabletas</div>
+</td>
+<td class="py-4 px-4 font-body-sm text-body-sm text-text-secondary">Ibuprofeno</td>
+<td class="py-4 px-4">
+<div class="inline-flex items-center gap-1 bg-teal-bg text-secondary px-2 py-1 rounded-[4px]">
+<span class="material-symbols-outlined text-[14px]">medication</span>
+<span class="font-label-caps text-label-caps">Analgésico</span>
+</div>
+</td>
+<td class="py-4 px-4 font-data-mono text-data-mono text-on-surface text-right">45</td>
+<td class="py-4 px-4">
+<span class="bg-badge-critical-bg text-badge-critical-text font-label-caps text-label-caps px-2 py-1 rounded-[4px]">CRÍTICO</span>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="p-1 rounded hover:bg-surface-variant text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-border-hairline hover:bg-surface-bright transition-colors opacity-60">
+<td class="py-4 px-4 font-data-mono text-data-mono text-on-surface">MED-1102</td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md font-semibold text-on-surface">Loratadina 10mg</div>
+<div class="font-body-sm text-body-sm text-text-secondary">Blister x 10 tabletas</div>
+</td>
+<td class="py-4 px-4 font-body-sm text-body-sm text-text-secondary">Loratadina</td>
+<td class="py-4 px-4">
+<div class="inline-flex items-center gap-1 bg-teal-bg text-secondary px-2 py-1 rounded-[4px]">
+<span class="material-symbols-outlined text-[14px]">medication</span>
+<span class="font-label-caps text-label-caps">Antihistamínico</span>
+</div>
+</td>
+<td class="py-4 px-4 font-data-mono text-data-mono text-text-muted text-right">0</td>
+<td class="py-4 px-4">
+<span class="bg-badge-out-bg text-badge-out-text font-label-caps text-label-caps px-2 py-1 rounded-[4px]">AGOTADO</span>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="p-1 rounded hover:bg-surface-variant text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-border-hairline bg-surface-bright/50">
+<span class="font-body-sm text-body-sm text-text-secondary">Mostrando 1 a 3 de 1,402 productos</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded border border-border-hairline flex items-center justify-center text-text-muted bg-surface hover:bg-surface-bright cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded border border-primary flex items-center justify-center text-primary font-data-mono-sm text-data-mono-sm bg-blue-tint-bg">1</button>
+<button class="w-8 h-8 rounded border border-border-hairline flex items-center justify-center text-text-secondary font-data-mono-sm text-data-mono-sm bg-surface hover:bg-surface-bright">2</button>
+<button class="w-8 h-8 rounded border border-border-hairline flex items-center justify-center text-text-secondary font-data-mono-sm text-data-mono-sm bg-surface hover:bg-surface-bright">3</button>
+<button class="w-8 h-8 rounded border border-border-hairline flex items-center justify-center text-text-secondary bg-surface hover:bg-surface-bright">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

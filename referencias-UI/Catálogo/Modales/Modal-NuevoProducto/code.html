@@ -1,0 +1,588 @@
+<!DOCTYPE html><html class="light" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>High Meds C.A. - Catálogo</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&amp;family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f6faff",
+                    "badge-normal-bg": "#E2F4EE",
+                    "blue-tint-text": "#0F4C81",
+                    "surface-tint": "#1960a6",
+                    "on-error": "#ffffff",
+                    "tertiary": "#6f3800",
+                    "surface-container-highest": "#d5e5f2",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#a4c9ff",
+                    "error-container": "#ffdad6",
+                    "inverse-surface": "#23323d",
+                    "on-secondary-container": "#167159",
+                    "surface-variant": "#d5e5f2",
+                    "page-bg": "#F5F8FB",
+                    "badge-out-text": "#B0301F",
+                    "tertiary-fixed": "#ffdcc4",
+                    "on-tertiary-fixed-variant": "#703800",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#c1d9ff",
+                    "secondary-fixed": "#a0f3d4",
+                    "on-primary-fixed-variant": "#004883",
+                    "surface-container-high": "#daeaf8",
+                    "outline-variant": "#c2c6d2",
+                    "inverse-on-surface": "#e5f3ff",
+                    "on-secondary-fixed": "#002117",
+                    "surface-container": "#e0f0fe",
+                    "secondary-fixed-dim": "#84d6b9",
+                    "surface-container-low": "#eaf5ff",
+                    "on-tertiary": "#ffffff",
+                    "text-secondary": "#5C6B78",
+                    "on-background": "#0e1d27",
+                    "badge-critical-bg": "#FBEFD9",
+                    "primary": "#004782",
+                    "blue-tint-bg": "#E8F1FA",
+                    "tertiary-container": "#924b00",
+                    "on-tertiary-fixed": "#2f1400",
+                    "text-muted": "#95A3AE",
+                    "on-surface-variant": "#424751",
+                    "primary-fixed-dim": "#a4c9ff",
+                    "on-surface": "#0e1d27",
+                    "badge-out-bg": "#FBE7E4",
+                    "tertiary-fixed-dim": "#ffb781",
+                    "border-hairline": "#E5ECF1",
+                    "primary-container": "#185fa5",
+                    "secondary": "#086b53",
+                    "badge-normal-text": "#0F7C5C",
+                    "on-primary-fixed": "#001c39",
+                    "secondary-container": "#a0f3d4",
+                    "background": "#f6faff",
+                    "on-tertiary-container": "#ffceac",
+                    "badge-critical-text": "#9A5B00",
+                    "primary-fixed": "#d4e3ff",
+                    "teal-bg": "#E1F5EE",
+                    "surface-dim": "#ccdcea",
+                    "error": "#ba1a1a",
+                    "surface": "#FFFFFF",
+                    "outline": "#727782",
+                    "on-secondary-fixed-variant": "#00513e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "margin-desktop": "32px",
+                    "margin-mobile": "16px",
+                    "base": "4px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": [
+                            "IBM Plex Sans"
+                    ],
+                    "body-sm": [
+                            "IBM Plex Sans"
+                    ],
+                    "headline-lg": [
+                            "IBM Plex Sans"
+                    ],
+                    "data-mono-sm": [
+                            "IBM Plex Mono"
+                    ],
+                    "data-mono": [
+                            "IBM Plex Mono"
+                    ],
+                    "body-md": [
+                            "IBM Plex Sans"
+                    ],
+                    "headline-sm": [
+                            "IBM Plex Sans"
+                    ],
+                    "label-caps": [
+                            "IBM Plex Sans"
+                    ],
+                    "body-lg": [
+                            "IBM Plex Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "30px",
+                            {
+                                    "lineHeight": "38px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-mono-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "data-mono": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-sm": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+</head>
+<body class="bg-page-bg font-body-md text-on-surface antialiased h-screen overflow-hidden flex relative">
+<!-- Modal Scrim -->
+<div class="fixed inset-0 bg-[#0e1d27]/40 z-50 flex items-center justify-center p-4 backdrop-blur-[2px]">
+<!-- Modal Container (Variant 1: Clean Classic) -->
+<div class="bg-surface rounded-[12px] shadow-lg w-full max-w-[480px] flex flex-col max-h-[90vh] overflow-hidden border border-border-hairline">
+<!-- Header -->
+<div class="px-6 py-4 border-b border-border-hairline flex items-center justify-between bg-surface">
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Nuevo Producto</h3>
+<button class="text-text-muted hover:text-on-surface transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="px-6 py-5 overflow-y-auto flex flex-col gap-5 flex-1 bg-surface">
+<!-- Basic Info Section -->
+<div class="flex flex-col gap-4">
+<!-- Nombre (Error State) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Nombre del producto <span class="text-error">*</span></label>
+<input class="w-full px-3 py-2 bg-error-container/10 border border-error text-on-surface font-body-sm text-body-sm rounded-[8px] focus:outline-none focus:ring-1 focus:ring-error focus:border-error transition-colors placeholder-text-muted" placeholder="Ej. Amoxicilina 500mg" type="text" value="">
+<span class="font-body-sm text-[12px] text-error flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                            El nombre es obligatorio
+                        </span>
+</div>
+<!-- 2 Column Grid for SKU & Category -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">SKU / Código <span class="text-error">*</span></label>
+<input class="w-full px-3 py-2 bg-surface border border-border-hairline text-on-surface font-data-mono text-data-mono rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors placeholder-text-muted" placeholder="SKU-" type="text">
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Categoría <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full pl-3 pr-8 py-2 bg-surface border border-border-hairline text-on-surface font-body-sm text-body-sm rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-colors">
+<option disabled="" hidden="" selected="" value="">Seleccionar</option>
+<option value="analgesicos">Analgésicos</option>
+<option value="antibioticos">Antibióticos</option>
+<option value="gastrointestinal">Gastrointestinal</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-muted">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 2 Column Grid for Price & Provider -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Precio (Bs) <span class="text-error">*</span></label>
+<input class="w-full px-3 py-2 bg-surface border border-border-hairline text-on-surface font-data-mono text-data-mono rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors placeholder-text-muted" placeholder="0.00" step="0.01" type="number">
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Proveedor</label>
+<div class="relative">
+<select class="w-full pl-3 pr-8 py-2 bg-surface border border-border-hairline text-on-surface font-body-sm text-body-sm rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-colors">
+<option disabled="" hidden="" selected="" value="">Seleccionar</option>
+<option value="prov1">Droguería Nena</option>
+<option value="prov2">Farvenca</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-muted">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr class="border-border-hairline">
+<!-- Inventory Settings Section -->
+<div class="flex flex-col gap-4">
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Inventario</h4>
+<!-- 2 Column Grid for Initial Stock & Min Stock -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Stock Inicial</label>
+<input class="w-full px-3 py-2 bg-surface border border-border-hairline text-on-surface font-data-mono text-data-mono rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors placeholder-text-muted" placeholder="0" type="number">
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Stock Mínimo (Alerta)</label>
+<input class="w-full px-3 py-2 bg-surface border border-border-hairline text-on-surface font-data-mono text-data-mono rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors placeholder-text-muted" placeholder="10" type="number">
+</div>
+</div>
+<!-- Ubication -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-text-secondary">Ubicación (Estante/Fila)</label>
+<input class="w-full px-3 py-2 bg-surface border border-border-hairline text-on-surface font-body-sm text-body-sm rounded-[8px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors placeholder-text-muted" placeholder="Ej. A1-F3" type="text">
+</div>
+</div>
+<!-- Activo Toggle -->
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Activo en catálogo</span>
+<span class="font-body-sm text-[12px] text-text-secondary">El producto será visible para facturación</span>
+</div>
+<!-- Toggle Switch ON -->
+<button aria-checked="true" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" role="switch" type="button">
+<span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 translate-x-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-6 py-4 border-t border-border-hairline flex items-center justify-end gap-3 bg-surface-bright">
+<button class="px-4 py-2 font-body-sm text-body-sm font-medium text-text-secondary hover:text-on-surface bg-transparent hover:bg-surface-variant/50 border border-transparent rounded-[8px] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+                    Cancelar
+                </button>
+<button class="px-4 py-2 font-body-sm text-body-sm font-medium text-white bg-primary hover:bg-primary-container rounded-[8px] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+                    Guardar Producto
+                </button>
+</div>
+</div>
+</div>
+<!-- SideNavBar Component -->
+<nav class="fixed left-0 top-0 h-full w-[190px] bg-surface border-r border-border-hairline flex flex-col z-20">
+<!-- Header -->
+<div class="px-gutter py-6 border-b border-border-hairline flex flex-col gap-1">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">High Meds C.A.</h1>
+<span class="text-xs text-text-muted">Gestión Farmacéutica</span>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-body-md text-body-md">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary bg-blue-tint-bg font-semibold border-r-4 border-primary cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-body-md text-body-md">Catálogo</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-body-md text-body-md">Existencias</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">swap_horiz</span>
+<span class="font-body-md text-body-md">Movimientos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">warning</span>
+<span class="font-body-md text-body-md">Alertas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">package_2</span>
+<span class="font-body-md text-body-md">Reposición</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">local_shipping</span>
+<span class="font-body-md text-body-md">Proveedores</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-bright transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-body-md text-body-md">Usuarios</span>
+</a>
+</div>
+<!-- Footer Profile -->
+<div class="p-4 border-t border-border-hairline bg-surface flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-tint-bg flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-medium text-on-surface truncate">Luis Ferrer</span>
+<span class="text-xs text-text-muted truncate">Administrador</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-[190px] flex flex-col h-full bg-page-bg">
+<!-- TopAppBar Component -->
+<header class="h-16 bg-surface border-b border-border-hairline px-gutter flex items-center justify-between flex-shrink-0 z-10 w-full">
+<!-- Breadcrumbs & Title -->
+<div class="flex flex-col">
+<div class="flex items-center gap-2 text-xs text-text-muted mb-0.5">
+<a class="hover:text-primary transition-colors" href="#">Inicio</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-text-secondary">Catálogo</span>
+</div>
+<h2 class="font-body-lg text-body-lg font-medium text-on-surface" style="font-size: 16px; font-weight: 500;">Catálogo de productos</h2>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-text-secondary hover:text-primary transition-colors rounded-full hover:bg-surface-bright focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-white leading-none">3</span>
+</button>
+<div class="h-8 w-px bg-border-hairline"></div>
+<button class="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-full p-0.5 pr-2 hover:bg-surface-bright transition-colors">
+<img alt="Usuario Admin" class="w-8 h-8 rounded-full object-cover border border-border-hairline" data-alt="A professional headshot of a young male administrator in a brightly lit modern office setting, wearing a crisp light blue shirt. The background is slightly blurred with soft cool tones, conveying a clinical yet approachable atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5f_fehIWI0nV7nA9O7Uq5LyZrl57E3lRC6C65B3Zn7Ffurbhz28NXQ3xeovc-qdGFND0ZYnvATJd9x3YiQbSHtJ1Wk--KNuAThEFYlIjz9MJ-hLuUIwnwNgwE4_5bFJPl1enwjavdtwCF10XnQEKRsxXaVMUF-pYeIjRvcMKOsnmoEVERHC9oS2mtrKG6MQJv-iA_8paR80He9ff53BWif6X-Wn3a3X1u0nncC6Wr26TD4jYEVK61WK_O9wso2mZ9m53VgRTh6d8">
+<span class="material-symbols-outlined text-text-muted text-[20px]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 overflow-y-auto p-gutter relative">
+<div class="max-w-container-max mx-auto flex flex-col gap-6">
+<!-- Filters & Actions Bar -->
+<div class="bg-surface rounded-[12px] border border-border-hairline p-4 flex flex-wrap gap-4 items-center justify-between">
+<!-- Search & Filters -->
+<div class="flex flex-wrap gap-4 flex-1">
+<!-- Search Input -->
+<div class="relative w-full max-w-[320px]">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-text-muted">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-border-hairline rounded-[8px] bg-surface text-body-sm text-on-surface placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" placeholder="Buscar producto" type="text">
+</div>
+<!-- Category Select -->
+<div class="relative w-[180px]">
+<select class="block w-full pl-3 pr-10 py-2 border border-border-hairline rounded-[8px] bg-surface text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-all duration-200">
+<option disabled="" hidden="" selected="" value="">Categoría</option>
+<option value="todas">Todas</option>
+<option value="analgesicos">Analgésicos</option>
+<option value="antibioticos">Antibióticos</option>
+<option value="antialergicos">Antialérgicos</option>
+<option value="gastrointestinal">Gastrointestinal</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-muted">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- Status Select -->
+<div class="relative w-[160px]">
+<select class="block w-full pl-3 pr-10 py-2 border border-border-hairline rounded-[8px] bg-surface text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-all duration-200">
+<option disabled="" hidden="" selected="" value="">Estado</option>
+<option value="todos">Todos</option>
+<option value="normal">Normal</option>
+<option value="critico">Crítico</option>
+<option value="agotado">Agotado</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-muted">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="bg-primary hover:bg-primary-container text-white px-4 py-2.5 rounded-[8px] font-body-sm text-body-sm font-medium flex items-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Nuevo Producto
+                    </button>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface rounded-[12px] border border-border-hairline flex flex-col overflow-hidden">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-border-hairline">
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary whitespace-nowrap">Producto</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary whitespace-nowrap">Categoría</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary text-right whitespace-nowrap">Stock</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary whitespace-nowrap">Estado</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-text-secondary text-center whitespace-nowrap w-[80px]">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-hairline">
+<!-- Row 1: Acetaminofén -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Acetaminofén 500mg</span>
+<span class="font-data-mono-sm text-data-mono-sm text-text-muted mt-0.5">SKU-0142</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="font-body-sm text-body-sm text-text-secondary">Analgésicos</span>
+</td>
+<td class="py-3 px-4 align-middle text-right">
+<span class="font-data-mono text-data-mono text-on-surface">120</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-badge-normal-bg text-badge-normal-text font-label-caps text-label-caps">Normal</span>
+</td>
+<td class="py-3 px-4 align-middle text-center">
+<button class="text-text-muted hover:text-primary transition-colors focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-primary opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Amoxicilina -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Amoxicilina 500mg</span>
+<span class="font-data-mono-sm text-data-mono-sm text-text-muted mt-0.5">SKU-0317</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="font-body-sm text-body-sm text-text-secondary">Antibióticos</span>
+</td>
+<td class="py-3 px-4 align-middle text-right">
+<span class="font-data-mono text-data-mono text-on-surface">8</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-badge-critical-bg text-badge-critical-text font-label-caps text-label-caps">Crítico</span>
+</td>
+<td class="py-3 px-4 align-middle text-center">
+<button class="text-text-muted hover:text-primary transition-colors focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-primary opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Loratadina -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Loratadina 10mg</span>
+<span class="font-data-mono-sm text-data-mono-sm text-text-muted mt-0.5">SKU-0089</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="font-body-sm text-body-sm text-text-secondary">Antialérgicos</span>
+</td>
+<td class="py-3 px-4 align-middle text-right">
+<span class="font-data-mono text-data-mono text-text-muted">0</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-badge-out-bg text-badge-out-text font-label-caps text-label-caps">Agotado</span>
+</td>
+<td class="py-3 px-4 align-middle text-center">
+<button class="text-text-muted hover:text-primary transition-colors focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-primary opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Ibuprofeno -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Ibuprofeno 400mg</span>
+<span class="font-data-mono-sm text-data-mono-sm text-text-muted mt-0.5">SKU-0205</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="font-body-sm text-body-sm text-text-secondary">Analgésicos</span>
+</td>
+<td class="py-3 px-4 align-middle text-right">
+<span class="font-data-mono text-data-mono text-on-surface">64</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-badge-normal-bg text-badge-normal-text font-label-caps text-label-caps">Normal</span>
+</td>
+<td class="py-3 px-4 align-middle text-center">
+<button class="text-text-muted hover:text-primary transition-colors focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-primary opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Omeprazol -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Omeprazol 20mg</span>
+<span class="font-data-mono-sm text-data-mono-sm text-text-muted mt-0.5">SKU-0451</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="font-body-sm text-body-sm text-text-secondary">Gastrointestinal</span>
+</td>
+<td class="py-3 px-4 align-middle text-right">
+<span class="font-data-mono text-data-mono text-on-surface">5</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<span class="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-badge-critical-bg text-badge-critical-text font-label-caps text-label-caps">Crítico</span>
+</td>
+<td class="py-3 px-4 align-middle text-center">
+<button class="text-text-muted hover:text-primary transition-colors focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-primary opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="bg-surface border-t border-border-hairline px-4 py-3 flex items-center justify-between">
+<div class="font-body-sm text-body-sm text-text-secondary">
+                            Mostrando 1–5 de 48 productos
+                        </div>
+<div class="flex items-center gap-1 font-data-mono text-data-mono">
+<button class="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:bg-surface-bright disabled:opacity-50 transition-colors" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-[8px] bg-primary text-white font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-secondary hover:bg-surface-bright transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-secondary hover:bg-surface-bright transition-colors">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-secondary hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

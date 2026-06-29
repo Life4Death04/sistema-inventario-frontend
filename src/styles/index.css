@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-page-bg: #f5f8fb;
+  --color-surface: #ffffff;
+  --color-surface-strong: #f6faff;
+  --color-surface-tint: #e8f1fa;
+  --color-border: #e5ecf1;
+  --color-primary: #004782;
+  --color-primary-strong: #185fa5;
+  --color-text: #0e1d27;
+  --color-text-secondary: #5c6b78;
+  --color-text-muted: #95a3ae;
+  --color-success-bg: #e2f4ee;
+  --color-success-text: #0f7c5c;
+  --color-warning-bg: #fbefd9;
+  --color-warning-text: #9a5b00;
+  --color-danger-bg: #fbe7e4;
+  --color-danger-text: #b0301f;
+  --radius-panel: 12px;
+  --radius-control: 8px;
+  color: var(--color-text);
+  background: var(--color-page-bg);
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  margin: 0;
+  min-width: 320px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.font-data-mono {
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
