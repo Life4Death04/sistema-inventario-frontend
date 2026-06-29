@@ -165,6 +165,43 @@ export const getReplenishmentRows = () =>
       notes: request.notes,
     }))
 
+export type ReplenishmentRow = ReturnType<typeof getReplenishmentRows>[number]
+
+export const getReplenishmentDetails = (requestId: string) => {
+  const request = mockDb.replenishmentRequests.find((item) => item.id === requestId)
+
+  if (!request) {
+    return null
+  }
+
+  return {
+    id: request.id,
+    supplier: getSupplierName(request.supplierId),
+    requestedBy: getUserName(request.requestedByUserId),
+    status: statusLabels[request.status],
+    rawStatus: request.status,
+    requestedAt: request.requestedAt,
+    sentAt: request.sentAt,
+    notes: request.notes,
+    items: request.items.map((item) => {
+      const product = mockDb.products.find((current) => current.id === item.productId)
+
+      return {
+        id: item.id,
+        productId: item.productId,
+        name: product?.name ?? 'Producto no encontrado',
+        code: product?.code ?? 'N/A',
+        requestedQuantity: item.requestedQuantity,
+        receivedQuantity: item.requestedQuantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.requestedQuantity * item.unitPrice,
+        stock: product?.stock ?? 0,
+        minStock: product?.minStock ?? 0,
+      }
+    }),
+  }
+}
+
 export const getCredentialsHint = () => ({
   email: mockDb.users[0]?.email ?? '',
   password: mockDb.users[0]?.password ?? '',
