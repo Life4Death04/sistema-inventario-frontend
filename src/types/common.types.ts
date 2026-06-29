@@ -9,6 +9,7 @@ export interface User {
   active: boolean
   phone: string
   createdAt: string
+  lastAccess?: string
 }
 
 export interface Category {

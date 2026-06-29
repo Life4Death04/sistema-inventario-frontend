@@ -3,8 +3,8 @@ import type { Product, ReplenishmentRequest, UserRole } from '@/types/common.typ
 
 const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Administrador',
-  MANAGER: 'Encargado',
-  OPERATOR: 'Operativo',
+  MANAGER: 'Encargado de inventario',
+  OPERATOR: 'Personal operativo',
 }
 
 const movementLabels = {
@@ -128,6 +128,55 @@ export const getAlertItems = () => {
   return [...outOfStockAlerts, ...lowStockAlerts, ...requestAlerts]
 }
 
+export const getInventoryAlertRows = () => {
+  const productRows = getProductRows()
+
+  const activeAlerts = productRows
+    .filter((product) => product.status === 'Agotado' || product.status === 'Critico')
+    .map((product) => ({
+      id: `alert-${product.id}`,
+      kind: 'active' as const,
+      level: product.status === 'Agotado' ? 'out' as const : 'critical' as const,
+      label: product.status,
+      generatedAt: getLatestProductActivity(product.id),
+      product,
+      requestCode: null,
+    }))
+    .sort((left, right) => {
+      if (left.level !== right.level) {
+        return left.level === 'out' ? -1 : 1
+      }
+
+      return left.product.stock - right.product.stock
+    })
+
+  const attendedAlerts = [...mockDb.replenishmentRequests]
+    .filter((request) => request.status === 'SENT' || request.status === 'RECEIVED')
+    .map((request) => {
+      const product = productRows.find((item) => item.id === request.items[0]?.productId)
+
+      if (!product) {
+        return null
+      }
+
+      return {
+        id: `alert-attended-${request.id}`,
+        kind: 'attended' as const,
+        level: 'normal' as const,
+        label: 'Atendida',
+        generatedAt: request.requestedAt,
+        product,
+        requestCode: formatRequestCode(request.id),
+      }
+    })
+    .filter((alert): alert is NonNullable<typeof alert> => Boolean(alert))
+    .sort((left, right) => right.generatedAt.localeCompare(left.generatedAt))
+
+  return [...activeAlerts, ...attendedAlerts]
+}
+
+export type InventoryAlertRow = ReturnType<typeof getInventoryAlertRows>[number]
+
 export const getSupplierRows = () =>
   mockDb.suppliers.map((supplier) => ({
     id: supplier.id,
@@ -145,10 +194,15 @@ export const getUserRows = () =>
     fullName: user.fullName,
     email: user.email,
     phone: user.phone,
+    initials: getInitials(user.fullName),
+    roleKey: user.role,
     role: roleLabels[user.role],
     active: user.active,
     createdAt: user.createdAt,
+    lastAccess: user.lastAccess ?? null,
   }))
+
+export type UserRow = ReturnType<typeof getUserRows>[number]
 
 export const getReplenishmentRows = () =>
   [...mockDb.replenishmentRequests]
@@ -221,3 +275,18 @@ const getProductStatus = (product: Product) => {
 
 const getRequestTotal = (request: ReplenishmentRequest) =>
   request.items.reduce((accumulator, item) => accumulator + item.requestedQuantity * item.unitPrice, 0)
+
+const getLatestProductActivity = (productId: string) =>
+  [...mockDb.movements]
+    .filter((movement) => movement.productId === productId)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]?.createdAt ?? new Date().toISOString()
+
+const formatRequestCode = (requestId: string) => `R-${requestId.replace('req-', '').padStart(4, '0')}`
+
+const getInitials = (fullName: string) =>
+  fullName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((chunk) => chunk[0]?.toUpperCase() ?? '')
+    .join('')
