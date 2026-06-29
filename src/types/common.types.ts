@@ -22,7 +22,10 @@ export interface Supplier {
   id: string
   name: string
   rif: string
+  contactName: string
   whatsapp: string
+  altPhone?: string
+  email?: string
   address: string
   active: boolean
 }

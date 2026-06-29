@@ -182,11 +182,16 @@ export const getSupplierRows = () =>
     id: supplier.id,
     name: supplier.name,
     rif: supplier.rif,
+    contactName: supplier.contactName,
     whatsapp: supplier.whatsapp,
+    altPhone: supplier.altPhone ?? null,
+    email: supplier.email ?? null,
     address: supplier.address,
     active: supplier.active,
     products: mockDb.productSuppliers.filter((relation) => relation.supplierId === supplier.id).length,
   }))
+
+export type SupplierRow = ReturnType<typeof getSupplierRows>[number]
 
 export const getUserRows = () =>
   mockDb.users.map((user) => ({
