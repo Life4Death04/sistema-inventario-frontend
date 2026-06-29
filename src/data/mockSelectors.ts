@@ -87,6 +87,8 @@ export const getInventoryRows = () =>
     difference: product.stock - product.minStock,
   }))
 
+export type InventoryRow = ReturnType<typeof getInventoryRows>[number]
+
 export const getMovementRows = () =>
   [...mockDb.movements]
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
