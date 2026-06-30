@@ -72,14 +72,6 @@ export function AlertsPage() {
               </button>
             ))}
           </div>
-
-          <button
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition hover:bg-[var(--color-surface-strong)]"
-            type="button"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Umbrales de stock
-          </button>
         </div>
 
         <div className="space-y-4">
