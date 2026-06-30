@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, CircleAlert, Eye, Package2, SlidersHorizontal } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, CircleAlert, Eye, Package2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
