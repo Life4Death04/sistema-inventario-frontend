@@ -1,4 +1,6 @@
-export type UserRole = 'ADMIN' | 'MANAGER' | 'OPERATOR'
+import type { UserRole } from '@/types/api.types'
+
+export type { UserRole }
 
 export interface User {
   id: string
@@ -7,7 +9,7 @@ export interface User {
   password: string
   role: UserRole
   active: boolean
-  phone: string
+  phone: string | null
   createdAt: string
   lastAccess?: string
 }

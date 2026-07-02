@@ -1,44 +1,90 @@
+import { isAxiosError } from 'axios'
 import { create } from 'zustand'
 
-import { mockDb } from '@/data/mockDatabase'
-import type { User } from '@/types/common.types'
+import { loginRequest, logoutRequest, meRequest } from '@/features/auth/api/auth.api'
+import {
+  clearSessionState,
+  getAccessToken,
+  registerSessionClearedHandler,
+  setAccessToken,
+} from '@/features/auth/lib/authSession'
+import type { AuthUser } from '@/types/api.types'
 
 interface AuthState {
-  user: User | null
-  login: (email: string, password: string) => Promise<User>
-  logout: () => void
+  user: AuthUser | null
+  isBootstrapping: boolean
+  login: (email: string, password: string) => Promise<AuthUser>
+  logout: () => Promise<void>
+  bootstrapSession: () => Promise<void>
+  clearSession: () => void
 }
 
-const STORAGE_KEY = 'inventory-demo-user'
+let bootstrapPromise: Promise<void> | null = null
 
-const getStoredUser = () => {
-  const stored = window.localStorage.getItem(STORAGE_KEY)
-
-  if (!stored) {
-    return null
+function isAuthFailure(error: unknown) {
+  if (!isAxiosError(error)) {
+    return false
   }
 
-  return JSON.parse(stored) as User
+  return error.response?.status === 401 || error.response?.status === 403
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: typeof window === 'undefined' ? null : getStoredUser(),
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  isBootstrapping: true,
   login: async (email, password) => {
-    const user = mockDb.users.find(
-      (currentUser) => currentUser.email === email && currentUser.password === password && currentUser.active,
-    )
+    const { user, token } = await loginRequest({ email, password })
 
-    if (!user) {
-      throw new Error('Credenciales invalidas')
-    }
-
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    setAccessToken(token)
     set({ user })
 
     return user
   },
-  logout: () => {
-    window.localStorage.removeItem(STORAGE_KEY)
-    set({ user: null })
+  logout: async () => {
+    try {
+      await logoutRequest()
+    } finally {
+      get().clearSession()
+    }
+  },
+  bootstrapSession: async () => {
+    if (bootstrapPromise) {
+      return bootstrapPromise
+    }
+
+    bootstrapPromise = (async () => {
+      try {
+        const token = getAccessToken()
+
+        if (!token) {
+          set({ user: null, isBootstrapping: false })
+          return
+        }
+
+        set({ isBootstrapping: true })
+
+        const { user } = await meRequest()
+        set({ user })
+      } catch (error) {
+        if (isAuthFailure(error)) {
+          get().clearSession()
+          return
+        }
+
+        set({ user: null })
+      } finally {
+        set({ isBootstrapping: false })
+        bootstrapPromise = null
+      }
+    })()
+
+    return bootstrapPromise
+  },
+  clearSession: () => {
+    clearSessionState()
   },
 }))
+
+registerSessionClearedHandler(() => {
+  useAuthStore.setState({ user: null, isBootstrapping: false })
+})
