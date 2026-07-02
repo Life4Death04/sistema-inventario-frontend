@@ -13,12 +13,13 @@ import { useEffect, useState } from 'react'
 import type { SupplierRow } from '@/data/mockSelectors'
 
 interface SuppliersTanStackTableProps {
+  canManage: boolean
   rows: SupplierRow[]
   globalFilter: string
   onEditSupplier: (supplier: SupplierRow) => void
 }
 
-export function SuppliersTanStackTable({ rows, globalFilter, onEditSupplier }: SuppliersTanStackTableProps) {
+export function SuppliersTanStackTable({ canManage, rows, globalFilter, onEditSupplier }: SuppliersTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -55,17 +56,21 @@ export function SuppliersTanStackTable({ rows, globalFilter, onEditSupplier }: S
       header: 'Estado',
       cell: ({ row }) => <StatusBadge active={row.original.active} />,
     },
-    {
-      id: 'actions',
-      header: 'Acciones',
-      cell: ({ row }) => (
-        <ActionsCell
-          isMenuOpen={openMenuId === row.original.id}
-          onEdit={() => onEditSupplier(row.original)}
-          onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
-        />
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            id: 'actions',
+            header: 'Acciones',
+            cell: ({ row }: { row: { original: SupplierRow } }) => (
+              <ActionsCell
+                isMenuOpen={openMenuId === row.original.id}
+                onEdit={() => onEditSupplier(row.original)}
+                onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
+              />
+            ),
+          } satisfies ColumnDef<SupplierRow>,
+        ]
+      : []),
   ]
 
   const table = useReactTable({

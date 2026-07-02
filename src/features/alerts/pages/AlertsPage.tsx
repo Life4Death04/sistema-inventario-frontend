@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { getInventoryAlertRows, type InventoryAlertRow, type ProductRow } from '@/data/mockSelectors'
+import { hasPermission } from '@/features/auth/lib/permissions'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 import { ProductCatalogModals, type ProductModalType } from '@/features/products/components/ProductCatalogModals'
 
 const tabs = [
@@ -15,6 +17,7 @@ const tabs = [
 type AlertFilter = (typeof tabs)[number]['key']
 
 export function AlertsPage() {
+  const user = useAuthStore((state) => state.user)
   const alerts = getInventoryAlertRows()
   const [filter, setFilter] = useState<AlertFilter>('active')
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
@@ -76,21 +79,23 @@ export function AlertsPage() {
 
         <div className="space-y-4">
           {visibleAlerts.map((alert) => (
-            <AlertCard key={alert.id} alert={alert} onOpenModal={openModal} />
+            <AlertCard key={alert.id} alert={alert} canUseReplenishment={hasPermission(user?.role, 'manage:replenishment')} onOpenModal={openModal} />
           ))}
         </div>
       </section>
 
-      <ProductCatalogModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} product={selectedProduct} />
+      <ProductCatalogModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} product={selectedProduct} role={user?.role} />
     </>
   )
 }
 
 function AlertCard({
   alert,
+  canUseReplenishment,
   onOpenModal,
 }: {
   alert: InventoryAlertRow
+  canUseReplenishment: boolean
   onOpenModal: (modalType: ProductModalType, product: ProductRow | null) => void
 }) {
   const statusClasses = getStatusClasses(alert)
@@ -135,10 +140,12 @@ function AlertCard({
         <div className="flex w-full flex-row gap-2 md:w-auto md:min-w-[182px] md:flex-col">
           {alert.kind === 'active' ? (
             <>
-              <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('replenishment', alert.product)} type="button">
-                <Package2 className="mr-2 h-4 w-4" />
-                Generar reposicion
-              </Button>
+              {canUseReplenishment ? (
+                <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('replenishment', alert.product)} type="button">
+                  <Package2 className="mr-2 h-4 w-4" />
+                  Generar reposicion
+                </Button>
+              ) : null}
               <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('detail', alert.product)} type="button" variant="secondary">
                 <Eye className="mr-2 h-4 w-4" />
                 Ver producto

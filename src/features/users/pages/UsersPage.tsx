@@ -2,11 +2,15 @@ import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 
 import { getUserRows, type UserRow } from '@/data/mockSelectors'
+import { canManageUsers } from '@/features/auth/lib/permissions'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 import { UserModals, type UserModalType } from '@/features/users/components/UserModals'
 import { UsersTanStackTable } from '@/features/users/components/UsersTanStackTable'
 
 export function UsersPage() {
+  const user = useAuthStore((state) => state.user)
   const users = getUserRows()
+  const canManage = canManageUsers(user?.role)
   const [query, setQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'ALL' | UserRow['roleKey']>('ALL')
   const [activeModal, setActiveModal] = useState<UserModalType | null>(null)
@@ -73,20 +77,22 @@ export function UsersPage() {
             </div>
           </div>
 
-          <button
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)]"
-            onClick={() => openModal('create')}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo usuario
-          </button>
+          {canManage ? (
+            <button
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)]"
+              onClick={() => openModal('create')}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo usuario
+            </button>
+          ) : null}
         </section>
 
-        <UsersTanStackTable globalFilter={query} onEditUser={(user) => openModal('edit', user)} rows={filteredUsers} />
+        <UsersTanStackTable canManage={canManage} globalFilter={query} onEditUser={(user) => openModal('edit', user)} rows={filteredUsers} />
       </section>
 
-      <UserModals modalType={activeModal} onClose={closeModal} user={selectedUser} />
+      {canManage ? <UserModals modalType={activeModal} onClose={closeModal} user={selectedUser} /> : null}
     </>
   )
 }

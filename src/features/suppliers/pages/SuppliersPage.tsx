@@ -2,12 +2,16 @@ import { Building2, ClipboardList, Plus, Search, ShieldCheck, TriangleAlert } fr
 import { useState } from 'react'
 
 import { getProductRows, getSupplierRows, type SupplierRow } from '@/data/mockSelectors'
+import { canManageSuppliers } from '@/features/auth/lib/permissions'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 import { SupplierModals, type SupplierModalType } from '@/features/suppliers/components/SupplierModals'
 import { SuppliersTanStackTable } from '@/features/suppliers/components/SuppliersTanStackTable'
 
 export function SuppliersPage() {
+  const user = useAuthStore((state) => state.user)
   const suppliers = getSupplierRows()
   const products = getProductRows()
+  const canManage = canManageSuppliers(user?.role)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL')
   const [activeModal, setActiveModal] = useState<SupplierModalType | null>(null)
@@ -82,21 +86,23 @@ export function SuppliersPage() {
               ))}
             </div>
 
-            <button
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)]"
-              onClick={() => openModal('create')}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-              Nuevo proveedor
-            </button>
+            {canManage ? (
+              <button
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)]"
+                onClick={() => openModal('create')}
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+                Nuevo proveedor
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <SuppliersTanStackTable globalFilter={query} onEditSupplier={(supplier) => openModal('edit', supplier)} rows={filteredSuppliers} />
+        <SuppliersTanStackTable canManage={canManage} globalFilter={query} onEditSupplier={(supplier) => openModal('edit', supplier)} rows={filteredSuppliers} />
       </section>
 
-      <SupplierModals modalType={activeModal} onClose={closeModal} supplier={selectedSupplier} />
+      {canManage ? <SupplierModals modalType={activeModal} onClose={closeModal} supplier={selectedSupplier} /> : null}
     </>
   )
 }

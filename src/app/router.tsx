@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import { RoleProtectedRoute } from '@/components/layout/RoleProtectedRoute'
 import { AlertsPage } from '@/features/alerts/pages/AlertsPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { InventoryPage } from '@/features/inventory/pages/InventoryPage'
@@ -45,16 +46,31 @@ export const router = createBrowserRouter([
             element: <AlertsPage />,
           },
           {
-            path: 'reposicion',
-            element: <ReplenishmentPage />,
+            element: <RoleProtectedRoute permission="view:replenishment" />,
+            children: [
+              {
+                path: 'reposicion',
+                element: <ReplenishmentPage />,
+              },
+            ],
           },
           {
-            path: 'proveedores',
-            element: <SuppliersPage />,
+            element: <RoleProtectedRoute permission="view:suppliers" />,
+            children: [
+              {
+                path: 'proveedores',
+                element: <SuppliersPage />,
+              },
+            ],
           },
           {
-            path: 'usuarios',
-            element: <UsersPage />,
+            element: <RoleProtectedRoute permission="view:users" />,
+            children: [
+              {
+                path: 'usuarios',
+                element: <UsersPage />,
+              },
+            ],
           },
           {
             path: 'perfil',

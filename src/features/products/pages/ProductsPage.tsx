@@ -4,13 +4,19 @@ import { useState } from 'react'
 import { ProductCatalogModals, type ProductModalType } from '@/features/products/components/ProductCatalogModals'
 import { ProductsTanStackTable } from '@/features/products/components/ProductsTanStackTable'
 import { getProductRows, type ProductRow } from '@/data/mockSelectors'
+import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 export function ProductsPage() {
+  const user = useAuthStore((state) => state.user)
   const [query, setQuery] = useState('')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
   const products = getProductRows()
+  const canManage = canManageProducts(user?.role)
+  const canUseReplenishment = hasPermission(user?.role, 'manage:replenishment')
+  const canOpenMovement = canCreateMovementType(user?.role, 'OUT')
   const criticalCount = products.filter((product) => product.status === 'Critico').length
   const outCount = products.filter((product) => product.status === 'Agotado').length
 
@@ -42,51 +48,59 @@ export function ProductsPage() {
         <View className="h-4 w-4 text-[#5c6b78]" />
         Ver detalle
       </button>
-      <button
-        className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
-        onClick={(event) => {
-          event.stopPropagation()
-          openModal('edit', product)
-        }}
-        type="button"
-      >
-        <SquarePen className="h-4 w-4 text-[#5c6b78]" />
-        Editar
-      </button>
-      <button
-        className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
-        onClick={(event) => {
-          event.stopPropagation()
-          openModal('movement', product)
-        }}
-        type="button"
-      >
-        <ArrowLeftRight className="h-4 w-4 text-[#5c6b78]" />
-        Registrar movimiento
-      </button>
-      <button
-        className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
-        onClick={(event) => {
-          event.stopPropagation()
-          openModal('replenishment', product)
-        }}
-        type="button"
-      >
-        <Package2 className="h-4 w-4 text-[#5c6b78]" />
-        Generar reposicion
-      </button>
-      <div className="mx-4 h-px bg-[#e5ecf1]" />
-      <button
-        className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#ba1a1a] transition hover:bg-[#fbe7e4]"
-        onClick={(event) => {
-          event.stopPropagation()
-          openModal('deactivate', product)
-        }}
-        type="button"
-      >
-        <TriangleAlert className="h-4 w-4" />
-        Desactivar
-      </button>
+      {canManage ? (
+        <button
+          className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
+          onClick={(event) => {
+            event.stopPropagation()
+            openModal('edit', product)
+          }}
+          type="button"
+        >
+          <SquarePen className="h-4 w-4 text-[#5c6b78]" />
+          Editar
+        </button>
+      ) : null}
+      {canOpenMovement ? (
+        <button
+          className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
+          onClick={(event) => {
+            event.stopPropagation()
+            openModal('movement', product)
+          }}
+          type="button"
+        >
+          <ArrowLeftRight className="h-4 w-4 text-[#5c6b78]" />
+          Registrar movimiento
+        </button>
+      ) : null}
+      {canUseReplenishment ? (
+        <button
+          className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
+          onClick={(event) => {
+            event.stopPropagation()
+            openModal('replenishment', product)
+          }}
+          type="button"
+        >
+          <Package2 className="h-4 w-4 text-[#5c6b78]" />
+          Generar reposicion
+        </button>
+      ) : null}
+      {canManage ? <div className="mx-4 h-px bg-[#e5ecf1]" /> : null}
+      {canManage ? (
+        <button
+          className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#ba1a1a] transition hover:bg-[#fbe7e4]"
+          onClick={(event) => {
+            event.stopPropagation()
+            openModal('deactivate', product)
+          }}
+          type="button"
+        >
+          <TriangleAlert className="h-4 w-4" />
+          Desactivar
+        </button>
+      ) : null}
     </div>
   )
 
@@ -111,14 +125,16 @@ export function ProductsPage() {
             />
           </label>
 
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#004782] px-4 text-xs font-semibold uppercase tracking-[0.05em] text-white transition hover:bg-[#1960a6]"
-            onClick={() => openModal('create')}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo producto
-          </button>
+          {canManage ? (
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#004782] px-4 text-xs font-semibold uppercase tracking-[0.05em] text-white transition hover:bg-[#1960a6]"
+              onClick={() => openModal('create')}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo producto
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -149,7 +165,7 @@ export function ProductsPage() {
       </div>
       </section>
 
-      <ProductCatalogModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} product={selectedProduct} />
+      <ProductCatalogModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} product={selectedProduct} role={user?.role} />
     </>
   )
 }
