@@ -84,6 +84,12 @@ export interface ProductSupplierEntry {
   referencePrice: string | null
 }
 
+export interface ProductSupplierLink {
+  id: string
+  supplierId: string
+  referencePrice: string | null
+}
+
 export interface ProductCategorySummary {
   id: string
   name: string
