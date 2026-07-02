@@ -1,5 +1,5 @@
-import { Check, Mail, MessageCircle, X } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { MessageCircle, X } from 'lucide-react'
+import { type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import type { SupplierRow } from '@/data/mockSelectors'
@@ -25,12 +25,10 @@ export function SupplierModals({ modalType, supplier, onClose }: SupplierModalsP
 }
 
 function CreateSupplierModal({ onClose }: { onClose: () => void }) {
-  const [active, setActive] = useState(true)
-
   return (
     <ModalFrame onClose={onClose} title="Nuevo proveedor">
       <div className="max-h-[614px] flex-1 space-y-6 overflow-y-auto px-6 py-6">
-        <SupplierForm active={active} onToggleActive={() => setActive((current) => !current)} />
+        <SupplierForm />
       </div>
       <Footer onClose={onClose} primaryLabel="Crear proveedor" />
     </ModalFrame>
@@ -38,8 +36,6 @@ function CreateSupplierModal({ onClose }: { onClose: () => void }) {
 }
 
 function EditSupplierModal({ onClose, supplier }: { onClose: () => void; supplier: SupplierRow }) {
-  const [active, setActive] = useState(supplier.active)
-
   return (
     <ModalFrame
       onClose={onClose}
@@ -47,7 +43,7 @@ function EditSupplierModal({ onClose, supplier }: { onClose: () => void; supplie
       titleSuffix={`${supplier.name} · ${supplier.products} productos asociados`}
     >
       <div className="max-h-[614px] flex-1 space-y-6 overflow-y-auto px-6 py-6">
-        <SupplierForm active={active} onToggleActive={() => setActive((current) => !current)} supplier={supplier} />
+        <SupplierForm supplier={supplier} />
       </div>
       <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4">
         <button className="rounded-lg px-2 py-1.5 text-sm font-medium text-[var(--color-danger-text)] transition hover:bg-[var(--color-danger-bg)]" type="button">
@@ -66,15 +62,7 @@ function EditSupplierModal({ onClose, supplier }: { onClose: () => void; supplie
   )
 }
 
-function SupplierForm({
-  active,
-  onToggleActive,
-  supplier,
-}: {
-  active: boolean
-  onToggleActive: () => void
-  supplier?: SupplierRow
-}) {
+function SupplierForm({ supplier }: { supplier?: SupplierRow }) {
   return (
     <form className="space-y-6">
       <Field>
@@ -85,51 +73,41 @@ function SupplierForm({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Field>
           <FieldLabel>RIF</FieldLabel>
-          <TextInput defaultValue={supplier?.rif} mono placeholder="J-12345678-9" />
+          <TextInput defaultValue={supplier?.rif ?? undefined} mono placeholder="J-12345678-9" />
         </Field>
-        <Field>
-          <FieldLabel>Persona de contacto</FieldLabel>
-          <TextInput defaultValue={supplier?.contactName} placeholder="Nombre y Apellido" />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field>
-          <FieldLabel icon={<MessageCircle className="h-4 w-4 text-[var(--color-success-text)]" />}>WhatsApp</FieldLabel>
-          <PhoneInput defaultValue={supplier?.whatsapp} helper="Se usara para enviar las solicitudes de reposicion" />
-        </Field>
-        <Field>
-          <FieldLabel>Telefono alternativo</FieldLabel>
-          <PhoneInput defaultValue={supplier?.altPhone ?? undefined} />
-        </Field>
+        {supplier ? <ReadonlyStatusField active={supplier.active} /> : null}
       </div>
 
       <Field>
-        <FieldLabel icon={<Mail className="h-4 w-4 text-[var(--color-primary)]" />}>Correo electronico</FieldLabel>
-        <TextInput defaultValue={supplier?.email ?? undefined} placeholder="correo@empresa.com" type="email" />
+        <FieldLabel icon={<MessageCircle className="h-4 w-4 text-[var(--color-success-text)]" />}>WhatsApp</FieldLabel>
+        <PhoneInput defaultValue={supplier?.whatsapp ?? undefined} helper="Se usara para enviar las solicitudes de reposicion" />
       </Field>
 
       <Field>
         <FieldLabel>Direccion</FieldLabel>
         <textarea
           className="w-full resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
-          defaultValue={supplier?.address}
+          defaultValue={supplier?.address ?? undefined}
           placeholder="Direccion completa"
           rows={2}
         />
       </Field>
-
-      <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-4">
-        <div>
-          <span className="block text-sm font-medium text-[var(--color-text-secondary)]">Estado</span>
-          <span className="block text-xs text-[var(--color-text-muted)]">Si esta inactivo, no aparecera en nuevas reposiciones.</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Toggle checked={active} onChange={onToggleActive} />
-          <span className="text-sm text-[var(--color-text)]">{active ? 'Activo' : 'Inactivo'}</span>
-        </div>
-      </div>
     </form>
+  )
+}
+
+function ReadonlyStatusField({ active }: { active: boolean }) {
+  return (
+    <Field>
+      <FieldLabel>Estado actual</FieldLabel>
+      <span
+        className={`inline-flex rounded-full px-3 py-2 text-sm font-semibold ${
+          active ? 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]' : 'bg-[var(--color-surface-strong)] text-[var(--color-text-secondary)]'
+        }`}
+      >
+        {active ? 'Activo' : 'Inactivo'}
+      </span>
+    </Field>
   )
 }
 
@@ -218,21 +196,6 @@ function PhoneInput({ defaultValue, helper }: { defaultValue?: string; helper?: 
       </div>
       {helper ? <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">{helper}</p> : null}
     </div>
-  )
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      aria-pressed={checked}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${checked ? 'bg-[var(--color-success-text)]' : 'bg-[var(--color-surface-variant)]'}`}
-      onClick={onChange}
-      type="button"
-    >
-      <span className={`absolute top-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)] bg-white transition ${checked ? 'translate-x-5' : 'translate-x-[2px]'}`}>
-        {checked ? <Check className="h-3 w-3 text-[var(--color-success-text)]" /> : null}
-      </span>
-    </button>
   )
 }
 

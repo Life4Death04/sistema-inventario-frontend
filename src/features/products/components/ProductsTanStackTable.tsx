@@ -49,13 +49,20 @@ export function ProductsTanStackTable({
       cell: ({ row }) => (
         <div>
           <div className="font-medium text-[var(--color-text)]">{row.original.name}</div>
-          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{row.original.presentation}</div>
+          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            {row.original.brandLabel} · {row.original.presentationLabel}
+          </div>
         </div>
       ),
     },
     {
       accessorKey: 'activeIngredient',
       header: 'Principio activo',
+    },
+    {
+      accessorKey: 'unitContent',
+      header: 'Contenido',
+      cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-secondary)]">{row.original.unitContent} {row.original.unit}</span>,
     },
     {
       accessorKey: 'category',
@@ -122,9 +129,15 @@ export function ProductsTanStackTable({
         return true
       }
 
-      return [row.original.code, row.original.name, row.original.activeIngredient, row.original.category].some((value) =>
-        value.toLowerCase().includes(query),
-      )
+      return [
+        row.original.code,
+        row.original.name,
+        row.original.activeIngredient ?? row.original.activeIngredientLabel,
+        row.original.category,
+        row.original.brand ?? row.original.brandLabel,
+        row.original.presentation ?? row.original.presentationLabel,
+        `${row.original.unitContent} ${row.original.unit}`,
+      ].some((value) => value.toLowerCase().includes(query))
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,

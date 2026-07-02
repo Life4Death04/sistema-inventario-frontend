@@ -36,9 +36,9 @@ export function SuppliersTanStackTable({ rows, globalFilter, onEditSupplier }: S
       cell: ({ row }) => <SupplierIdentityCell supplier={row.original} />,
     },
     {
-      accessorKey: 'contactName',
-      header: 'Contacto',
-      cell: ({ row }) => <span className="text-sm text-[var(--color-text-secondary)]">{row.original.contactName}</span>,
+      accessorKey: 'rif',
+      header: 'RIF',
+      cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-secondary)]">{row.original.rif ?? 'Sin RIF'}</span>,
     },
     {
       accessorKey: 'whatsapp',
@@ -81,9 +81,7 @@ export function SuppliersTanStackTable({ rows, globalFilter, onEditSupplier }: S
         return true
       }
 
-      return [row.original.name, row.original.rif, row.original.contactName, row.original.whatsapp].some((value) =>
-        value.toLowerCase().includes(query),
-      )
+      return [row.original.name, row.original.rif ?? '', row.original.whatsapp ?? '', row.original.address ?? ''].some((value) => value.toLowerCase().includes(query))
     },
     onPaginationChange: setPagination,
     state: {
@@ -179,12 +177,16 @@ function SupplierIdentityCell({ supplier }: { supplier: SupplierRow }) {
   return (
     <div className="flex flex-col">
       <span className="text-sm font-medium text-[var(--color-text)]">{supplier.name}</span>
-      <span className="mt-0.5 font-data-mono text-xs text-[var(--color-text-muted)]">RIF: {supplier.rif}</span>
+      <span className="mt-0.5 font-data-mono text-xs text-[var(--color-text-muted)]">RIF: {supplier.rif ?? 'Sin RIF'}</span>
     </div>
   )
 }
 
-function WhatsappCell({ whatsapp }: { whatsapp: string }) {
+function WhatsappCell({ whatsapp }: { whatsapp: string | null }) {
+  if (!whatsapp) {
+    return <span className="text-sm italic text-[var(--color-text-muted)]">No disponible</span>
+  }
+
   return (
     <div className="flex items-center gap-1.5">
       <MessageCircle className="h-4 w-4 text-[var(--color-success-text)]" />

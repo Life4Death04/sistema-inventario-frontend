@@ -1,5 +1,5 @@
 import { mockDb } from '@/data/mockDatabase'
-import type { Product, ReplenishmentRequest, UserRole } from '@/types/common.types'
+import type { AdjustmentDirection, Product, ReplenishmentRequest, UserRole } from '@/types/common.types'
 
 const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Administrador',
@@ -11,6 +11,11 @@ const movementLabels = {
   IN: 'Entrada',
   OUT: 'Salida',
   ADJUSTMENT: 'Ajuste',
+} as const
+
+const adjustmentDirectionLabels: Record<AdjustmentDirection, string> = {
+  INCREASE: 'Incremento',
+  DECREASE: 'Disminucion',
 }
 
 const statusLabels = {
@@ -49,14 +54,23 @@ export const getProductRows = () =>
     code: product.code,
     name: product.name,
     activeIngredient: product.activeIngredient,
+    activeIngredientLabel: product.activeIngredient ?? 'Sin principio activo',
     description: product.description,
+    descriptionLabel: product.description ?? 'Sin descripcion',
     category: getCategoryName(product.categoryId),
     stock: product.stock,
     minStock: product.minStock,
     presentation: product.presentation,
+    presentationLabel: product.presentation ?? 'Sin presentacion',
+    brand: product.brand,
+    brandLabel: product.brand ?? 'Sin marca',
+    unit: product.unit,
+    unitContent: product.unitContent,
     price: product.price,
     active: product.active,
     suppliers: getSuppliersForProduct(product.id),
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
     status: getProductStatus(product),
   }))
 
@@ -74,6 +88,8 @@ export const getProductMovementHistory = (productId: string) =>
       id: movement.id,
       type: movement.type,
       typeLabel: movementLabels[movement.type],
+      adjustmentDirection: movement.adjustmentDirection,
+      adjustmentLabel: movement.adjustmentDirection ? adjustmentDirectionLabels[movement.adjustmentDirection] : null,
       quantity: movement.quantity,
       resultingStock: movement.resultingStock,
       reason: movement.reason,
@@ -95,7 +111,11 @@ export const getMovementRows = () =>
     .map((movement) => ({
       id: movement.id,
       product: mockDb.products.find((product) => product.id === movement.productId)?.name ?? 'Producto no encontrado',
-      type: movementLabels[movement.type],
+      code: mockDb.products.find((product) => product.id === movement.productId)?.code ?? 'N/A',
+      type: movement.type,
+      typeLabel: movementLabels[movement.type],
+      adjustmentDirection: movement.adjustmentDirection,
+      adjustmentLabel: movement.adjustmentDirection ? adjustmentDirectionLabels[movement.adjustmentDirection] : null,
       quantity: movement.quantity,
       resultingStock: movement.resultingStock,
       reason: movement.reason,
@@ -182,12 +202,11 @@ export const getSupplierRows = () =>
     id: supplier.id,
     name: supplier.name,
     rif: supplier.rif,
-    contactName: supplier.contactName,
     whatsapp: supplier.whatsapp,
-    altPhone: supplier.altPhone ?? null,
-    email: supplier.email ?? null,
     address: supplier.address,
     active: supplier.active,
+    createdAt: supplier.createdAt,
+    updatedAt: supplier.updatedAt,
     products: mockDb.productSuppliers.filter((relation) => relation.supplierId === supplier.id).length,
   }))
 
@@ -204,6 +223,7 @@ export const getUserRows = () =>
     role: roleLabels[user.role],
     active: user.active,
     createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
     lastAccess: user.lastAccess ?? null,
   }))
 
@@ -260,11 +280,6 @@ export const getReplenishmentDetails = (requestId: string) => {
     }),
   }
 }
-
-export const getCredentialsHint = () => ({
-  email: mockDb.users[0]?.email ?? '',
-  password: mockDb.users[0]?.password ?? '',
-})
 
 const getProductStatus = (product: Product) => {
   if (product.stock === 0) {

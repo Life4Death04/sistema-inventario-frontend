@@ -110,7 +110,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
         return true
       }
 
-      return [row.original.code, row.original.name, row.original.category, row.original.activeIngredient].some((value) =>
+      return [row.original.code, row.original.name, row.original.category, row.original.activeIngredient ?? row.original.activeIngredientLabel].some((value) =>
         value.toLowerCase().includes(query),
       )
     },

@@ -177,7 +177,11 @@ function AssociateProductsOverlay({
   const visibleProducts = allProducts.filter((product) => {
     const matchesLowStock = !onlyLowStock || product.stock <= product.minStock
     const normalizedQuery = query.trim().toLowerCase()
-    const matchesQuery = !normalizedQuery || [product.name, product.code, product.activeIngredient].some((value) => value.toLowerCase().includes(normalizedQuery))
+    const matchesQuery =
+      !normalizedQuery ||
+      [product.name, product.code, product.activeIngredient ?? product.activeIngredientLabel].some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      )
 
     return matchesLowStock && matchesQuery
   })

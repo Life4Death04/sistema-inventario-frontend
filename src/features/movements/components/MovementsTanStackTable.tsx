@@ -16,7 +16,10 @@ export interface MovementTableRow {
   id: string
   product: string
   code: string
-  type: 'Entrada' | 'Salida' | 'Ajuste'
+  type: 'IN' | 'OUT' | 'ADJUSTMENT'
+  typeLabel: 'Entrada' | 'Salida' | 'Ajuste'
+  adjustmentDirection: 'INCREASE' | 'DECREASE' | null
+  adjustmentLabel: string | null
   quantity: number
   resultingStock: number
   reason: string
@@ -64,7 +67,9 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
     {
       accessorKey: 'quantity',
       header: 'Cantidad',
-      cell: ({ row }) => <QuantityValue quantity={row.original.quantity} type={row.original.type} />,
+      cell: ({ row }) => (
+        <QuantityValue adjustmentDirection={row.original.adjustmentDirection} quantity={row.original.quantity} type={row.original.type} />
+      ),
     },
     {
       accessorKey: 'resultingStock',
@@ -83,6 +88,16 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
         </div>
       ),
     },
+    {
+      accessorKey: 'reason',
+      header: 'Motivo',
+      cell: ({ row }) => (
+        <div>
+          <div className="text-sm text-[var(--color-text)]">{row.original.reason}</div>
+          {row.original.adjustmentLabel ? <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{row.original.adjustmentLabel}</div> : null}
+        </div>
+      ),
+    },
   ]
 
   const table = useReactTable({
@@ -98,9 +113,9 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
         return true
       }
 
-      return [row.original.product, row.original.user, row.original.code, row.original.reason, row.original.type].some((value) =>
-        value.toLowerCase().includes(query),
-      )
+        return [row.original.product, row.original.user, row.original.code, row.original.reason, row.original.typeLabel, row.original.adjustmentLabel ?? ''].some((value) =>
+          value.toLowerCase().includes(query),
+        )
     },
     onPaginationChange: setPagination,
     state: {
@@ -193,7 +208,7 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
 }
 
 function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
-  if (type === 'Entrada') {
+  if (type === 'IN') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">
         <ArrowDownLeft className="h-3.5 w-3.5" />
@@ -202,7 +217,7 @@ function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
     )
   }
 
-  if (type === 'Salida') {
+  if (type === 'OUT') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">
         <ArrowUpRight className="h-3.5 w-3.5" />
@@ -219,19 +234,27 @@ function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
   )
 }
 
-function QuantityValue({ quantity, type }: { quantity: number; type: MovementTableRow['type'] }) {
-  const signal = type === 'Entrada' ? '+' : '-'
-  const tone = type === 'Entrada' ? 'text-[var(--color-success-text)]' : type === 'Salida' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-primary)]'
+function QuantityValue({
+  adjustmentDirection,
+  quantity,
+  type,
+}: {
+  adjustmentDirection: MovementTableRow['adjustmentDirection']
+  quantity: number
+  type: MovementTableRow['type']
+}) {
+  const signal = type === 'IN' ? '+' : type === 'OUT' ? '-' : adjustmentDirection === 'DECREASE' ? '-' : '+'
+  const tone = type === 'IN' ? 'text-[var(--color-success-text)]' : type === 'OUT' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-primary)]'
 
   return <span className={`font-data-mono text-sm ${tone}`}>{signal}{quantity}</span>
 }
 
 function getRowBackground(type: MovementTableRow['type']) {
-  if (type === 'Entrada') {
+  if (type === 'IN') {
     return 'bg-[rgba(226,244,238,0.30)]'
   }
 
-  if (type === 'Salida') {
+  if (type === 'OUT') {
     return 'bg-[rgba(251,231,228,0.30)]'
   }
 

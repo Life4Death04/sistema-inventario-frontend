@@ -1,70 +1,46 @@
-import type { UserRole } from '@/types/api.types'
+import type {
+  AdjustmentDirection as ApiAdjustmentDirection,
+  Category as ApiCategory,
+  InventoryMovement as ApiInventoryMovement,
+  PaginatedResponse as ApiPaginatedResponse,
+  PaginationMeta as ApiPaginationMeta,
+  Product as ApiProduct,
+  ProductUnit as ApiProductUnit,
+  Supplier as ApiSupplier,
+  User as ApiUser,
+  UserRole,
+} from '@/types/api.types'
 
-export type { UserRole }
-
-export interface User {
-  id: string
-  fullName: string
-  email: string
-  password: string
-  role: UserRole
-  active: boolean
-  phone: string | null
-  createdAt: string
-  lastAccess?: string
+export type {
+  UserRole,
 }
 
-export interface Category {
-  id: string
-  name: string
-  description: string
-}
+export type ProductUnit = ApiProductUnit
 
-export interface Supplier {
-  id: string
-  name: string
-  rif: string
-  contactName: string
-  whatsapp: string
-  altPhone?: string
-  email?: string
-  address: string
-  active: boolean
-}
+export type AdjustmentDirection = ApiAdjustmentDirection
 
-export interface Product {
-  id: string
-  code: string
-  name: string
-  activeIngredient: string
-  description: string
-  presentation: string
-  categoryId: string
-  stock: number
-  minStock: number
-  price: number
-  active: boolean
-}
+export type PaginationMeta = ApiPaginationMeta
+
+export type PaginatedResponse<T> = ApiPaginatedResponse<T>
+
+export type User = ApiUser
+
+export type Category = ApiCategory
+
+export type Supplier = ApiSupplier
+
+export type Product = ApiProduct
 
 export interface ProductSupplier {
   id: string
   productId: string
   supplierId: string
-  referencePrice: number
+  referencePrice: string | null
 }
 
-export type MovementType = 'IN' | 'OUT' | 'ADJUSTMENT'
+export type MovementType = ApiInventoryMovement['type']
 
-export interface InventoryMovement {
-  id: string
-  productId: string
-  userId: string
-  type: MovementType
-  reason: string
-  quantity: number
-  resultingStock: number
-  createdAt: string
-}
+export type InventoryMovement = ApiInventoryMovement
 
 export type ReplenishmentStatus = 'PENDING' | 'SENT' | 'RECEIVED' | 'CANCELLED'
 
@@ -89,4 +65,12 @@ export interface ReplenishmentRequest {
 export interface LoginFormValues {
   email: string
   password: string
+}
+
+export interface CreateUserInput {
+  fullName: string
+  email: string
+  password: string
+  role?: UserRole
+  phone?: string
 }
