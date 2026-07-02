@@ -58,7 +58,7 @@ export function SuppliersPage() {
             <input
               className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-10 pr-4 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar proveedor, RIF o contacto..."
+              placeholder="Buscar proveedor, RIF o direccion..."
               type="text"
               value={query}
             />

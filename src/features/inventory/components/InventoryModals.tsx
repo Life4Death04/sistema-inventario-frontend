@@ -66,11 +66,12 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
           <DetailItem label="Categoria" value={product.category} />
-          <DetailItem label="Precio unitario" mono value={formatCurrency(product.price)} />
+          <DetailItem label="Precio unitario" mono value={formatCurrency(Number(product.price))} />
           <DetailItem label="Proveedor" value={product.suppliers.join(', ') || 'No asignado'} />
           <DetailItem label="Ultima actualizacion" mono value={latestUpdate ? formatDate(latestUpdate) : 'Sin movimientos'} />
-          <DetailItem label="Presentacion" value={product.presentation} />
-          <DetailItem label="Principio activo" value={product.activeIngredient} />
+          <DetailItem label="Presentacion" value={`${product.brandLabel} · ${product.presentationLabel}`} />
+          <DetailItem label="Contenido" mono value={`${product.unitContent} ${product.unit}`} />
+          <DetailItem label="Principio activo" value={product.activeIngredientLabel} />
         </div>
 
         <div className="space-y-3">
@@ -87,7 +88,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
                 </div>
                 <div className="text-right">
                   <p className="font-data-mono text-sm text-[var(--color-text)]">
-                    {movement.type === 'IN' ? '+' : '-'}
+                    {movement.type === 'IN' || movement.adjustmentDirection === 'INCREASE' ? '+' : '-'}
                     {movement.quantity}
                   </p>
                   <p className="font-data-mono text-xs text-[var(--color-text-secondary)]">{formatDate(movement.createdAt)}</p>

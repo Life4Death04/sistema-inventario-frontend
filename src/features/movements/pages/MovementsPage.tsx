@@ -8,16 +8,10 @@ import { MovementsTanStackTable, type MovementTableRow } from '@/features/moveme
 export function MovementsPage() {
   const movements = getMovementRows()
   const [query, setQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState<'Todos' | 'Entrada' | 'Salida' | 'Ajuste'>('Todos')
+  const [typeFilter, setTypeFilter] = useState<'Todos' | 'IN' | 'OUT' | 'ADJUSTMENT'>('Todos')
 
   const movementRows: MovementTableRow[] = useMemo(
-    () =>
-      movements.map((movement) => ({
-        ...movement,
-        code: extractCode(movement.reason, movement.product),
-        type: movement.type as MovementTableRow['type'],
-        initials: getInitials(movement.user),
-      })),
+    () => movements.map((movement) => ({ ...movement, initials: getInitials(movement.user) })),
     [movements],
   )
 
@@ -27,9 +21,9 @@ export function MovementsPage() {
   )
 
   const metrics = {
-    entries: movementRows.filter((movement) => movement.type === 'Entrada').length,
-    outputs: movementRows.filter((movement) => movement.type === 'Salida').length,
-    adjustments: movementRows.filter((movement) => movement.type === 'Ajuste').length,
+    entries: movementRows.filter((movement) => movement.type === 'IN').length,
+    outputs: movementRows.filter((movement) => movement.type === 'OUT').length,
+    adjustments: movementRows.filter((movement) => movement.type === 'ADJUSTMENT').length,
   }
 
   return (
@@ -71,16 +65,21 @@ export function MovementsPage() {
 
           <div className="flex items-center gap-4">
             <div className="hidden rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-1 md:flex">
-              {(['Todos', 'Entrada', 'Salida', 'Ajuste'] as const).map((item) => (
+              {([
+                { key: 'Todos', label: 'Todos' },
+                { key: 'IN', label: 'Entrada' },
+                { key: 'OUT', label: 'Salida' },
+                { key: 'ADJUSTMENT', label: 'Ajuste' },
+              ] as const).map((item) => (
                 <button
-                  key={item}
+                  key={item.key}
                   className={`rounded-[6px] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.05em] transition ${
-                    typeFilter === item ? 'bg-[var(--color-surface-tint)] text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'
+                    typeFilter === item.key ? 'bg-[var(--color-surface-tint)] text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'
                   }`}
-                  onClick={() => setTypeFilter(item)}
+                  onClick={() => setTypeFilter(item.key)}
                   type="button"
                 >
-                  {item}
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -96,16 +95,6 @@ export function MovementsPage() {
       </section>
     </section>
   )
-}
-
-function extractCode(reason: string, product: string) {
-  const normalized = `${product}-${reason}`
-
-  return normalized
-    .split(' ')
-    .map((part) => part.slice(0, 3).toUpperCase())
-    .slice(0, 2)
-    .join('-')
 }
 
 function getInitials(fullName: string) {

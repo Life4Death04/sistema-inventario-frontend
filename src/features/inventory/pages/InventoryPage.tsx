@@ -23,7 +23,9 @@ export function InventoryPage() {
         const normalizedQuery = query.trim().toLowerCase()
         const matchesQuery =
           !normalizedQuery ||
-          [product.code, product.name, product.category, product.activeIngredient].some((value) => value.toLowerCase().includes(normalizedQuery))
+          [product.code, product.name, product.category, product.activeIngredient ?? product.activeIngredientLabel].some((value) =>
+            value.toLowerCase().includes(normalizedQuery),
+          )
 
         return matchesCategory && matchesStatus && matchesQuery
       }),

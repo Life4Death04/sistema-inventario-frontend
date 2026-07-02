@@ -104,7 +104,7 @@ function TextField({ defaultValue = '', placeholder, mono = false }: { defaultVa
   )
 }
 
-function NumberField({ defaultValue, placeholder }: { defaultValue?: number; placeholder?: string }) {
+function NumberField({ defaultValue, placeholder }: { defaultValue?: number | string; placeholder?: string }) {
   return (
     <input
       className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 font-data-mono text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]"
@@ -248,11 +248,12 @@ function ProductDetailModal({
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
           <DetailItem label="Categoria" value={product.category} />
-          <DetailItem label="Precio unitario" mono value={formatCurrency(product.price)} />
+          <DetailItem label="Precio unitario" mono value={formatCurrency(Number(product.price))} />
           <DetailItem label="Proveedor" value={product.suppliers.join(', ') || 'No asignado'} />
           <DetailItem label="Ultima actualizacion" mono value={latestUpdate ? formatDate(latestUpdate) : 'Sin movimientos'} />
-          <DetailItem label="Presentacion" value={product.presentation} />
-          <DetailItem label="Principio activo" value={product.activeIngredient} />
+          <DetailItem label="Presentacion" value={`${product.brandLabel} · ${product.presentationLabel}`} />
+          <DetailItem label="Contenido" mono value={`${product.unitContent} ${product.unit}`} />
+          <DetailItem label="Principio activo" value={product.activeIngredientLabel} />
         </div>
 
         <div className="space-y-3">
@@ -269,7 +270,7 @@ function ProductDetailModal({
                 </div>
                 <div className="text-right">
                   <p className="font-data-mono text-sm text-[var(--color-text)]">
-                    {movement.type === 'IN' ? '+' : '-'}
+                    {movement.type === 'IN' || movement.adjustmentDirection === 'INCREASE' ? '+' : '-'}
                     {movement.quantity}
                   </p>
                   <p className="font-data-mono text-xs text-[var(--color-text-secondary)]">{formatDate(movement.createdAt)}</p>
@@ -321,6 +322,18 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
             <TextField defaultValue={product.name} />
           </div>
           <div className="space-y-1.5">
+            <FieldLabel>Marca</FieldLabel>
+            <TextField defaultValue={product.brand ?? ''} />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Presentacion</FieldLabel>
+            <TextField defaultValue={product.presentation ?? ''} />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Principio activo</FieldLabel>
+            <TextField defaultValue={product.activeIngredient ?? ''} />
+          </div>
+          <div className="space-y-1.5">
             <FieldLabel>Stock actual</FieldLabel>
             <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-2 font-data-mono text-sm text-[var(--color-text)]">{product.stock}</div>
           </div>
@@ -342,6 +355,10 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
           <div className="space-y-1.5">
             <FieldLabel>Proveedor</FieldLabel>
             <SelectField defaultValue={product.suppliers[0]} options={suppliers} />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Contenido</FieldLabel>
+            <TextField defaultValue={product.unitContent} mono />
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Ultima actualizacion</FieldLabel>
