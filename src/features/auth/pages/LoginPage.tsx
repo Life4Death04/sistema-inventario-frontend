@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
 import { Eye, EyeOff, Lock, Mail, Pill } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -6,10 +7,22 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 import { Button } from '@/components/ui/Button'
-import { getCredentialsHint } from '@/data/mockSelectors'
 import { loginSchema } from '@/features/auth/schemas/auth.schema'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { LoginFormValues } from '@/types/common.types'
+import type { ApiErrorEnvelope } from '@/types/api.types'
+
+function getLoginErrorMessage(error: unknown) {
+  if (isAxiosError<ApiErrorEnvelope>(error)) {
+    return error.response?.data.message ?? 'No fue posible iniciar sesion'
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'No fue posible iniciar sesion'
+}
 
 export function LoginPage() {
   const login = useAuthStore((state) => state.login)
@@ -17,7 +30,6 @@ export function LoginPage() {
   const location = useLocation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const credentials = getCredentialsHint()
   const destination = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
 
   const {
@@ -27,8 +39,8 @@ export function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: credentials.email,
-      password: credentials.password,
+      email: '',
+      password: '',
     },
   })
 
@@ -40,8 +52,7 @@ export function LoginPage() {
       toast.success('Sesion iniciada correctamente')
       navigate(destination, { replace: true })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'No fue posible iniciar sesion'
-      toast.error(message)
+      toast.error(getLoginErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -114,11 +125,6 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 rounded-[8px] bg-[#f6faff] px-4 py-3 text-sm text-[#5c6b78]">
-            <p className="font-medium text-[#0e1d27]">Credenciales mock</p>
-            <p className="mt-1">Correo: {credentials.email}</p>
-            <p>Contrasena: {credentials.password}</p>
-          </div>
         </div>
 
         <footer className="mt-8 text-center text-[11px] leading-4 text-[#95a3ae]">Aragua de Maturin, Monagas · Acceso restringido</footer>

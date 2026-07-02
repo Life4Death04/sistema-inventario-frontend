@@ -1,5 +1,6 @@
 import { LogOut, X } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 import { navigation, profileNavigationItem } from '@/components/layout/navigation'
 import { useAuthStore } from '@/features/auth/store/auth.store'
@@ -12,6 +13,20 @@ interface SidebarProps {
 
 export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
   const logout = useAuthStore((state) => state.logout)
+  const navigate = useNavigate()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+      onClose()
+      navigate('/login', { replace: true })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <>
@@ -80,11 +95,14 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
 
           <button
             className="flex w-full items-center gap-3 rounded-[var(--radius-control)] px-4 py-3 text-sm text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"
-            onClick={logout}
+            disabled={isLoggingOut}
+            onClick={() => {
+              void handleLogout()
+            }}
             type="button"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            Cerrar sesion
+            {isLoggingOut ? 'Cerrando sesion...' : 'Cerrar sesion'}
           </button>
         </div>
       </aside>
