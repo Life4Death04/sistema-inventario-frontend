@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import { navigation, profileNavigationItem } from '@/components/layout/navigation'
+import { hasPermission } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 interface SidebarProps {
@@ -13,8 +14,11 @@ interface SidebarProps {
 
 export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
   const logout = useAuthStore((state) => state.logout)
+  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const visibleNavigation = navigation.filter((item) => hasPermission(user?.role, item.permission))
+  const canViewProfile = hasPermission(user?.role, profileNavigationItem.permission)
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -54,7 +58,7 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const Icon = item.icon
 
             return (
@@ -78,20 +82,22 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
         </nav>
 
         <div className="border-t border-[var(--color-border)] p-3">
-          <NavLink
-            className={({ isActive }) =>
-              `mb-1 flex items-center gap-3 rounded-[var(--radius-control)] px-4 py-3 text-sm transition ${
-                isActive
-                  ? 'bg-[var(--color-surface-tint)] font-semibold text-[var(--color-primary)]'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]'
-              }`
-            }
-            onClick={onClose}
-            to={profileNavigationItem.to}
-          >
-            <profileNavigationItem.icon className="h-4 w-4 shrink-0" />
-            {profileNavigationItem.label}
-          </NavLink>
+          {canViewProfile ? (
+            <NavLink
+              className={({ isActive }) =>
+                `mb-1 flex items-center gap-3 rounded-[var(--radius-control)] px-4 py-3 text-sm transition ${
+                  isActive
+                    ? 'bg-[var(--color-surface-tint)] font-semibold text-[var(--color-primary)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]'
+                }`
+              }
+              onClick={onClose}
+              to={profileNavigationItem.to}
+            >
+              <profileNavigationItem.icon className="h-4 w-4 shrink-0" />
+              {profileNavigationItem.label}
+            </NavLink>
+          ) : null}
 
           <button
             className="flex w-full items-center gap-3 rounded-[var(--radius-control)] px-4 py-3 text-sm text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"

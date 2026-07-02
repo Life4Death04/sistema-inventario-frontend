@@ -79,14 +79,22 @@ interface ProductSupplierLinkEnvelope {
   link: ProductSupplierLink
 }
 
-export async function listProducts(params?: ListProductsParams): Promise<PaginatedResponse<Product>> {
-  const normalizedParams = {
-    ...params,
-    ...(params?.active !== undefined ? { active: String(params.active) } : {}),
-    ...(params?.lowStock !== undefined ? { lowStock: String(params.lowStock) } : {}),
+function normalizeListProductsParams(params?: ListProductsParams) {
+  if (!params) {
+    return undefined
   }
 
-  const { data } = await apiClient.get<PaginatedResponse<Product>>('/products', { params: normalizedParams })
+  return {
+    ...params,
+    ...(params.active !== undefined ? { active: String(params.active) } : {}),
+    ...(params.lowStock !== undefined ? { lowStock: String(params.lowStock) } : {}),
+  }
+}
+
+export async function listProducts(params?: ListProductsParams): Promise<PaginatedResponse<Product>> {
+  const { data } = await apiClient.get<PaginatedResponse<Product>>('/products', {
+    params: normalizeListProductsParams(params),
+  })
 
   return data
 }
