@@ -1,8 +1,9 @@
+import { isAxiosError } from 'axios'
 import { create } from 'zustand'
 
 import { loginRequest, logoutRequest, meRequest } from '@/features/auth/api/auth.api'
 import {
-  clearAccessToken,
+  clearSessionState,
   getAccessToken,
   registerSessionClearedHandler,
   setAccessToken,
@@ -11,26 +12,31 @@ import type { AuthUser } from '@/types/api.types'
 
 interface AuthState {
   user: AuthUser | null
-  token: string | null
   isBootstrapping: boolean
   login: (email: string, password: string) => Promise<AuthUser>
   logout: () => Promise<void>
   bootstrapSession: () => Promise<void>
-  setToken: (token: string | null) => void
   clearSession: () => void
 }
 
 let bootstrapPromise: Promise<void> | null = null
 
+function isAuthFailure(error: unknown) {
+  if (!isAxiosError(error)) {
+    return false
+  }
+
+  return error.response?.status === 401 || error.response?.status === 403
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  token: getAccessToken(),
   isBootstrapping: true,
   login: async (email, password) => {
     const { user, token } = await loginRequest({ email, password })
 
     setAccessToken(token)
-    set({ user, token })
+    set({ user })
 
     return user
   },
@@ -51,16 +57,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const token = getAccessToken()
 
         if (!token) {
-          set({ user: null, token: null, isBootstrapping: false })
+          set({ user: null, isBootstrapping: false })
           return
         }
 
-        set({ token, isBootstrapping: true })
+        set({ isBootstrapping: true })
 
         const { user } = await meRequest()
-        set({ user, token: getAccessToken() })
-      } catch {
-        get().clearSession()
+        set({ user })
+      } catch (error) {
+        if (isAuthFailure(error)) {
+          get().clearSession()
+          return
+        }
+
+        set({ user: null })
       } finally {
         set({ isBootstrapping: false })
         bootstrapPromise = null
@@ -69,16 +80,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     return bootstrapPromise
   },
-  setToken: (token) => {
-    setAccessToken(token)
-    set({ token, user: token ? get().user : null })
-  },
   clearSession: () => {
-    clearAccessToken()
-    set({ user: null, token: null })
+    clearSessionState()
   },
 }))
 
 registerSessionClearedHandler(() => {
-  useAuthStore.setState({ user: null, token: null, isBootstrapping: false })
+  useAuthStore.setState({ user: null, isBootstrapping: false })
 })

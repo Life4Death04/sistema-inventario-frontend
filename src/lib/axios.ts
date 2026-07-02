@@ -4,7 +4,12 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 
-import { clearSessionState, getAccessToken, setAccessToken } from '@/features/auth/lib/authSession'
+import {
+  clearSessionState,
+  getAccessToken,
+  getSessionVersion,
+  setAccessToken,
+} from '@/features/auth/lib/authSession'
 import type { RefreshResponse } from '@/types/api.types'
 
 const API_BASE_URL = '/api'
@@ -37,16 +42,27 @@ function shouldSkipRefresh(url?: string) {
   return Array.from(AUTH_EXCLUDED_PATHS).some((path) => url.endsWith(path))
 }
 
+async function requestNewAccessToken() {
+  const versionAtStart = getSessionVersion()
+
+  try {
+    const { data } = await refreshClient.post<RefreshResponse>('/auth/refresh')
+
+    if (getSessionVersion() !== versionAtStart) {
+      throw new Error('Session changed while refreshing token.')
+    }
+
+    setAccessToken(data.token)
+
+    return data.token
+  } finally {
+    refreshPromise = null
+  }
+}
+
 async function refreshAccessToken() {
   if (!refreshPromise) {
-    refreshPromise = refreshClient.post<RefreshResponse>('/auth/refresh').then(({ data }) => {
-      setAccessToken(data.token)
-      return data.token
-    })
-
-    refreshPromise.finally(() => {
-      refreshPromise = null
-    })
+    refreshPromise = requestNewAccessToken()
   }
 
   return refreshPromise

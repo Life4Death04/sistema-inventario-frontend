@@ -2,6 +2,7 @@ const ACCESS_TOKEN_STORAGE_KEY = 'inventory-access-token'
 
 let accessToken = typeof window === 'undefined' ? null : window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
 let sessionClearedHandler: (() => void) | null = null
+let sessionVersion = 0
 
 export function getAccessToken() {
   return accessToken
@@ -22,8 +23,12 @@ export function setAccessToken(token: string | null) {
   window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY)
 }
 
-export function clearAccessToken() {
-  setAccessToken(null)
+export function getSessionVersion() {
+  return sessionVersion
+}
+
+export function bumpSessionVersion() {
+  sessionVersion += 1
 }
 
 export function registerSessionClearedHandler(handler: () => void) {
@@ -31,6 +36,7 @@ export function registerSessionClearedHandler(handler: () => void) {
 }
 
 export function clearSessionState() {
-  clearAccessToken()
+  bumpSessionVersion()
+  setAccessToken(null)
   sessionClearedHandler?.()
 }
