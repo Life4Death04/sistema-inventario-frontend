@@ -13,12 +13,13 @@ import { useEffect, useState } from 'react'
 import type { UserRow } from '@/data/mockSelectors'
 
 interface UsersTanStackTableProps {
+  canManage: boolean
   rows: UserRow[]
   globalFilter: string
   onEditUser: (user: UserRow) => void
 }
 
-export function UsersTanStackTable({ rows, globalFilter, onEditUser }: UsersTanStackTableProps) {
+export function UsersTanStackTable({ canManage, rows, globalFilter, onEditUser }: UsersTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -50,17 +51,21 @@ export function UsersTanStackTable({ rows, globalFilter, onEditUser }: UsersTanS
       header: 'Estado',
       cell: ({ row }) => <StatusCell active={row.original.active} />,
     },
-    {
-      id: 'actions',
-      header: 'Acciones',
-      cell: ({ row }) => (
-        <ActionsCell
-          isMenuOpen={openMenuId === row.original.id}
-          onEdit={() => onEditUser(row.original)}
-          onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
-        />
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            id: 'actions',
+            header: 'Acciones',
+            cell: ({ row }: { row: { original: UserRow } }) => (
+              <ActionsCell
+                isMenuOpen={openMenuId === row.original.id}
+                onEdit={() => onEditUser(row.original)}
+                onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
+              />
+            ),
+          } satisfies ColumnDef<UserRow>,
+        ]
+      : []),
   ]
 
   const table = useReactTable({

@@ -9,7 +9,9 @@ import {
   getSupplierOptions,
   type ProductRow,
 } from '@/data/mockSelectors'
+import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import type { UserRole } from '@/types/api.types'
 
 export type ProductModalType = 'create' | 'detail' | 'edit' | 'movement' | 'replenishment' | 'deactivate'
 
@@ -18,6 +20,7 @@ interface ProductCatalogModalsProps {
   product: ProductRow | null
   onClose: () => void
   onOpenModal: (modalType: ProductModalType, product: ProductRow | null) => void
+  role: UserRole | undefined
 }
 
 const movementTypeOptions = {
@@ -26,12 +29,16 @@ const movementTypeOptions = {
   ADJUSTMENT: ['Conteo fisico', 'Correccion manual', 'Auditoria interna'],
 } as const
 
-export function ProductCatalogModals({ modalType, product, onClose, onOpenModal }: ProductCatalogModalsProps) {
+export function ProductCatalogModals({ modalType, product, onClose, onOpenModal, role }: ProductCatalogModalsProps) {
   if (!modalType) {
     return null
   }
 
   if (modalType === 'create') {
+    if (!canManageProducts(role)) {
+      return null
+    }
+
     return <NewProductModal onClose={onClose} />
   }
 
@@ -40,19 +47,35 @@ export function ProductCatalogModals({ modalType, product, onClose, onOpenModal 
   }
 
   if (modalType === 'detail') {
-    return <ProductDetailModal onClose={onClose} onOpenModal={onOpenModal} product={product} />
+    return <ProductDetailModal onClose={onClose} onOpenModal={onOpenModal} product={product} role={role} />
   }
 
   if (modalType === 'edit') {
+    if (!canManageProducts(role)) {
+      return null
+    }
+
     return <EditProductModal onClose={onClose} product={product} />
   }
 
   if (modalType === 'movement') {
-    return <RegisterMovementModal onClose={onClose} product={product} />
+    if (!canCreateMovementType(role, 'OUT')) {
+      return null
+    }
+
+    return <RegisterMovementModal onClose={onClose} product={product} role={role} />
   }
 
   if (modalType === 'replenishment') {
+    if (!hasPermission(role, 'manage:replenishment')) {
+      return null
+    }
+
     return <ReplenishmentModal onClose={onClose} product={product} />
+  }
+
+  if (!canManageProducts(role)) {
+    return null
   }
 
   return <DeactivateProductModal onClose={onClose} product={product} />
@@ -220,11 +243,16 @@ function ProductDetailModal({
   onClose,
   onOpenModal,
   product,
+  role,
 }: {
   onClose: () => void
   onOpenModal: (modalType: ProductModalType, product: ProductRow | null) => void
   product: ProductRow
+  role: UserRole | undefined
 }) {
+  const canManage = canManageProducts(role)
+  const canOpenMovement = canCreateMovementType(role, 'OUT')
+  const canUseReplenishment = hasPermission(role, 'manage:replenishment')
   const history = getProductMovementHistory(product.id).slice(0, 3)
   const latestUpdate = history[0]?.createdAt
 
@@ -282,18 +310,30 @@ function ProductDetailModal({
       </div>
 
       <div className="flex flex-col gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-strong)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <Button onClick={() => onOpenModal('replenishment', product)} type="button" variant="secondary">
-          <Package2 className="mr-2 h-4 w-4" />
-          Generar reposicion
-        </Button>
+        <div className="flex gap-3">
+          {canOpenMovement ? (
+            <Button onClick={() => onOpenModal('movement', product)} type="button" variant="secondary">
+              <ArrowLeftRight className="mr-2 h-4 w-4" />
+              Registrar movimiento
+            </Button>
+          ) : null}
+          {canUseReplenishment ? (
+            <Button onClick={() => onOpenModal('replenishment', product)} type="button" variant="secondary">
+              <Package2 className="mr-2 h-4 w-4" />
+              Generar reposicion
+            </Button>
+          ) : null}
+        </div>
         <div className="flex justify-end gap-3">
           <Button onClick={onClose} type="button" variant="ghost">
             Cerrar
           </Button>
-          <Button onClick={() => onOpenModal('edit', product)} type="button">
-            <SquarePen className="mr-2 h-4 w-4" />
-            Editar
-          </Button>
+          {canManage ? (
+            <Button onClick={() => onOpenModal('edit', product)} type="button">
+              <SquarePen className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          ) : null}
         </div>
       </div>
     </ModalFrame>
@@ -385,10 +425,24 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
   )
 }
 
-function RegisterMovementModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
-  const [movementType, setMovementType] = useState<'IN' | 'OUT' | 'ADJUSTMENT'>('IN')
+function RegisterMovementModal({ onClose, product, role }: { onClose: () => void; product: ProductRow; role: UserRole | undefined }) {
+  const availableMovementTypes = (['IN', 'OUT', 'ADJUSTMENT'] as const).filter((type) => canCreateMovementType(role, type))
+  const [movementType, setMovementType] = useState<'IN' | 'OUT' | 'ADJUSTMENT'>(availableMovementTypes[0] ?? 'OUT')
+  const [adjustmentDirection, setAdjustmentDirection] = useState<'INCREASE' | 'DECREASE'>('INCREASE')
   const [quantity, setQuantity] = useState(10)
-  const resultingStock = movementType === 'IN' ? product.stock + quantity : Math.max(product.stock - quantity, 0)
+
+  if (availableMovementTypes.length === 0) {
+    return null
+  }
+
+  const resultingStock =
+    movementType === 'IN'
+      ? product.stock + quantity
+      : movementType === 'OUT'
+        ? Math.max(product.stock - quantity, 0)
+        : adjustmentDirection === 'INCREASE'
+          ? product.stock + quantity
+          : Math.max(product.stock - quantity, 0)
 
   return (
     <ModalFrame maxWidth="max-w-[420px]" onClose={onClose} title="Registrar movimiento">
@@ -404,7 +458,7 @@ function RegisterMovementModal({ onClose, product }: { onClose: () => void; prod
         </div>
 
         <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-1">
-          {(['IN', 'OUT', 'ADJUSTMENT'] as const).map((type) => (
+          {availableMovementTypes.map((type) => (
             <button
               key={type}
               className={`flex-1 rounded-[6px] px-3 py-2 text-sm font-medium transition ${
@@ -419,6 +473,29 @@ function RegisterMovementModal({ onClose, product }: { onClose: () => void; prod
         </div>
 
         <div className="space-y-4">
+          {movementType === 'ADJUSTMENT' ? (
+            <div className="space-y-1.5">
+              <FieldLabel>Direccion del ajuste</FieldLabel>
+              <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-1">
+                {([
+                  { value: 'INCREASE', label: 'Incrementar' },
+                  { value: 'DECREASE', label: 'Disminuir' },
+                ] as const).map((option) => (
+                  <button
+                    key={option.value}
+                    className={`flex-1 rounded-[6px] px-3 py-2 text-sm font-medium transition ${
+                      adjustmentDirection === option.value ? 'border border-[var(--color-border)] bg-white text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]'
+                    }`}
+                    onClick={() => setAdjustmentDirection(option.value)}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="space-y-1.5">
             <FieldLabel>Cantidad</FieldLabel>
             <input
