@@ -10,6 +10,8 @@ import {
   type ProductRow,
 } from '@/data/mockSelectors'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
+import { useCategories } from '@/features/categories/api/useCategories'
+import { useSuppliers } from '@/features/suppliers/api/useSuppliers'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { UserRole } from '@/types/api.types'
 
@@ -155,8 +157,10 @@ function SelectField({ options, defaultValue }: { options: string[]; defaultValu
 }
 
 function NewProductModal({ onClose }: { onClose: () => void }) {
-  const categories = getCategoryOptions()
-  const suppliers = getSupplierOptions()
+  const { data: categoriesResponse } = useCategories({ limit: 100 })
+  const { data: suppliersResponse } = useSuppliers({ limit: 100, active: true })
+  const categories = categoriesResponse?.data.map((category) => category.name) ?? getCategoryOptions()
+  const suppliers = suppliersResponse?.data.map((supplier) => supplier.name) ?? getSupplierOptions()
 
   return (
     <ModalFrame maxWidth="max-w-[560px]" onClose={onClose} title="Nuevo Producto">
@@ -341,8 +345,10 @@ function ProductDetailModal({
 }
 
 function EditProductModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
-  const categories = getCategoryOptions()
-  const suppliers = getSupplierOptions()
+  const { data: categoriesResponse } = useCategories({ limit: 100 })
+  const { data: suppliersResponse } = useSuppliers({ limit: 100, active: true })
+  const categories = categoriesResponse?.data.map((category) => category.name) ?? getCategoryOptions()
+  const suppliers = suppliersResponse?.data.map((supplier) => supplier.name) ?? getSupplierOptions()
   const latestUpdate = getProductMovementHistory(product.id)[0]?.createdAt
 
   return (
@@ -533,13 +539,15 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
 
 function ReplenishmentModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
   const [requestedUnits, setRequestedUnits] = useState(Math.max(product.minStock - product.stock, 25))
+  const { data: suppliersResponse } = useSuppliers({ limit: 100, active: true })
+  const supplierOptions = suppliersResponse?.data.map((supplier) => supplier.name) ?? getSupplierOptions()
 
   return (
     <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Nueva solicitud de reposicion">
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <div className="space-y-1.5">
           <FieldLabel>Proveedor</FieldLabel>
-          <SelectField defaultValue={product.suppliers[0]} options={product.suppliers.length ? product.suppliers : getSupplierOptions()} />
+          <SelectField defaultValue={product.suppliers[0]} options={product.suppliers.length ? product.suppliers : supplierOptions} />
           <p className="text-xs text-[var(--color-text-muted)]">Solo se listan productos asociados a este proveedor</p>
         </div>
 
