@@ -10,7 +10,7 @@ import {
 import { ArrowLeft, ArrowRight, MoreVertical, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { ReplenishmentRow } from '@/data/mockSelectors'
+import type { ReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
 
 interface ReplenishmentTanStackTableProps {
   rows: ReplenishmentRow[]
@@ -49,7 +49,9 @@ export function ReplenishmentTanStackTable({
       header: 'Productos',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="font-medium text-[var(--color-text)]">{row.original.items === 1 ? '1 producto' : `${row.original.items} productos`}</span>
+          <span className="font-medium text-[var(--color-text)]">
+            {row.original.items === null ? '—' : row.original.items === 1 ? '1 producto' : `${row.original.items} productos`}
+          </span>
         </div>
       ),
     },
@@ -61,7 +63,11 @@ export function ReplenishmentTanStackTable({
     {
       accessorKey: 'estimatedTotal',
       header: 'Cantidad',
-      cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-primary)]">{Math.round(row.original.estimatedTotal / Math.max(row.original.items, 1))}</span>,
+      cell: ({ row }) => (
+        <span className="font-data-mono text-sm text-[var(--color-primary)]">
+          {row.original.estimatedTotal === null || row.original.items === null ? '—' : Math.round(row.original.estimatedTotal / Math.max(row.original.items, 1))}
+        </span>
+      ),
     },
     {
       accessorKey: 'requestedAt',
