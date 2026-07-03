@@ -4,8 +4,13 @@ import type {
   InventoryMovement as ApiInventoryMovement,
   PaginatedResponse as ApiPaginatedResponse,
   PaginationMeta as ApiPaginationMeta,
+  PageSizePaginatedResponse as ApiPageSizePaginatedResponse,
+  PageSizePaginationMeta as ApiPageSizePaginationMeta,
   Product as ApiProduct,
   ProductUnit as ApiProductUnit,
+  ReplenishmentRequestItem as ApiReplenishmentRequestItem,
+  ReplenishmentRequestWithItems as ApiReplenishmentRequestWithItems,
+  ReplenishmentStatus as ApiReplenishmentStatus,
   Supplier as ApiSupplier,
   User as ApiUser,
   UserRole,
@@ -22,6 +27,10 @@ export type AdjustmentDirection = ApiAdjustmentDirection
 export type PaginationMeta = ApiPaginationMeta
 
 export type PaginatedResponse<T> = ApiPaginatedResponse<T>
+
+export type PageSizePaginationMeta = ApiPageSizePaginationMeta
+
+export type PageSizePaginatedResponse<T> = ApiPageSizePaginatedResponse<T>
 
 export type User = ApiUser
 
@@ -42,25 +51,13 @@ export type MovementType = ApiInventoryMovement['type']
 
 export type InventoryMovement = ApiInventoryMovement
 
-export type ReplenishmentStatus = 'PENDING' | 'SENT' | 'RECEIVED' | 'CANCELLED'
+export type ReplenishmentStatus = ApiReplenishmentStatus
 
-export interface ReplenishmentRequestItem {
-  id: string
-  productId: string
-  requestedQuantity: number
-  unitPrice: number
-}
+export type ReplenishmentRequestItem = ApiReplenishmentRequestItem
 
-export interface ReplenishmentRequest {
-  id: string
-  supplierId: string
-  requestedByUserId: string
-  status: ReplenishmentStatus
-  requestedAt: string
-  sentAt?: string
-  notes: string
-  items: ReplenishmentRequestItem[]
-}
+export type ReplenishmentRequestWithItems = ApiReplenishmentRequestWithItems
+
+export type ReplenishmentRequest = ApiReplenishmentRequestWithItems
 
 export interface LoginFormValues {
   email: string

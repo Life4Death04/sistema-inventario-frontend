@@ -2,7 +2,7 @@ import { Check, Eye, EyeOff, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/Button'
-import type { UserRow } from '@/data/mockSelectors'
+import type { UserRow } from '@/features/users/lib/userRows'
 
 export type UserModalType = 'create' | 'edit'
 

@@ -121,7 +121,7 @@ export function ReplenishmentTanStackTable({
         return true
       }
 
-      return [row.original.id, row.original.supplier, row.original.status, row.original.notes].some((value) => value.toLowerCase().includes(query))
+      return [row.original.id, row.original.supplier, row.original.status, row.original.notes ?? ''].some((value) => value.toLowerCase().includes(query))
     },
     onPaginationChange: setPagination,
     state: {

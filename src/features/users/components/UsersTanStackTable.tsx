@@ -10,7 +10,7 @@ import {
 import { ArrowLeft, ArrowRight, MoreVertical, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { UserRow } from '@/data/mockSelectors'
+import type { UserRow } from '@/features/users/lib/userRows'
 
 interface UsersTanStackTableProps {
   canManage: boolean
