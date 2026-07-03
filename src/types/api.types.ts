@@ -13,9 +13,21 @@ export interface PaginationMeta {
   totalPages: number
 }
 
+export interface PageSizePaginationMeta {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   meta: PaginationMeta
+}
+
+export interface PageSizePaginatedResponse<T> {
+  data: T[]
+  meta: PageSizePaginationMeta
 }
 
 export interface AuthUser {
@@ -111,6 +123,68 @@ export interface InventoryMovement {
   resultingStock: number
   reason: string
   createdAt: string
+}
+
+export type ReplenishmentStatus = 'PENDING' | 'SENT' | 'RECEIVED' | 'CANCELLED'
+
+export interface ReplenishmentSupplierSummary {
+  id: string
+  name: string
+  rif: string | null
+  whatsapp: string | null
+  address: string | null
+  active: boolean
+}
+
+export interface ReplenishmentUserSummary {
+  id: string
+  fullName: string
+  email: string
+  role: UserRole
+  active: boolean
+}
+
+export interface ReplenishmentProductSummary {
+  id: string
+  code: string
+  name: string
+  activeIngredient: string | null
+  presentation: string | null
+  brand: string | null
+  unit: ProductUnit
+  unitContent: string
+  stock: number
+  minStock: number
+  active: boolean
+}
+
+export interface ReplenishmentRequestItem {
+  id: string
+  productId: string
+  requestedQuantity: number
+  unitPrice: number
+  receivedQuantity?: number | null
+  product?: ReplenishmentProductSummary | null
+}
+
+export interface ReplenishmentRequest {
+  id: string
+  supplierId: string
+  requestedByUserId: string
+  status: ReplenishmentStatus
+  requestedAt: string
+  sentAt?: string | null
+  receivedAt?: string | null
+  receivedByUserId?: string | null
+  cancelledAt?: string | null
+  cancelledByUserId?: string | null
+  notes: string | null
+  supplier?: ReplenishmentSupplierSummary | null
+  requestedByUser?: ReplenishmentUserSummary | null
+}
+
+export interface ReplenishmentRequestWithItems extends ReplenishmentRequest {
+  items: ReplenishmentRequestItem[]
 }
 
 export interface LoginResponse {

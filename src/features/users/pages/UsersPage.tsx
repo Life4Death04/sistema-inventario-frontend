@@ -1,20 +1,24 @@
 import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 
-import { getUserRows, type UserRow } from '@/data/mockSelectors'
+import { Loading } from '@/components/ui/Loading'
 import { canManageUsers } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useUsers } from '@/features/users/api/useUsers'
 import { UserModals, type UserModalType } from '@/features/users/components/UserModals'
 import { UsersTanStackTable } from '@/features/users/components/UsersTanStackTable'
+import { toUserRow, type UserRow } from '@/features/users/lib/userRows'
 
 export function UsersPage() {
   const user = useAuthStore((state) => state.user)
-  const users = getUserRows()
   const canManage = canManageUsers(user?.role)
   const [query, setQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'ALL' | UserRow['roleKey']>('ALL')
   const [activeModal, setActiveModal] = useState<UserModalType | null>(null)
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null)
+  const { data, isLoading, isError } = useUsers({ limit: 100 })
+
+  const users = data?.data.map(toUserRow) ?? []
 
   const filteredUsers = users.filter((user) => (roleFilter === 'ALL' ? true : user.roleKey === roleFilter))
 
@@ -89,7 +93,9 @@ export function UsersPage() {
           ) : null}
         </section>
 
-        <UsersTanStackTable canManage={canManage} globalFilter={query} onEditUser={(user) => openModal('edit', user)} rows={filteredUsers} />
+        {isLoading ? <Loading /> : null}
+        {isError ? <LoadErrorMessage /> : null}
+        {!isLoading && !isError ? <UsersTanStackTable canManage={canManage} globalFilter={query} onEditUser={(user) => openModal('edit', user)} rows={filteredUsers} /> : null}
       </section>
 
       {canManage ? <UserModals modalType={activeModal} onClose={closeModal} user={selectedUser} /> : null}
@@ -102,6 +108,14 @@ function MetricCard({ label, value }: { label: string; value: number }) {
     <div className="rounded-[var(--radius-panel)] bg-[var(--color-surface)] p-5 transition hover:border hover:border-[var(--color-primary)]/20">
       <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{label}</p>
       <p className="mt-1 font-data-mono text-[28px] text-[var(--color-text)]">{value}</p>
+    </div>
+  )
+}
+
+function LoadErrorMessage() {
+  return (
+    <div className="rounded-[var(--radius-panel)] border border-[var(--color-danger-text)]/20 bg-[var(--color-danger-bg)] px-4 py-3 text-sm text-[var(--color-danger-text)]">
+      No se pudieron cargar los usuarios reales en este momento.
     </div>
   )
 }
