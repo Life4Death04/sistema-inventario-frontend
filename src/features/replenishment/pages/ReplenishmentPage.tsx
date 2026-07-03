@@ -2,17 +2,21 @@ import { Plus, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
-import { getReplenishmentRows, type ReplenishmentRow } from '@/data/mockSelectors'
+import { Loading } from '@/components/ui/Loading'
+import { useReplenishmentRequests } from '@/features/replenishment/api/useReplenishmentRequests'
 import { ReplenishmentModals, type ReplenishmentModalType } from '@/features/replenishment/components/ReplenishmentModals'
 import { ReplenishmentTanStackTable } from '@/features/replenishment/components/ReplenishmentTanStackTable'
+import { toReplenishmentRow, type ReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
 
 export function ReplenishmentPage() {
-  const requests = getReplenishmentRows()
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'Todas' | 'Pendiente' | 'Enviada' | 'Recibida' | 'Cancelada'>('Todas')
   const [activeModal, setActiveModal] = useState<ReplenishmentModalType | null>(null)
   const [selectedRequest, setSelectedRequest] = useState<ReplenishmentRow | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const { data, isLoading, isError } = useReplenishmentRequests({ pageSize: 100 })
+
+  const requests = data?.data.map(toReplenishmentRow) ?? []
 
   const filteredRequests = useMemo(
     () => requests.filter((request) => (statusFilter === 'Todas' ? true : request.status === statusFilter)),
@@ -96,14 +100,18 @@ export function ReplenishmentPage() {
           </Button>
         </section>
 
-        <ReplenishmentTanStackTable
-          globalFilter={query}
-          onMenuToggle={(requestId) => setOpenMenuId((current) => (current === requestId ? null : requestId))}
-          onOpenDetail={(request) => openModal('detail', request)}
-          openMenuId={openMenuId}
-          renderActionsMenu={renderActionsMenu}
-          rows={filteredRequests}
-        />
+        {isLoading ? <Loading /> : null}
+        {isError ? <LoadErrorMessage /> : null}
+        {!isLoading && !isError ? (
+          <ReplenishmentTanStackTable
+            globalFilter={query}
+            onMenuToggle={(requestId) => setOpenMenuId((current) => (current === requestId ? null : requestId))}
+            onOpenDetail={(request) => openModal('detail', request)}
+            openMenuId={openMenuId}
+            renderActionsMenu={renderActionsMenu}
+            rows={filteredRequests}
+          />
+        ) : null}
       </section>
 
       <ReplenishmentModals modalType={activeModal} onClose={() => setActiveModal(null)} onOpenModal={openModal} request={selectedRequest} />
@@ -123,6 +131,14 @@ function MetricCard({ label, value, tone }: { label: string; value: number; tone
     <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5">
       <p className="mb-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{label}</p>
       <p className={`text-[30px] font-semibold leading-[38px] ${toneClass[tone]}`}>{value}</p>
+    </div>
+  )
+}
+
+function LoadErrorMessage() {
+  return (
+    <div className="rounded-[var(--radius-panel)] border border-[var(--color-danger-text)]/20 bg-[var(--color-danger-bg)] px-4 py-3 text-sm text-[var(--color-danger-text)]">
+      No se pudieron cargar las solicitudes de reposicion reales en este momento.
     </div>
   )
 }
