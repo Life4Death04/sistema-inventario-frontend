@@ -3,7 +3,10 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { getProductRows, getReplenishmentDetails, type ProductRow, type ReplenishmentRow } from '@/data/mockSelectors'
+import { Loading } from '@/components/ui/Loading'
+import { getProductRows, type ProductRow } from '@/data/mockSelectors'
+import { useReplenishmentRequest } from '@/features/replenishment/api/useReplenishmentRequest'
+import { toReplenishmentDetail, type ReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export type ReplenishmentModalType = 'generate' | 'detail' | 'change-status'
@@ -275,8 +278,28 @@ function ReplenishmentDetailModal({
   onOpenModal: (modalType: ReplenishmentModalType, request: ReplenishmentRow | null) => void
   request: ReplenishmentRow
 }) {
-  const details = getReplenishmentDetails(request.id)
+  const { data, isLoading, isError } = useReplenishmentRequest(request.id)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  if (isLoading) {
+    return (
+      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={`Solicitud ${request.id.toUpperCase().replace('REQ-', 'R-')}`}>
+        <div className="p-6">
+          <Loading />
+        </div>
+      </ModalFrame>
+    )
+  }
+
+  if (isError || !data) {
+    return (
+      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={`Solicitud ${request.id.toUpperCase().replace('REQ-', 'R-')}`}>
+        <div className="p-6 text-sm text-[var(--color-danger-text)]">No se pudo cargar el detalle de la solicitud.</div>
+      </ModalFrame>
+    )
+  }
+
+  const details = toReplenishmentDetail(data)
 
   if (!details) {
     return null
@@ -321,7 +344,7 @@ function ReplenishmentDetailModal({
         <div className="grid grid-cols-1 gap-4 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-4 sm:grid-cols-2">
           <MetadataItem label="Creada por" value={`${details.requestedBy} · ${formatDate(details.requestedAt)}`} />
           <MetadataItem label="Enviada" value={details.sentAt ? `${formatDate(details.sentAt)} · por WhatsApp` : 'No enviada'} />
-          <MetadataItem label="Recibida" value={details.rawStatus === 'RECEIVED' ? formatDate(details.sentAt ?? details.requestedAt) : '—'} />
+          <MetadataItem label="Recibida" value={details.rawStatus === 'RECEIVED' ? formatDate(details.receivedAt ?? details.sentAt ?? details.requestedAt) : '—'} />
           <MetadataItem label="Origen" value="Generada desde alerta de stock" link />
         </div>
 
@@ -363,7 +386,7 @@ function ReplenishmentDetailModal({
           <div className="ml-2 border-l-2 border-[var(--color-border)] pl-4 flex flex-col gap-4 py-2">
             <TimelineItem active label="Pendiente" meta={`${details.requestedBy} · ${shortDate(details.requestedAt)}`} />
             <TimelineItem active={details.rawStatus !== 'PENDING'} label="Enviada" meta={details.sentAt ? shortDate(details.sentAt) : 'pendiente'} primary={details.rawStatus !== 'PENDING'} />
-            <TimelineItem active={details.rawStatus === 'RECEIVED'} label="Recibida" meta={details.rawStatus === 'RECEIVED' ? 'confirmada' : 'pendiente'} success={details.rawStatus === 'RECEIVED'} />
+            <TimelineItem active={details.rawStatus === 'RECEIVED'} label="Recibida" meta={details.rawStatus === 'RECEIVED' ? shortDate(details.receivedAt ?? details.sentAt ?? details.requestedAt) : 'pendiente'} success={details.rawStatus === 'RECEIVED'} />
           </div>
         </div>
       </div>
@@ -387,9 +410,29 @@ function ReplenishmentDetailModal({
 }
 
 function ChangeStatusModal({ onClose, request }: { onClose: () => void; request: ReplenishmentRow }) {
-  const details = getReplenishmentDetails(request.id)
+  const { data, isLoading, isError } = useReplenishmentRequest(request.id)
   const [newStatus, setNewStatus] = useState<'Enviada' | 'Recibida' | 'Cancelada'>('Enviada')
   const [note, setNote] = useState('')
+
+  if (isLoading) {
+    return (
+      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title="Cambiar estado">
+        <div className="p-6">
+          <Loading />
+        </div>
+      </ModalFrame>
+    )
+  }
+
+  if (isError || !data) {
+    return (
+      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title="Cambiar estado">
+        <div className="p-6 text-sm text-[var(--color-danger-text)]">No se pudo cargar la solicitud para actualizar su estado.</div>
+      </ModalFrame>
+    )
+  }
+
+  const details = toReplenishmentDetail(data)
 
   if (!details) {
     return null
