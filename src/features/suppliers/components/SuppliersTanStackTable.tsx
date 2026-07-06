@@ -7,24 +7,30 @@ import {
   type ColumnDef,
   type PaginationState,
 } from '@tanstack/react-table'
-import { ArrowLeft, ArrowRight, EllipsisVertical, Eye, MessageCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Eye, MessageCircle, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { SupplierRow } from '@/data/mockSelectors'
+import type { SupplierRow } from '@/features/suppliers/lib/supplierRows'
 
 interface SuppliersTanStackTableProps {
   canManage: boolean
   rows: SupplierRow[]
   globalFilter: string
   onEditSupplier: (supplier: SupplierRow) => void
+  onViewSupplier: (supplier: SupplierRow) => void
 }
 
-export function SuppliersTanStackTable({ canManage, rows, globalFilter, onEditSupplier }: SuppliersTanStackTableProps) {
+export function SuppliersTanStackTable({
+  canManage,
+  rows,
+  globalFilter,
+  onEditSupplier,
+  onViewSupplier,
+}: SuppliersTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
   })
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   useEffect(() => {
     setPagination((current) => ({ ...current, pageIndex: 0 }))
@@ -47,30 +53,26 @@ export function SuppliersTanStackTable({ canManage, rows, globalFilter, onEditSu
       cell: ({ row }) => <WhatsappCell whatsapp={row.original.whatsapp} />,
     },
     {
-      accessorKey: 'products',
+      accessorKey: 'productsLabel',
       header: 'Productos',
-      cell: ({ row }) => <ProductsCell count={row.original.products} />,
+      cell: ({ row }) => <ProductsCell label={row.original.productsLabel} />,
     },
     {
       accessorKey: 'active',
       header: 'Estado',
       cell: ({ row }) => <StatusBadge active={row.original.active} />,
     },
-    ...(canManage
-      ? [
-          {
-            id: 'actions',
-            header: 'Acciones',
-            cell: ({ row }: { row: { original: SupplierRow } }) => (
-              <ActionsCell
-                isMenuOpen={openMenuId === row.original.id}
-                onEdit={() => onEditSupplier(row.original)}
-                onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
-              />
-            ),
-          } satisfies ColumnDef<SupplierRow>,
-        ]
-      : []),
+    {
+      id: 'actions',
+      header: 'Acciones',
+      cell: ({ row }: { row: { original: SupplierRow } }) => (
+        <ActionsCell
+          canManage={canManage}
+          onEdit={() => onEditSupplier(row.original)}
+          onView={() => onViewSupplier(row.original)}
+        />
+      ),
+    } satisfies ColumnDef<SupplierRow>,
   ]
 
   const table = useReactTable({
@@ -111,7 +113,7 @@ export function SuppliersTanStackTable({ canManage, rows, globalFilter, onEditSu
                   <th
                     key={header.id}
                     className={`px-4 py-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)] ${
-                      header.column.id === 'products' ? 'text-center' : header.column.id === 'actions' ? 'text-right' : ''
+                      header.column.id === 'productsLabel' ? 'text-center' : header.column.id === 'actions' ? 'text-right' : ''
                     }`}
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -122,11 +124,11 @@ export function SuppliersTanStackTable({ canManage, rows, globalFilter, onEditSu
           </thead>
           <tbody className="divide-y divide-[var(--color-border)]">
             {pageRows.map((row) => (
-              <tr key={row.id} className="group transition-colors hover:bg-[color:rgba(245,248,251,0.55)]">
+              <tr key={row.id} className="cursor-pointer transition-colors hover:bg-[color:rgba(245,248,251,0.55)]" onClick={() => onViewSupplier(row.original)}>
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className={`px-4 py-3 ${cell.column.id === 'products' ? 'text-center' : cell.column.id === 'actions' ? 'text-right' : ''}`}
+                      className={`px-4 py-3 ${cell.column.id === 'productsLabel' ? 'text-center' : cell.column.id === 'actions' ? 'text-right' : ''}`}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -200,15 +202,11 @@ function WhatsappCell({ whatsapp }: { whatsapp: string | null }) {
   )
 }
 
-function ProductsCell({ count }: { count: number }) {
-  if (count === 0) {
-    return <span className="text-sm italic text-[var(--color-text-muted)]">Sin productos</span>
-  }
-
+function ProductsCell({ label }: { label: string }) {
   return (
-    <button className="inline-flex items-center justify-center rounded-full bg-[var(--color-surface-tint)]/18 px-2.5 py-1 text-sm text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white" type="button">
-      {count} productos
-    </button>
+    <span className="inline-flex items-center justify-center rounded-full bg-[var(--color-surface-strong)] px-2.5 py-1 text-sm text-[var(--color-text-secondary)]">
+      {label}
+    </span>
   )
 }
 
@@ -225,32 +223,33 @@ function StatusBadge({ active }: { active: boolean }) {
 }
 
 function ActionsCell({
-  isMenuOpen,
+  canManage,
   onEdit,
-  onToggleMenu,
+  onView,
 }: {
-  isMenuOpen: boolean
+  canManage: boolean
   onEdit: () => void
-  onToggleMenu: () => void
+  onView: () => void
 }) {
   return (
-    <div className="relative inline-flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-      <button className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-tint)]/18 hover:text-[var(--color-primary)]" onClick={onEdit} type="button">
+    <div className="inline-flex items-center justify-end gap-1">
+      <button
+        className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-tint)]/18 hover:text-[var(--color-primary)]"
+        onClick={(event) => { event.stopPropagation(); onView() }}
+        title="Ver detalle"
+        type="button"
+      >
         <Eye className="h-5 w-5" />
       </button>
-      <button className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-text)]" onClick={onToggleMenu} type="button">
-        <EllipsisVertical className="h-5 w-5" />
-      </button>
-      {isMenuOpen ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] py-1 text-left shadow-lg">
-          <button className="block w-full px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-page-bg)]" type="button">
-            Acciones disponibles proximamente
-          </button>
-          <div className="mx-4 my-1 h-px bg-[var(--color-border)]" />
-          <button className="block w-full px-4 py-2 text-sm text-[var(--color-text-muted)]" type="button">
-            Menu de acciones pendiente
-          </button>
-        </div>
+      {canManage ? (
+        <button
+          className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"
+          onClick={(event) => { event.stopPropagation(); onEdit() }}
+          title="Editar proveedor"
+          type="button"
+        >
+          <SquarePen className="h-5 w-5" />
+        </button>
       ) : null}
     </div>
   )
