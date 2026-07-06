@@ -5,3 +5,6 @@ dist
 .atl/
 .opencode/node_modules/
 referencias-UI
+playwright
+playwright-report
+test-results
