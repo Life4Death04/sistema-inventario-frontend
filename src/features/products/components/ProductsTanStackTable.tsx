@@ -10,9 +10,10 @@ import {
   type SortingState,
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, ArrowUpDown, MoreVertical, Pill } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
-import type { ProductRow } from '@/data/mockSelectors'
+import type { ProductRow } from '@/features/products/lib/productRows'
 
 interface ProductsTanStackTableProps {
   products: ProductRow[]
@@ -93,25 +94,14 @@ export function ProductsTanStackTable({
       id: 'actions',
       header: '',
       enableSorting: false,
-      cell: ({ row }) => {
-        const isMenuOpen = openMenuId === row.original.id
-
-        return (
-          <div className="relative text-right">
-            <button
-              className={`rounded-[8px] p-1 transition ${isMenuOpen ? 'bg-[#d5e5f2] text-[#004782]' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]'}`}
-              onClick={(event) => {
-                event.stopPropagation()
-                onMenuToggle(row.original.id)
-              }}
-              type="button"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
-            {isMenuOpen ? renderActionsMenu(row.original) : null}
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <ActionsCell
+          isMenuOpen={openMenuId === row.original.id}
+          onMenuToggle={onMenuToggle}
+          product={row.original}
+          renderActionsMenu={renderActionsMenu}
+        />
+      ),
     },
   ]
 
@@ -239,6 +229,65 @@ export function ProductsTanStackTable({
         </div>
       </div>
     </>
+  )
+}
+
+function MenuPortal({
+  children,
+  triggerRef,
+}: {
+  children: React.ReactNode
+  triggerRef: React.RefObject<HTMLButtonElement>
+}) {
+  const [style, setStyle] = useState<React.CSSProperties>({})
+
+  useEffect(() => {
+    const el = triggerRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      right: window.innerWidth - rect.right,
+      zIndex: 50,
+    })
+  }, [triggerRef])
+
+  return createPortal(<div style={style}>{children}</div>, document.body)
+}
+
+function ActionsCell({
+  isMenuOpen,
+  onMenuToggle,
+  product,
+  renderActionsMenu,
+}: {
+  isMenuOpen: boolean
+  onMenuToggle: (id: string) => void
+  product: ProductRow
+  renderActionsMenu: (product: ProductRow) => React.ReactNode
+}) {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  return (
+    <div className="text-right">
+      <button
+        ref={triggerRef}
+        className={`rounded-[8px] p-1 transition ${
+          isMenuOpen
+            ? 'bg-[#d5e5f2] text-[#004782]'
+            : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]'
+        }`}
+        onClick={(event) => {
+          event.stopPropagation()
+          onMenuToggle(product.id)
+        }}
+        type="button"
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+      {isMenuOpen ? <MenuPortal triggerRef={triggerRef}>{renderActionsMenu(product)}</MenuPortal> : null}
+    </div>
   )
 }
 

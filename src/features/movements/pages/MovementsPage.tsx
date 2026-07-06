@@ -1,18 +1,18 @@
-import { ArrowDownLeft, ArrowUpRight, Download, RefreshCcw, Search } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, RefreshCcw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { Button } from '@/components/ui/Button'
-import { getMovementRows } from '@/data/mockSelectors'
+import { useInventoryMovements } from '@/features/inventory-movements/api/useInventoryMovements'
 import { MovementsTanStackTable, type MovementTableRow } from '@/features/movements/components/MovementsTanStackTable'
+import type { InventoryMovement } from '@/types/api.types'
 
 export function MovementsPage() {
-  const movements = getMovementRows()
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'Todos' | 'IN' | 'OUT' | 'ADJUSTMENT'>('Todos')
+  const { data, error, isLoading } = useInventoryMovements({ limit: 100 })
 
   const movementRows: MovementTableRow[] = useMemo(
-    () => movements.map((movement) => ({ ...movement, initials: getInitials(movement.user) })),
-    [movements],
+    () => (data?.data ?? []).map(toMovementTableRow),
+    [data],
   )
 
   const filteredRows = useMemo(
@@ -84,17 +84,74 @@ export function MovementsPage() {
               ))}
             </div>
 
-            <Button type="button" variant="ghost">
-              <Download className="mr-2 h-4 w-4" />
-              Exportar
-            </Button>
+
           </div>
         </div>
 
-        <MovementsTanStackTable globalFilter={query} rows={filteredRows} />
+        {isLoading ? <MovementStateMessage label="Cargando movimientos reales..." /> : null}
+        {!isLoading && error ? <MovementStateMessage label="No fue posible cargar los movimientos reales." tone="error" /> : null}
+        {!isLoading && !error ? <MovementsTanStackTable globalFilter={query} rows={filteredRows} /> : null}
       </section>
     </section>
   )
+}
+
+function toMovementTableRow(movement: InventoryMovement): MovementTableRow {
+  const productName = movement.product.name
+  const productCode = movement.product.code
+  const userFullName = movement.user.fullName
+
+  return {
+    id: movement.id,
+    product: productName,
+    code: productCode,
+    type: movement.type,
+    typeLabel: getMovementTypeLabel(movement.type),
+    adjustmentDirection: movement.adjustmentDirection,
+    adjustmentLabel: getAdjustmentLabel(movement.adjustmentDirection),
+    quantity: movement.quantity,
+    resultingStock: movement.resultingStock,
+    reason: translateMovementReason(movement.reason),
+    user: userFullName,
+    createdAt: movement.createdAt,
+    initials: getInitials(userFullName),
+  }
+}
+
+const MOVEMENT_REASON_TRANSLATIONS: Record<string, string> = {
+  'Received from replenishment request': 'Recibido por solicitud de reposicion',
+  'Replenishment received': 'Reposicion recibida',
+  'Stock adjustment': 'Ajuste de stock',
+  'Manual entry': 'Entrada manual',
+  'Manual output': 'Salida manual',
+}
+
+function translateMovementReason(reason: string): string {
+  return MOVEMENT_REASON_TRANSLATIONS[reason] ?? reason
+}
+
+function getMovementTypeLabel(type: InventoryMovement['type']): MovementTableRow['typeLabel'] {
+  if (type === 'IN') {
+    return 'Entrada'
+  }
+
+  if (type === 'OUT') {
+    return 'Salida'
+  }
+
+  return 'Ajuste'
+}
+
+function getAdjustmentLabel(direction: InventoryMovement['adjustmentDirection']) {
+  if (direction === 'INCREASE') {
+    return 'Incremento'
+  }
+
+  if (direction === 'DECREASE') {
+    return 'Disminucion'
+  }
+
+  return null
 }
 
 function getInitials(fullName: string) {
@@ -104,6 +161,17 @@ function getInitials(fullName: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('')
+}
+
+
+function MovementStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
+  return (
+    <div
+      className={`px-6 py-8 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}
+    >
+      {label}
+    </div>
+  )
 }
 
 function MovementMetricCard({

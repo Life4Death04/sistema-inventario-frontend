@@ -33,7 +33,7 @@ export interface CreateProductInput {
   categoryId: string
   stock?: number
   minStock?: number
-  price: string
+  price?: string
 }
 
 export interface UpdateProductInput {
@@ -47,7 +47,7 @@ export interface UpdateProductInput {
   unitContent?: string
   categoryId?: string
   minStock?: number
-  price?: string
+  price?: string | null
 }
 
 export interface AttachProductSupplierInput {
