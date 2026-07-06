@@ -273,7 +273,7 @@ export const getReplenishmentDetails = (requestId: string) => {
         requestedQuantity: item.requestedQuantity,
         receivedQuantity: item.requestedQuantity,
         unitPrice: item.unitPrice,
-        subtotal: item.requestedQuantity * item.unitPrice,
+        subtotal: item.unitPrice != null ? item.requestedQuantity * item.unitPrice : null,
         stock: product?.stock ?? 0,
         minStock: product?.minStock ?? 0,
       }
@@ -294,7 +294,7 @@ const getProductStatus = (product: Product) => {
 }
 
 const getRequestTotal = (request: ReplenishmentRequest) =>
-  request.items.reduce((accumulator, item) => accumulator + item.requestedQuantity * item.unitPrice, 0)
+  request.items.reduce((accumulator, item) => accumulator + item.requestedQuantity * (item.unitPrice ?? 0), 0)
 
 const getLatestProductActivity = (productId: string) =>
   [...mockDb.movements]

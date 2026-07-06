@@ -24,8 +24,8 @@ export interface ReplenishmentDetailItem {
   code: string
   requestedQuantity: number
   receivedQuantity: number
-  unitPrice: number
-  subtotal: number
+  unitPrice: number | null
+  subtotal: number | null
   stock: number
   minStock: number
 }
@@ -69,8 +69,8 @@ export function toReplenishmentRow(request: ReplenishmentRequestView): Replenish
     requestedAt: request.requestedAt,
     sentAt: request.sentAt ?? 'No enviada',
     receivedAt: request.receivedAt ?? null,
-    items: null,
-    estimatedTotal: null,
+    items: request.itemsCount,
+    estimatedTotal: Number(request.estimatedTotal),
     notes: request.notes ?? '',
   }
 }
@@ -94,7 +94,7 @@ export function toReplenishmentDetail(request: ReplenishmentRequestWithItemsView
       requestedQuantity: item.requestedQuantity,
       receivedQuantity: item.receivedQuantity ?? item.requestedQuantity,
       unitPrice: item.unitPrice,
-      subtotal: item.requestedQuantity * item.unitPrice,
+      subtotal: item.unitPrice != null ? item.requestedQuantity * item.unitPrice : null,
       stock: item.product.stock,
       minStock: item.product.minStock,
     })),

@@ -1,65 +1,48 @@
 import { Plus, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { MetricCard } from '@/components/ui/MetricCard'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
-import { getReplenishmentRows, type ReplenishmentRow } from '@/data/mockSelectors'
+import { Loading } from '@/components/ui/Loading'
+import { hasPermission } from '@/features/auth/lib/permissions'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 import { ReplenishmentModals, type ReplenishmentModalType } from '@/features/replenishment/components/ReplenishmentModals'
 import { ReplenishmentTanStackTable } from '@/features/replenishment/components/ReplenishmentTanStackTable'
+import { useReplenishmentRequests } from '@/features/replenishment/api/useReplenishmentRequests'
+import { type ReplenishmentRow, toReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
 
 export function ReplenishmentPage() {
-  const requests = getReplenishmentRows()
+  const user = useAuthStore((state) => state.user)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'Todas' | 'Pendiente' | 'Enviada' | 'Recibida' | 'Cancelada'>('Todas')
   const [activeModal, setActiveModal] = useState<ReplenishmentModalType | null>(null)
   const [selectedRequest, setSelectedRequest] = useState<ReplenishmentRow | null>(null)
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const canManage = hasPermission(user?.role, 'manage:replenishment')
+  const { data, isError, isLoading } = useReplenishmentRequests({ pageSize: 100 })
 
-  const filteredRequests = useMemo(
-    () => requests.filter((request) => (statusFilter === 'Todas' ? true : request.status === statusFilter)),
-    [requests, statusFilter],
-  )
+  const requests = (data?.data ?? []).map(toReplenishmentRow)
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus = statusFilter === 'Todas' ? true : request.status === statusFilter
+    const normalizedQuery = query.trim().toLowerCase()
+    const matchesQuery =
+      !normalizedQuery ||
+      [request.id, request.supplier, request.requestedBy, request.status, request.notes].some((value) => value.toLowerCase().includes(normalizedQuery))
+
+    return matchesStatus && matchesQuery
+  })
 
   const metrics = {
-    pending: requests.filter((request) => request.status === 'Pendiente').length,
-    sent: requests.filter((request) => request.status === 'Enviada').length,
-    received: requests.filter((request) => request.status === 'Recibida').length,
-    cancelled: requests.filter((request) => request.status === 'Cancelada').length,
+    pending: requests.filter((request) => request.rawStatus === 'PENDING').length,
+    sent: requests.filter((request) => request.rawStatus === 'SENT').length,
+    received: requests.filter((request) => request.rawStatus === 'RECEIVED').length,
+    cancelled: requests.filter((request) => request.rawStatus === 'CANCELLED').length,
   }
 
   const openModal = (modalType: ReplenishmentModalType, request: ReplenishmentRow | null = null) => {
     setSelectedRequest(request)
-    setOpenMenuId(null)
     setActiveModal(modalType)
   }
 
-  const renderActionsMenu = (request: ReplenishmentRow) => (
-    <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg z-20">
-      <div className="p-1 flex flex-col">
-        <button
-          className="flex items-center gap-2 rounded px-3 py-2 text-left hover:bg-[var(--color-page-bg)]"
-          onClick={(event) => {
-            event.stopPropagation()
-            openModal('detail', request)
-          }}
-          type="button"
-        >
-          <span className="h-2 w-2 rounded-full bg-[var(--color-text-muted)]" />
-          <span className="text-sm font-medium text-[var(--color-text)]">Ver detalle</span>
-        </button>
-        <button
-          className="flex items-center gap-2 rounded px-3 py-2 text-left hover:bg-[rgba(232,241,250,0.30)]"
-          onClick={(event) => {
-            event.stopPropagation()
-            openModal('change-status', request)
-          }}
-          type="button"
-        >
-          <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
-          <span className="text-sm font-medium text-[var(--color-primary)]">Cambiar estado</span>
-        </button>
-      </div>
-    </div>
-  )
 
   return (
     <>
@@ -90,20 +73,26 @@ export function ReplenishmentPage() {
             <input className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] pl-10 pr-4 py-2 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]" onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por n.º, producto o proveedor" type="text" value={query} />
           </div>
 
-          <Button onClick={() => openModal('generate')} type="button">
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva solicitud
-          </Button>
+          {canManage ? (
+            <Button onClick={() => openModal('generate')} type="button">
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva solicitud
+            </Button>
+          ) : null}
         </section>
 
-        <ReplenishmentTanStackTable
-          globalFilter={query}
-          onMenuToggle={(requestId) => setOpenMenuId((current) => (current === requestId ? null : requestId))}
-          onOpenDetail={(request) => openModal('detail', request)}
-          openMenuId={openMenuId}
-          renderActionsMenu={renderActionsMenu}
-          rows={filteredRequests}
-        />
+        {isLoading ? <Loading /> : null}
+        {!isLoading && isError ? <ReplenishmentStateMessage label="No fue posible cargar las solicitudes reales de reposición." tone="error" /> : null}
+        {!isLoading && !isError && filteredRequests.length === 0 ? <ReplenishmentStateMessage label="No hay solicitudes de reposición para mostrar." /> : null}
+        {!isLoading && !isError && filteredRequests.length > 0 ? (
+          <ReplenishmentTanStackTable
+            canShowMenu={(request) => canManage && canChangeReplenishmentStatus(request.rawStatus)}
+            globalFilter={query}
+            onChangeStatus={(request) => openModal('change-status', request)}
+            onOpenDetail={(request) => openModal('detail', request)}
+            rows={filteredRequests}
+          />
+        ) : null}
       </section>
 
       <ReplenishmentModals modalType={activeModal} onClose={() => setActiveModal(null)} onOpenModal={openModal} request={selectedRequest} />
@@ -111,18 +100,16 @@ export function ReplenishmentPage() {
   )
 }
 
-function MetricCard({ label, value, tone }: { label: string; value: number; tone: 'default' | 'info' | 'success' | 'danger' }) {
-  const toneClass = {
-    default: 'text-[var(--color-text)]',
-    info: 'text-[var(--color-primary)]',
-    success: 'text-[var(--color-success-text)]',
-    danger: 'text-[var(--color-danger-text)]',
-  }
-
+function ReplenishmentStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
   return (
-    <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{label}</p>
-      <p className={`text-[30px] font-semibold leading-[38px] ${toneClass[tone]}`}>{value}</p>
+    <div className={`rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}>
+      {label}
     </div>
   )
 }
+
+function canChangeReplenishmentStatus(status: ReplenishmentRow['rawStatus']) {
+  return status === 'PENDING' || status === 'SENT'
+}
+
+
