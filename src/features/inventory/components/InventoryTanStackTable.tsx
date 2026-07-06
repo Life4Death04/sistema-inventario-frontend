@@ -10,7 +10,7 @@ import {
 import { ArrowLeft, ArrowRight, Minus, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { InventoryRow } from '@/data/mockSelectors'
+import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
 
 interface InventoryTanStackTableProps {
   rows: InventoryRow[]
@@ -143,7 +143,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
           </thead>
           <tbody>
             {pageRows.map((row) => (
-              <tr key={row.id} className="transition hover:bg-[var(--color-page-bg)]">
+              <tr key={row.id} className="cursor-pointer transition hover:bg-[var(--color-page-bg)]" onClick={() => onOpenSalida(row.original)}>
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className={`px-4 py-3 ${cell.column.id === 'stock' || cell.column.id === 'minStock' ? 'text-right' : cell.column.id === 'actions' ? 'text-center' : ''}`}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

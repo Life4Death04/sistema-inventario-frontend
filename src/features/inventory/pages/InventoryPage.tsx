@@ -1,24 +1,34 @@
-import { Download, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
+import { MetricCard } from '@/components/ui/MetricCard'
 import { useMemo, useState } from 'react'
 
-import { Button } from '@/components/ui/Button'
-import { getCategoryOptions, getInventoryRows, type InventoryRow } from '@/data/mockSelectors'
+import { useCategories } from '@/features/categories/api/useCategories'
 import { InventoryModals, type InventoryModalType } from '@/features/inventory/components/InventoryModals'
 import { InventoryTanStackTable } from '@/features/inventory/components/InventoryTanStackTable'
+import { type InventoryRow, toInventoryRow } from '@/features/inventory/lib/inventoryRows'
+import { useProducts } from '@/features/products/api/useProducts'
 
 export function InventoryPage() {
-  const inventory = getInventoryRows()
-  const categories = getCategoryOptions()
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'Optimo' | 'Critico' | 'Agotado'>('all')
   const [activeModal, setActiveModal] = useState<InventoryModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<InventoryRow | null>(null)
+  const { data: productsResponse, error: productsError, isLoading: isLoadingProducts } = useProducts({ active: true, pageSize: 100 })
+  const { data: categoriesResponse, error: categoriesError, isLoading: isLoadingCategories } = useCategories({ limit: 100 })
+
+  const categories = categoriesResponse?.data ?? []
+
+  const inventory = useMemo(() => {
+    const categoriesById = new Map(categories.map((category) => [category.id, category]))
+
+    return (productsResponse?.data ?? []).map((product) => toInventoryRow(product, categoriesById))
+  }, [categories, productsResponse])
 
   const filteredInventory = useMemo(
     () =>
       inventory.filter((product) => {
-        const matchesCategory = !categoryFilter || product.category === categoryFilter
+        const matchesCategory = !categoryFilter || product.categoryId === categoryFilter
         const matchesStatus = statusFilter === 'all' || product.status === statusFilter
         const normalizedQuery = query.trim().toLowerCase()
         const matchesQuery =
@@ -31,6 +41,9 @@ export function InventoryPage() {
       }),
     [categoryFilter, inventory, query, statusFilter],
   )
+
+  const isLoading = isLoadingProducts || isLoadingCategories
+  const hasError = Boolean(productsError || categoriesError)
 
   const stats = {
     total: inventory.length,
@@ -79,8 +92,8 @@ export function InventoryPage() {
             >
               <option value="">Categoría</option>
               {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -104,18 +117,18 @@ export function InventoryPage() {
             </div>
           </div>
 
-          <Button type="button" variant="secondary">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
         </section>
 
-        <InventoryTanStackTable
-          globalFilter={query}
-          onOpenDetail={(product) => openModal('detail', product)}
-          onOpenSalida={(product) => openModal('output', product)}
-          rows={filteredInventory}
-        />
+        {isLoading ? <InventoryStateMessage label="Cargando existencias reales..." /> : null}
+        {!isLoading && hasError ? <InventoryStateMessage label="No fue posible cargar el inventario real." tone="error" /> : null}
+        {!isLoading && !hasError ? (
+          <InventoryTanStackTable
+            globalFilter={query}
+            onOpenDetail={(product) => openModal('detail', product)}
+            onOpenSalida={(product) => openModal('output', product)}
+            rows={filteredInventory}
+          />
+        ) : null}
       </section>
 
       <InventoryModals modalType={activeModal} onClose={() => setActiveModal(null)} product={selectedProduct} />
@@ -123,18 +136,12 @@ export function InventoryPage() {
   )
 }
 
-function MetricCard({ label, value, tone }: { label: string; value: number; tone: 'default' | 'success' | 'warning' | 'danger' }) {
-  const toneClass = {
-    default: 'text-[var(--color-text)]',
-    success: 'text-[var(--color-success-text)]',
-    warning: 'text-[var(--color-warning-text)]',
-    danger: 'text-[var(--color-danger-text)]',
-  }
-
+function InventoryStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
   return (
-    <div className="flex h-24 flex-col justify-between rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <h3 className="text-sm text-[var(--color-text-secondary)]">{label}</h3>
-      <p className={`font-data-mono text-[24px] font-semibold ${toneClass[tone]}`}>{value}</p>
+    <div className={`rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}>
+      {label}
     </div>
   )
 }
+
+

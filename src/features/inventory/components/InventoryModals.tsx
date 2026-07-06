@@ -1,9 +1,16 @@
+import { isAxiosError } from 'axios'
 import { ArrowDown, ArrowLeftRight, ArrowUp, Lock, TriangleAlert, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { Button } from '@/components/ui/Button'
-import { getProductMovementHistory, type InventoryRow } from '@/data/mockSelectors'
+import {
+  useCreateInventoryMovement,
+  useProductInventoryMovements,
+} from '@/features/inventory-movements/api/useInventoryMovements'
+import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import type { ApiErrorEnvelope, InventoryMovement } from '@/types/api.types'
 
 export type InventoryModalType = 'detail' | 'output'
 
@@ -43,7 +50,8 @@ function ModalFrame({ children, title, onClose, maxWidth = 'max-w-[560px]' }: { 
 }
 
 function InventoryDetailModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
-  const history = getProductMovementHistory(product.id).slice(0, 3)
+  const { data, error, isLoading } = useProductInventoryMovements(product.id, { limit: 3 })
+  const history = data?.data ?? []
   const latestUpdate = history[0]?.createdAt
 
   return (
@@ -66,7 +74,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
           <DetailItem label="Categoria" value={product.category} />
-          <DetailItem label="Precio unitario" mono value={formatCurrency(Number(product.price))} />
+          <DetailItem label="Precio unitario" mono value={product.price != null ? formatCurrency(Number(product.price)) : 'Sin precio'} />
           <DetailItem label="Proveedor" value={product.suppliers.join(', ') || 'No asignado'} />
           <DetailItem label="Ultima actualizacion" mono value={latestUpdate ? formatDate(latestUpdate) : 'Sin movimientos'} />
           <DetailItem label="Presentacion" value={`${product.brandLabel} · ${product.presentationLabel}`} />
@@ -77,24 +85,29 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
         <div className="space-y-3">
           <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Movimientos recientes</h5>
           <div className="space-y-2">
-            {history.map((movement) => (
-              <div key={movement.id} className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <MovementIcon type={movement.type} />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-text)]">{movement.typeLabel}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)]">{movement.user}</p>
+            {isLoading ? <MovementStateMessage label="Cargando historial real..." /> : null}
+            {!isLoading && error ? <MovementStateMessage label="No fue posible cargar el historial real." tone="error" /> : null}
+            {!isLoading && !error && history.length === 0 ? <MovementStateMessage label="Sin movimientos recientes." /> : null}
+            {!isLoading && !error
+              ? history.map((movement) => (
+                  <div key={movement.id} className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <MovementIcon type={movement.type} />
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type)}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-data-mono text-sm text-[var(--color-text)]">
+                        {getMovementSignal(movement)}
+                        {movement.quantity}
+                      </p>
+                      <p className="font-data-mono text-xs text-[var(--color-text-secondary)]">{formatDate(movement.createdAt)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-data-mono text-sm text-[var(--color-text)]">
-                    {movement.type === 'IN' || movement.adjustmentDirection === 'INCREASE' ? '+' : '-'}
-                    {movement.quantity}
-                  </p>
-                  <p className="font-data-mono text-xs text-[var(--color-text-secondary)]">{formatDate(movement.createdAt)}</p>
-                </div>
-              </div>
-            ))}
+                ))
+              : null}
           </div>
         </div>
       </div>
@@ -110,7 +123,8 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
 
 function RegisterOutputModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
   const [quantity, setQuantity] = useState(3)
-  const [reason, setReason] = useState('Vencimiento')
+  const [reason, setReason] = useState('Dispensación por Ventanilla')
+  const createMovementMutation = useCreateInventoryMovement()
   const resultingStock = Math.max(product.stock - quantity, 0)
   const warning = resultingStock < product.minStock
 
@@ -145,6 +159,7 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
               onChange={(event) => setReason(event.target.value)}
               value={reason}
             >
+              <option>Dispensación por Ventanilla</option>
               <option>Vencimiento</option>
               <option>Daño</option>
               <option>Pérdida/Merma</option>
@@ -152,22 +167,6 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
               <option>Devolución a proveedor</option>
             </select>
           </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Lote afectado</label>
-            <input className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 font-data-mono text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" defaultValue="L-9021" type="text" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Fecha</label>
-            <input className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 font-data-mono text-sm text-[var(--color-text-secondary)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" defaultValue="2026-06-29" type="date" />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Nota / justificación</label>
-          <textarea className="min-h-20 w-full resize-none rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" placeholder="Opcional" />
         </div>
 
         <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4">
@@ -189,13 +188,51 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 sm:px-6">
-        <Button onClick={onClose} type="button" variant="ghost">
+        <Button disabled={createMovementMutation.isPending} onClick={onClose} type="button" variant="ghost">
           Cancelar
         </Button>
-        <Button type="button">Registrar salida</Button>
+        <Button
+          disabled={createMovementMutation.isPending}
+          onClick={() => {
+            if (quantity <= 0) {
+              toast.error('La cantidad debe ser mayor que cero')
+              return
+            }
+
+            if (!reason.trim()) {
+              toast.error('Seleccione un motivo para la salida')
+              return
+            }
+
+            createMovementMutation.mutate(
+              {
+                productId: product.id,
+                type: 'OUT',
+                quantity,
+                reason,
+              },
+              {
+                onError: (error: unknown) => {
+                  toast.error(getInventoryMovementErrorMessage(error))
+                },
+                onSuccess: () => {
+                  toast.success('Salida registrada correctamente')
+                  onClose()
+                },
+              },
+            )
+          }}
+          type="button"
+        >
+          {createMovementMutation.isPending ? 'Registrando...' : 'Registrar salida'}
+        </Button>
       </div>
     </ModalFrame>
   )
+}
+
+function MovementStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
+  return <div className={`rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-4 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}>{label}</div>
 }
 
 function SummaryCard({ label, value, valueClassName, badge = false }: { label: string; value: string; valueClassName?: string; badge?: boolean }) {
@@ -252,4 +289,46 @@ function getStatusClasses(status: string) {
   }
 
   return 'bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]'
+}
+
+function getMovementLabel(type: InventoryMovement['type']) {
+  if (type === 'IN') {
+    return 'Entrada'
+  }
+
+  if (type === 'OUT') {
+    return 'Salida'
+  }
+
+  return 'Ajuste'
+}
+
+function getMovementSubtitle(movement: InventoryMovement) {
+  const userLabel = `Usuario ${shortId(movement.userId)}`
+
+  return movement.reason ? `${movement.reason} · ${userLabel}` : userLabel
+}
+
+function getMovementSignal(movement: InventoryMovement) {
+  if (movement.type === 'IN') {
+    return '+'
+  }
+
+  if (movement.type === 'OUT') {
+    return '-'
+  }
+
+  return movement.adjustmentDirection === 'DECREASE' ? '-' : '+'
+}
+
+function getInventoryMovementErrorMessage(error: unknown) {
+  if (!isAxiosError<ApiErrorEnvelope>(error)) {
+    return 'No fue posible registrar la salida'
+  }
+
+  return error.response?.data.message?.trim() || 'No fue posible registrar la salida'
+}
+
+function shortId(value: string) {
+  return value.length > 8 ? value.slice(0, 8) : value
 }
