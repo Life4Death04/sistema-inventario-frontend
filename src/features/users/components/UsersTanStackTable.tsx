@@ -7,7 +7,7 @@ import {
   type ColumnDef,
   type PaginationState,
 } from '@tanstack/react-table'
-import { ArrowLeft, ArrowRight, MoreVertical, SquarePen } from 'lucide-react'
+import { ArrowLeft, ArrowRight, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { UserRow } from '@/features/users/lib/userRows'
@@ -16,15 +16,15 @@ interface UsersTanStackTableProps {
   canManage: boolean
   rows: UserRow[]
   globalFilter: string
+  onDetailUser: (user: UserRow) => void
   onEditUser: (user: UserRow) => void
 }
 
-export function UsersTanStackTable({ canManage, rows, globalFilter, onEditUser }: UsersTanStackTableProps) {
+export function UsersTanStackTable({ canManage, rows, globalFilter, onDetailUser, onEditUser }: UsersTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
   })
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   useEffect(() => {
     setPagination((current) => ({ ...current, pageIndex: 0 }))
@@ -57,11 +57,7 @@ export function UsersTanStackTable({ canManage, rows, globalFilter, onEditUser }
             id: 'actions',
             header: 'Acciones',
             cell: ({ row }: { row: { original: UserRow } }) => (
-              <ActionsCell
-                isMenuOpen={openMenuId === row.original.id}
-                onEdit={() => onEditUser(row.original)}
-                onToggleMenu={() => setOpenMenuId((current) => (current === row.original.id ? null : row.original.id))}
-              />
+              <ActionsCell onEdit={() => { onEditUser(row.original) }} />
             ),
           } satisfies ColumnDef<UserRow>,
         ]
@@ -115,7 +111,7 @@ export function UsersTanStackTable({ canManage, rows, globalFilter, onEditUser }
           </thead>
           <tbody className="divide-y divide-[var(--color-border)]">
             {pageRows.map((row) => (
-              <tr key={row.id} className="transition-colors hover:bg-[color:rgba(245,248,251,0.55)]">
+              <tr key={row.id} className="cursor-pointer transition-colors hover:bg-[color:rgba(245,248,251,0.55)]" onClick={() => onDetailUser(row.original)}>
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className={`px-6 py-4 ${cell.column.id === 'actions' ? 'text-right' : ''}`}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -216,35 +212,17 @@ function StatusCell({ active }: { active: boolean }) {
   )
 }
 
-function ActionsCell({
-  isMenuOpen,
-  onEdit,
-  onToggleMenu,
-}: {
-  isMenuOpen: boolean
-  onEdit: () => void
-  onToggleMenu: () => void
-}) {
+function ActionsCell({ onEdit }: { onEdit: () => void }) {
   return (
-    <div className="relative inline-flex items-center justify-end gap-1 text-[var(--color-text-muted)]">
-      <button className="rounded-[8px] p-1 transition hover:text-[var(--color-primary)]" onClick={onEdit} type="button">
+    <div className="inline-flex items-center justify-end text-[var(--color-text-muted)]">
+      <button
+        className="rounded-[8px] p-1 transition hover:text-[var(--color-primary)]"
+        onClick={(event) => { event.stopPropagation(); onEdit() }}
+        title="Editar usuario"
+        type="button"
+      >
         <SquarePen className="h-5 w-5" />
       </button>
-      <button className="rounded-[8px] p-1 transition hover:text-[var(--color-primary)]" onClick={onToggleMenu} type="button">
-        <MoreVertical className="h-5 w-5" />
-      </button>
-
-      {isMenuOpen ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] py-1 text-left shadow-lg">
-          <button className="block w-full px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-page-bg)]" type="button">
-            Acciones disponibles proximamente
-          </button>
-          <div className="mx-4 my-1 h-px bg-[var(--color-border)]" />
-          <button className="block w-full px-4 py-2 text-sm text-[var(--color-text-muted)]" type="button">
-            Menu de acciones pendiente
-          </button>
-        </div>
-      ) : null}
     </div>
   )
 }
