@@ -1,11 +1,15 @@
-import { ArrowLeftRight, Package2, Plus, Search, SquarePen, TriangleAlert, View } from 'lucide-react'
+import { ArrowLeftRight, FolderTree, Package2, Plus, Search, SquarePen, TriangleAlert, View } from 'lucide-react'
 import { useState } from 'react'
 
+import { Loading } from '@/components/ui/Loading'
+import { CategoryManagementModal } from '@/features/categories/components/CategoryManagementModal'
+import { useCategories } from '@/features/categories/api/useCategories'
+import { useProducts } from '@/features/products/api/useProducts'
 import { ProductCatalogModals, type ProductModalType } from '@/features/products/components/ProductCatalogModals'
 import { ProductsTanStackTable } from '@/features/products/components/ProductsTanStackTable'
-import { getProductRows, type ProductRow } from '@/data/mockSelectors'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function ProductsPage() {
   const user = useAuthStore((state) => state.user)
@@ -13,10 +17,20 @@ export function ProductsPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
-  const products = getProductRows()
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false)
   const canManage = canManageProducts(user?.role)
   const canUseReplenishment = hasPermission(user?.role, 'manage:replenishment')
   const canOpenMovement = canCreateMovementType(user?.role, 'OUT')
+  const { data: categoriesResponse } = useCategories({ limit: 100 })
+  const { data: productsResponse, isError, isLoading } = useProducts({
+    active: true,
+    pageSize: 100,
+    search: query.trim() || undefined,
+  })
+  const categoryNames = new Map((categoriesResponse?.data ?? []).map((category) => [category.id, category.name]))
+  const products = (productsResponse?.data ?? []).map((product) =>
+    toProductRow(product, categoryNames.get(product.categoryId)),
+  )
   const criticalCount = products.filter((product) => product.status === 'Critico').length
   const outCount = products.filter((product) => product.status === 'Agotado').length
 
@@ -36,7 +50,7 @@ export function ProductsPage() {
   }
 
   const renderActionsMenu = (product: ProductRow) => (
-    <div className="absolute right-10 top-3 z-10 w-52 overflow-hidden rounded-[8px] border border-[#e5ecf1] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+    <div className="w-52 overflow-hidden rounded-[8px] border border-[#e5ecf1] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
       <button
         className="flex w-full items-center gap-3 px-4 py-2 text-sm text-[#0e1d27] transition hover:bg-[#f6faff]"
         onClick={(event) => {
@@ -127,6 +141,17 @@ export function ProductsPage() {
 
           {canManage ? (
             <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d7e4ee] bg-white px-4 text-xs font-semibold uppercase tracking-[0.05em] text-[#004782] transition hover:border-[#b8d0e2] hover:bg-[#f6faff]"
+              onClick={() => setIsCategoryManagerOpen(true)}
+              type="button"
+            >
+              <FolderTree className="h-4 w-4" />
+              Categorias
+            </button>
+          ) : null}
+
+          {canManage ? (
+            <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#004782] px-4 text-xs font-semibold uppercase tracking-[0.05em] text-white transition hover:bg-[#1960a6]"
               onClick={() => openModal('create')}
               type="button"
@@ -154,18 +179,31 @@ export function ProductsPage() {
       </div>
 
       <div className="overflow-hidden rounded-[12px] border border-[#e5ecf1] bg-white">
-        <ProductsTanStackTable
-          globalFilter={query}
-          onMenuToggle={(productId) => setOpenMenuId((current) => (current === productId ? null : productId))}
-          onProductSelect={(product) => openModal('detail', product)}
-          openMenuId={openMenuId}
-          products={products}
-          renderActionsMenu={renderActionsMenu}
-        />
+        {isLoading ? <Loading /> : null}
+        {isError ? <ProductsLoadError /> : null}
+        {!isLoading && !isError ? (
+          <ProductsTanStackTable
+            globalFilter={query}
+            onMenuToggle={(productId) => setOpenMenuId((current) => (current === productId ? null : productId))}
+            onProductSelect={(product) => openModal('detail', product)}
+            openMenuId={openMenuId}
+            products={products}
+            renderActionsMenu={renderActionsMenu}
+          />
+        ) : null}
       </div>
       </section>
 
       <ProductCatalogModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} product={selectedProduct} role={user?.role} />
+      <CategoryManagementModal onClose={() => setIsCategoryManagerOpen(false)} open={isCategoryManagerOpen && canManage} />
     </>
+  )
+}
+
+function ProductsLoadError() {
+  return (
+    <div className="rounded-[var(--radius-panel)] border border-[var(--color-danger-text)]/20 bg-[var(--color-danger-bg)] px-4 py-3 text-sm text-[var(--color-danger-text)]">
+      No se pudieron cargar los productos reales en este momento.
+    </div>
   )
 }
