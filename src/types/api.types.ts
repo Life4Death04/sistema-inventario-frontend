@@ -86,7 +86,7 @@ export interface Product {
   categoryId: string
   stock: number
   minStock: number
-  price: string
+  price: string | null
   active: boolean
   createdAt: string
   updatedAt: string
@@ -176,7 +176,7 @@ export interface ReplenishmentRequestItem {
   id: string
   productId: string
   requestedQuantity: number
-  unitPrice: number
+  unitPrice: number | null
   receivedQuantity?: number | null
   product?: ReplenishmentProductSummary | null
 }

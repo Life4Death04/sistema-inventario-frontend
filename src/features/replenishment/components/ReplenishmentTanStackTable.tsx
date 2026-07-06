@@ -7,27 +7,25 @@ import {
   type ColumnDef,
   type PaginationState,
 } from '@tanstack/react-table'
-import { ArrowLeft, ArrowRight, MoreVertical, View } from 'lucide-react'
+import { ArrowLeft, ArrowRight, SquarePen, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { ReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
 
 interface ReplenishmentTanStackTableProps {
+  canShowMenu: (request: ReplenishmentRow) => boolean
   rows: ReplenishmentRow[]
   globalFilter: string
-  openMenuId: string | null
-  onMenuToggle: (requestId: string) => void
+  onChangeStatus: (request: ReplenishmentRow) => void
   onOpenDetail: (request: ReplenishmentRow) => void
-  renderActionsMenu: (request: ReplenishmentRow) => React.ReactNode
 }
 
 export function ReplenishmentTanStackTable({
+  canShowMenu,
   rows,
   globalFilter,
-  openMenuId,
-  onMenuToggle,
+  onChangeStatus,
   onOpenDetail,
-  renderActionsMenu,
 }: ReplenishmentTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -50,7 +48,7 @@ export function ReplenishmentTanStackTable({
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="font-medium text-[var(--color-text)]">
-            {row.original.items === null ? '—' : row.original.items === 1 ? '1 producto' : `${row.original.items} productos`}
+            {row.original.items === null ? 'Sin resumen' : row.original.items === 1 ? '1 producto' : `${row.original.items} productos`}
           </span>
         </div>
       ),
@@ -59,15 +57,6 @@ export function ReplenishmentTanStackTable({
       accessorKey: 'supplier',
       header: 'Proveedor',
       cell: ({ row }) => <span className="text-sm text-[var(--color-text)]">{row.original.supplier}</span>,
-    },
-    {
-      accessorKey: 'estimatedTotal',
-      header: 'Cantidad',
-      cell: ({ row }) => (
-        <span className="font-data-mono text-sm text-[var(--color-primary)]">
-          {row.original.estimatedTotal === null || row.original.items === null ? '—' : Math.round(row.original.estimatedTotal / Math.max(row.original.items, 1))}
-        </span>
-      ),
     },
     {
       accessorKey: 'requestedAt',
@@ -83,31 +72,34 @@ export function ReplenishmentTanStackTable({
       id: 'actions',
       header: 'Acciones',
       cell: ({ row }) => {
-        const isOpen = openMenuId === row.original.id
+        const showMenu = canShowMenu(row.original)
 
         return (
-          <div className="relative flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <button
               className="flex h-8 w-8 items-center justify-center text-[var(--color-text-muted)] transition hover:text-[var(--color-primary)]"
               onClick={(event) => {
                 event.stopPropagation()
                 onOpenDetail(row.original)
               }}
+              title="Ver detalle"
               type="button"
             >
               <View className="h-4 w-4" />
             </button>
-            <button
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition ${isOpen ? 'bg-[var(--color-surface-strong)] text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]'}`}
-              onClick={(event) => {
-                event.stopPropagation()
-                onMenuToggle(row.original.id)
-              }}
-              type="button"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
-            {isOpen ? renderActionsMenu(row.original) : null}
+            {showMenu ? (
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onChangeStatus(row.original)
+                }}
+                title="Cambiar estado"
+                type="button"
+              >
+                <SquarePen className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
         )
       },
@@ -149,7 +141,7 @@ export function ReplenishmentTanStackTable({
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => (
-                  <th key={header.id} className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)] ${header.column.id === 'estimatedTotal' ? 'text-right' : ''}`}>
+                  <th key={header.id} className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
@@ -160,7 +152,7 @@ export function ReplenishmentTanStackTable({
             {pageRows.map((row) => (
               <tr key={row.id} className="cursor-pointer transition-colors hover:bg-[rgba(232,241,250,0.30)]" onClick={() => onOpenDetail(row.original)}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className={`px-6 py-4 ${cell.column.id === 'estimatedTotal' ? 'text-right' : ''} ${cell.column.id === 'actions' ? 'relative' : ''}`}>
+                  <td key={cell.id} className={`px-6 py-4 ${cell.column.id === 'actions' ? 'relative' : ''}`}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

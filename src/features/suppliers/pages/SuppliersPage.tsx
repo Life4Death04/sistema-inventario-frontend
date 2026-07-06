@@ -1,39 +1,44 @@
-import { Building2, ClipboardList, Plus, Search, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { LoaderCircle, Plus, Search } from 'lucide-react'
+import { MetricCard } from '@/components/ui/MetricCard'
 import { useState } from 'react'
 
-import { getProductRows, getSupplierRows, type SupplierRow } from '@/data/mockSelectors'
 import { canManageSuppliers } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useSuppliers } from '@/features/suppliers/api/useSuppliers'
 import { SupplierModals, type SupplierModalType } from '@/features/suppliers/components/SupplierModals'
 import { SuppliersTanStackTable } from '@/features/suppliers/components/SuppliersTanStackTable'
+import { mergeSupplierRows, type SupplierRow } from '@/features/suppliers/lib/supplierRows'
 
 export function SuppliersPage() {
   const user = useAuthStore((state) => state.user)
-  const suppliers = getSupplierRows()
-  const products = getProductRows()
   const canManage = canManageSuppliers(user?.role)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL')
   const [activeModal, setActiveModal] = useState<SupplierModalType | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierRow | null>(null)
 
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    if (statusFilter === 'ACTIVE') {
-      return supplier.active
-    }
+  const activeSuppliersQuery = useSuppliers({ limit: 100, active: true })
+  const inactiveSuppliersQuery = useSuppliers({ limit: 100, active: false })
 
-    if (statusFilter === 'INACTIVE') {
-      return !supplier.active
-    }
+  const activeSuppliers = activeSuppliersQuery.data?.data ?? []
+  const inactiveSuppliers = inactiveSuppliersQuery.data?.data ?? []
+  const allSuppliers = mergeSupplierRows(activeSuppliers, inactiveSuppliers)
 
-    return true
-  })
+  const suppliers =
+    statusFilter === 'ACTIVE'
+      ? allSuppliers.filter((supplier) => supplier.active)
+      : statusFilter === 'INACTIVE'
+        ? allSuppliers.filter((supplier) => !supplier.active)
+        : allSuppliers
+
+  const isLoading = activeSuppliersQuery.isLoading || inactiveSuppliersQuery.isLoading
+  const isError = activeSuppliersQuery.isError || inactiveSuppliersQuery.isError
+  const isRefreshing = activeSuppliersQuery.isFetching || inactiveSuppliersQuery.isFetching
 
   const metrics = {
-    active: suppliers.filter((supplier) => supplier.active).length,
-    total: suppliers.length,
-    productsWithoutSupplier: products.filter((product) => product.suppliers.length === 0).length,
-    requestsThisMonth: 17,
+    active: allSuppliers.filter((supplier) => supplier.active).length,
+    total: allSuppliers.length,
+    inactive: allSuppliers.filter((supplier) => !supplier.active).length,
   }
 
   const openModal = (modalType: SupplierModalType, supplier: SupplierRow | null = null) => {
@@ -49,11 +54,10 @@ export function SuppliersPage() {
   return (
     <>
       <section className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard icon={<ShieldCheck className="h-[18px] w-[18px]" />} iconClassName="bg-[var(--color-success-bg)] text-[var(--color-success-text)]" label="Proveedores activos" value={metrics.active} />
-          <MetricCard icon={<Building2 className="h-[18px] w-[18px]" />} iconClassName="bg-[var(--color-surface-variant)] text-[var(--color-primary)]" label="Total de proveedores" value={metrics.total} />
-          <MetricCard icon={<TriangleAlert className="h-[18px] w-[18px]" />} iconClassName="bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]" label="Productos sin proveedor" tone="warning" value={metrics.productsWithoutSupplier} />
-          <MetricCard icon={<ClipboardList className="h-[18px] w-[18px]" />} iconClassName="bg-[var(--color-surface-tint)]/18 text-[var(--color-primary)]" label="Solicitudes este mes" value={metrics.requestsThisMonth} />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <MetricCard label="Proveedores activos" tone="success" value={metrics.active} />
+          <MetricCard label="Total de proveedores" tone="default" value={metrics.total} />
+          <MetricCard label="Proveedores inactivos" tone="warning" value={metrics.inactive} />
         </div>
 
         <div className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 lg:flex-row lg:items-center lg:justify-between">
@@ -99,35 +103,38 @@ export function SuppliersPage() {
           </div>
         </div>
 
-        <SuppliersTanStackTable canManage={canManage} globalFilter={query} onEditSupplier={(supplier) => openModal('edit', supplier)} rows={filteredSuppliers} />
+        {isLoading ? (
+          <div className="flex min-h-56 items-center justify-center rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-secondary)]">
+            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            Cargando proveedores...
+          </div>
+        ) : isError ? (
+          <div className="space-y-3 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+            <p className="text-sm font-medium text-[var(--color-text)]">No fue posible cargar los proveedores reales.</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">Verifique la conexion con el backend e intente nuevamente.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {isRefreshing ? (
+              <div className="inline-flex items-center rounded-full bg-[var(--color-surface-strong)] px-3 py-1 text-xs text-[var(--color-text-secondary)]">
+                <LoaderCircle className="mr-2 h-3.5 w-3.5 animate-spin" />
+                Actualizando listado...
+              </div>
+            ) : null}
+            <SuppliersTanStackTable
+              canManage={canManage}
+              globalFilter={query}
+              onEditSupplier={(supplier) => openModal('edit', supplier)}
+              onViewSupplier={(supplier) => openModal('detail', supplier)}
+              rows={suppliers}
+            />
+          </div>
+        )}
       </section>
 
-      {canManage ? <SupplierModals modalType={activeModal} onClose={closeModal} supplier={selectedSupplier} /> : null}
+      <SupplierModals modalType={activeModal} onClose={closeModal} onOpenModal={openModal} role={user?.role} supplier={selectedSupplier} />
     </>
   )
 }
 
-function MetricCard({
-  icon,
-  iconClassName,
-  label,
-  value,
-  tone = 'default',
-}: {
-  icon: React.ReactNode
-  iconClassName: string
-  label: string
-  value: number
-  tone?: 'default' | 'warning'
-}) {
-  return (
-    <div className={`relative flex flex-col justify-between rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 ${tone === 'warning' ? 'overflow-hidden' : ''}`}>
-      {tone === 'warning' ? <div className="pointer-events-none absolute inset-0 bg-[var(--color-warning-bg)] opacity-20" /> : null}
-      <div className="relative z-10 mb-3 flex items-center gap-2">
-        <div className={`flex h-8 w-8 items-center justify-center rounded ${iconClassName}`}>{icon}</div>
-        <span className="text-sm text-[var(--color-text-secondary)]">{label}</span>
-      </div>
-      <div className={`relative z-10 font-data-mono text-[30px] ${tone === 'warning' ? 'text-[var(--color-warning-text)]' : 'text-[var(--color-text)]'}`}>{value}</div>
-    </div>
-  )
-}
+

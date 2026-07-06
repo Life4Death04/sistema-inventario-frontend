@@ -1,4 +1,5 @@
 import { Plus, Search } from 'lucide-react'
+import { MetricCard } from '@/components/ui/MetricCard'
 import { useState } from 'react'
 
 import { Loading } from '@/components/ui/Loading'
@@ -43,10 +44,10 @@ export function UsersPage() {
     <>
       <section className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          <MetricCard label="Usuarios activos" value={metrics.active} />
-          <MetricCard label="Administradores" value={metrics.admins} />
-          <MetricCard label="Encargados" value={metrics.managers} />
-          <MetricCard label="Operativos" value={metrics.operators} />
+          <MetricCard label="Usuarios activos" tone="default" value={metrics.active} />
+          <MetricCard label="Administradores" tone="default" value={metrics.admins} />
+          <MetricCard label="Encargados" tone="default" value={metrics.managers} />
+          <MetricCard label="Operativos" tone="default" value={metrics.operators} />
         </div>
 
         <section className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -95,22 +96,23 @@ export function UsersPage() {
 
         {isLoading ? <Loading /> : null}
         {isError ? <LoadErrorMessage /> : null}
-        {!isLoading && !isError ? <UsersTanStackTable canManage={canManage} globalFilter={query} onEditUser={(user) => openModal('edit', user)} rows={filteredUsers} /> : null}
+        {!isLoading && !isError ? (
+          <UsersTanStackTable
+            canManage={canManage}
+            globalFilter={query}
+            onDetailUser={(user) => openModal('detail', user)}
+            onEditUser={(user) => openModal('edit', user)}
+            rows={filteredUsers}
+          />
+        ) : null}
       </section>
 
-      {canManage ? <UserModals modalType={activeModal} onClose={closeModal} user={selectedUser} /> : null}
+      <UserModals modalType={activeModal} onClose={closeModal} user={selectedUser} />
     </>
   )
 }
 
-function MetricCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-[var(--radius-panel)] bg-[var(--color-surface)] p-5 transition hover:border hover:border-[var(--color-primary)]/20">
-      <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{label}</p>
-      <p className="mt-1 font-data-mono text-[28px] text-[var(--color-text)]">{value}</p>
-    </div>
-  )
-}
+
 
 function LoadErrorMessage() {
   return (

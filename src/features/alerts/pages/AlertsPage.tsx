@@ -1,41 +1,45 @@
-import { AlertTriangle, CheckCircle2, CircleAlert, Eye, Package2 } from 'lucide-react'
-import { useState } from 'react'
+import { AlertTriangle, CircleAlert, Eye, Package2 } from 'lucide-react'
+import { MetricCard } from '@/components/ui/MetricCard'
+import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { getInventoryAlertRows, type InventoryAlertRow, type ProductRow } from '@/data/mockSelectors'
+import { Loading } from '@/components/ui/Loading'
+import { useCategories } from '@/features/categories/api/useCategories'
+import { type InventoryAlertRow, toInventoryAlertRows } from '@/features/alerts/lib/alertRows'
 import { hasPermission } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useProducts } from '@/features/products/api/useProducts'
 import { ProductCatalogModals, type ProductModalType } from '@/features/products/components/ProductCatalogModals'
-
-const tabs = [
-  { key: 'active', label: 'Activas' },
-  { key: 'attended', label: 'Atendidas' },
-  { key: 'all', label: 'Todas' },
-] as const
-
-type AlertFilter = (typeof tabs)[number]['key']
+import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function AlertsPage() {
   const user = useAuthStore((state) => state.user)
-  const alerts = getInventoryAlertRows()
-  const [filter, setFilter] = useState<AlertFilter>('active')
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
+  const { data: categoriesResponse, isError: isCategoriesError, isLoading: isLoadingCategories } = useCategories({ limit: 100 })
+  const { data: activeProductsResponse, dataUpdatedAt, isError: isActiveProductsError, isLoading: isLoadingActiveProducts } = useProducts({ active: true, pageSize: 100 })
 
-  const visibleAlerts = alerts.filter((alert) => {
-    if (filter === 'all') {
-      return true
-    }
+  const categoryNames = useMemo(
+    () => new Map((categoriesResponse?.data ?? []).map((category) => [category.id, category.name])),
+    [categoriesResponse],
+  )
 
-    return filter === 'active' ? alert.kind === 'active' : alert.kind === 'attended'
-  })
+  const activeProducts = useMemo(
+    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, categoryNames.get(product.categoryId))),
+    [categoryNames, activeProductsResponse],
+  )
+
+  const generatedAt = new Date(dataUpdatedAt || Date.now()).toISOString()
+  const activeAlerts = useMemo(() => toInventoryAlertRows(activeProducts, generatedAt), [generatedAt, activeProducts])
+
+  const isLoading = isLoadingActiveProducts || isLoadingCategories
+  const isError = isActiveProductsError || isCategoriesError
 
   const metrics = {
-    active: alerts.filter((alert) => alert.kind === 'active').length,
-    critical: alerts.filter((alert) => alert.kind === 'active' && alert.level === 'critical').length,
-    out: alerts.filter((alert) => alert.kind === 'active' && alert.level === 'out').length,
-    attended: alerts.filter((alert) => alert.kind === 'attended' && isWithinLastSevenDays(alert.generatedAt)).length,
+    active: activeAlerts.length,
+    critical: activeAlerts.filter((alert) => alert.level === 'critical').length,
+    out: activeAlerts.filter((alert) => alert.level === 'out').length,
   }
 
   const openModal = (modalType: ProductModalType, product: ProductRow | null = null) => {
@@ -55,32 +59,23 @@ export function AlertsPage() {
           <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">Alertas de inventario</h2>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           <MetricCard label="Alertas activas" tone="default" value={metrics.active} />
-          <MetricCard label="Criticas" tone="critical" value={metrics.critical} />
-          <MetricCard label="Agotadas" tone="out" value={metrics.out} />
-          <MetricCard label="Atendidas (7 dias)" tone="success" value={metrics.attended} />
-        </div>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="inline-flex w-full flex-wrap rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-1 sm:w-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${filter === tab.key ? 'bg-[var(--color-surface-tint)]/18 text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'}`}
-                onClick={() => setFilter(tab.key)}
-                type="button"
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <MetricCard label="Criticas" tone="warning" value={metrics.critical} />
+          <MetricCard label="Agotadas" tone="danger" value={metrics.out} />
         </div>
 
         <div className="space-y-4">
-          {visibleAlerts.map((alert) => (
-            <AlertCard key={alert.id} alert={alert} canUseReplenishment={hasPermission(user?.role, 'manage:replenishment')} onOpenModal={openModal} />
-          ))}
+          {isLoading ? <Loading /> : null}
+          {!isLoading && isError ? <AlertsStateMessage label="No fue posible cargar las alertas desde productos reales." tone="error" /> : null}
+          {!isLoading && !isError && activeAlerts.length === 0 ? (
+            <AlertsStateMessage label="No hay alertas activas. Todos los productos están por encima del stock mínimo." />
+          ) : null}
+          {!isLoading && !isError
+            ? activeAlerts.map((alert) => (
+                <AlertCard key={alert.id} alert={alert} canUseReplenishment={hasPermission(user?.role, 'manage:replenishment')} onOpenModal={openModal} />
+              ))
+            : null}
         </div>
       </section>
 
@@ -102,7 +97,7 @@ function AlertCard({
   const Icon = statusClasses.icon
 
   return (
-    <Card className={alert.kind === 'attended' ? 'bg-[var(--color-surface)]/70' : 'hover:border-[color:var(--color-outline)] transition-colors'}>
+    <Card className="transition-colors hover:border-[color:var(--color-outline)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex gap-4">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] ${statusClasses.iconWrapperClassName}`}>
@@ -125,82 +120,35 @@ function AlertCard({
               <span className={`font-data-mono text-base font-semibold ${statusClasses.stockClassName}`}>{alert.product.stock}</span>
               <span className="text-[var(--color-text-secondary)]">/ {alert.product.minStock}</span>
             </div>
-
-            {alert.kind === 'attended' && alert.requestCode ? (
-              <div className="inline-flex items-center gap-1.5 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-sm text-[var(--color-text-secondary)]">
-                <CheckCircle2 className="h-4 w-4 text-[var(--color-success-text)]" />
-                <span>
-                  Solicitud <span className="font-data-mono text-xs">#{alert.requestCode}</span> enviada
-                </span>
-              </div>
-            ) : null}
           </div>
         </div>
 
         <div className="flex w-full flex-row gap-2 md:w-auto md:min-w-[182px] md:flex-col">
-          {alert.kind === 'active' ? (
-            <>
-              {canUseReplenishment ? (
-                <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('replenishment', alert.product)} type="button">
-                  <Package2 className="mr-2 h-4 w-4" />
-                  Generar reposicion
-                </Button>
-              ) : null}
-              <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('detail', alert.product)} type="button" variant="secondary">
-                <Eye className="mr-2 h-4 w-4" />
-                Ver producto
-              </Button>
-            </>
-          ) : (
-            <button
-              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] md:flex-none"
-              disabled
-              type="button"
-            >
-              Ver reposicion
-            </button>
-          )}
+          {canUseReplenishment ? (
+            <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('replenishment', alert.product)} type="button">
+              <Package2 className="mr-2 h-4 w-4" />
+              Generar reposicion
+            </Button>
+          ) : null}
+          <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('detail', alert.product)} type="button" variant="secondary">
+            <Eye className="mr-2 h-4 w-4" />
+            Ver producto
+          </Button>
         </div>
       </div>
     </Card>
   )
 }
 
-function MetricCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: number
-  tone: 'default' | 'critical' | 'out' | 'success'
-}) {
-  const valueClassName = {
-    default: 'text-[var(--color-text)]',
-    critical: 'text-[var(--color-warning-text)]',
-    out: 'text-[var(--color-danger-text)]',
-    success: 'text-[var(--color-success-text)]',
-  }
-
+function AlertsStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
   return (
-    <div className="flex min-h-24 flex-col justify-between rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-      <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
-      <p className={`font-data-mono text-[30px] font-bold ${valueClassName[tone]}`}>{value}</p>
+    <div className={`rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}>
+      {label}
     </div>
   )
 }
 
 function getStatusClasses(alert: InventoryAlertRow) {
-  if (alert.kind === 'attended') {
-    return {
-      badgeClassName: 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]',
-      icon: CheckCircle2,
-      iconClassName: 'text-[var(--color-success-text)]',
-      iconWrapperClassName: 'bg-[var(--color-success-bg)]',
-      stockClassName: 'text-[var(--color-text-secondary)]',
-    }
-  }
-
   if (alert.level === 'out') {
     return {
       badgeClassName: 'bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]',
@@ -228,10 +176,4 @@ function formatAlertDate(value: string) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value))
-}
-
-function isWithinLastSevenDays(value: string) {
-  const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
-
-  return Date.now() - new Date(value).getTime() <= sevenDaysInMs
 }

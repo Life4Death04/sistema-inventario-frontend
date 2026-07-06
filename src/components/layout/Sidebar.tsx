@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import { navigation, profileNavigationItem } from '@/components/layout/navigation'
+import { useActiveAlertCount } from '@/features/alerts/api/useActiveAlertCount'
 import { hasPermission } from '@/features/auth/lib/permissions'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
@@ -19,6 +20,7 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const visibleNavigation = navigation.filter((item) => hasPermission(user?.role, item.permission))
   const canViewProfile = hasPermission(user?.role, profileNavigationItem.permission)
+  const activeAlertCount = useActiveAlertCount()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -60,6 +62,8 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {visibleNavigation.map((item) => {
             const Icon = item.icon
+            const isAlertsItem = item.to === '/alertas'
+            const showBadge = isAlertsItem && activeAlertCount > 0
 
             return (
               <NavLink
@@ -75,7 +79,12 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
                 to={item.to}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <span className="flex-1 truncate">{item.label}</span>
+                {showBadge ? (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-danger-text)] px-1.5 font-data-mono text-[10px] font-bold leading-none text-white">
+                    {activeAlertCount > 99 ? '99+' : activeAlertCount}
+                  </span>
+                ) : null}
               </NavLink>
             )
           })}
