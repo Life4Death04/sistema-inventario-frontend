@@ -51,6 +51,7 @@ export interface Supplier {
   whatsapp: string | null
   address: string | null
   active: boolean
+  productsCount: number
   createdAt: string
   updatedAt: string
 }
@@ -113,10 +114,23 @@ export interface ProductDetail extends Product {
   suppliers: ProductSupplierEntry[]
 }
 
+export interface MovementProductSummary {
+  id: string
+  name: string
+  code: string
+}
+
+export interface MovementUserSummary {
+  id: string
+  fullName: string
+}
+
 export interface InventoryMovement {
   id: string
   productId: string
   userId: string
+  product: MovementProductSummary
+  user: MovementUserSummary
   type: MovementType
   adjustmentDirection: AdjustmentDirection | null
   quantity: number
@@ -171,6 +185,8 @@ export interface ReplenishmentRequest {
   id: string
   supplierId: string
   requestedByUserId: string
+  supplier?: ReplenishmentSupplierSummary | null
+  requestedByUser?: ReplenishmentUserSummary | null
   status: ReplenishmentStatus
   requestedAt: string
   sentAt?: string | null
@@ -179,8 +195,8 @@ export interface ReplenishmentRequest {
   cancelledAt?: string | null
   cancelledByUserId?: string | null
   notes: string | null
-  supplier?: ReplenishmentSupplierSummary | null
-  requestedByUser?: ReplenishmentUserSummary | null
+  itemsCount: number
+  estimatedTotal: string
 }
 
 export interface ReplenishmentRequestWithItems extends ReplenishmentRequest {
