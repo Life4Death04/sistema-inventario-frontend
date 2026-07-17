@@ -14,7 +14,7 @@ import type { ApiErrorEnvelope } from '@/types/api.types'
 
 function getLoginErrorMessage(error: unknown) {
   if (isAxiosError<ApiErrorEnvelope>(error)) {
-    return error.response?.data.message ?? 'No fue posible iniciar sesion'
+    return /*error.response?.data.message ??*/ 'Correo y/o contraseña incorrectos'
   }
 
   if (error instanceof Error) {
