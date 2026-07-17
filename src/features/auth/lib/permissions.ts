@@ -46,11 +46,11 @@ const rolePermissions: Record<UserRole, AppPermission[]> = {
     'view:profile',
   ],
   OPERATOR: [
-    'view:products',
+    //'view:products',
     'view:inventory',
     'view:movements',
     'create:movement:out',
-    'view:alerts',
+    //'view:alerts',
     'view:profile',
   ],
 }
