@@ -124,6 +124,7 @@ export function SuppliersPage() {
             <SuppliersTanStackTable
               canManage={canManage}
               globalFilter={query}
+              onAssociateProducts={(supplier) => openModal('associate-products', supplier)}
               onEditSupplier={(supplier) => openModal('edit', supplier)}
               onViewSupplier={(supplier) => openModal('detail', supplier)}
               rows={suppliers}

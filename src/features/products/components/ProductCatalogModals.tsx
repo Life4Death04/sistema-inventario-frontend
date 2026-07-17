@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import {
+  ArrowDown,
   ArrowLeftRight,
+  ArrowUp,
   CircleAlert,
   Info,
   LoaderCircle,
@@ -19,7 +21,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
 import { useCategories } from '@/features/categories/api/useCategories'
-import { useCreateInventoryMovement } from '@/features/inventory-movements/api/useInventoryMovements'
+import { useCreateInventoryMovement, useProductInventoryMovements } from '@/features/inventory-movements/api/useInventoryMovements'
 import {
   attachProductSupplier,
   createProduct,
@@ -37,6 +39,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type {
   ApiErrorEnvelope,
+  InventoryMovement,
   ProductDetail,
   ProductUnit,
   UserRole,
@@ -251,6 +254,8 @@ function ProductDetailModal({
   const canOpenMovement = canCreateMovementType(role, 'OUT')
   const canUseReplenishment = hasPermission(role, 'manage:replenishment')
   const detailQuery = useProductDetail(product.id)
+  const movementsQuery = useProductInventoryMovements(product.id, { limit: 3 })
+  const movementHistory = movementsQuery.data?.data ?? []
 
   if (detailQuery.isLoading) {
     return (
@@ -306,8 +311,30 @@ function ProductDetailModal({
 
         <div className="space-y-3">
           <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Movimientos recientes</h5>
-          <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4 text-sm text-[var(--color-text-secondary)]">
-            Los movimientos reales se conectarán en la siguiente fase. Por ahora este detalle usa exclusivamente backend para producto, categoría y proveedores.
+          <div className="space-y-2">
+            {movementsQuery.isLoading ? <MovementStateMessage label="Cargando historial real..." /> : null}
+            {!movementsQuery.isLoading && movementsQuery.error ? <MovementStateMessage label="No fue posible cargar el historial real." tone="error" /> : null}
+            {!movementsQuery.isLoading && !movementsQuery.error && movementHistory.length === 0 ? <MovementStateMessage label="Sin movimientos recientes." /> : null}
+            {!movementsQuery.isLoading && !movementsQuery.error
+              ? movementHistory.map((movement) => (
+                  <div key={movement.id} className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <MovementIcon type={movement.type} />
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type)}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-data-mono text-sm text-[var(--color-text)]">
+                        {getMovementSignal(movement)}
+                        {movement.quantity}
+                      </p>
+                      <p className="font-data-mono text-xs text-[var(--color-text-secondary)]">{formatDate(movement.createdAt)}</p>
+                    </div>
+                  </div>
+                ))
+              : null}
           </div>
         </div>
       </div>
@@ -1044,6 +1071,34 @@ function DetailItem({ label, value, mono = false }: { label: string; value: stri
   )
 }
 
+function MovementStateMessage({ label, tone = 'muted' }: { label: string; tone?: 'error' | 'muted' }) {
+  return <div className={`rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-4 text-sm ${tone === 'error' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text-secondary)]'}`}>{label}</div>
+}
+
+function MovementIcon({ type }: { type: InventoryMovement['type'] }) {
+  if (type === 'IN') {
+    return (
+      <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-[var(--color-success-bg)] text-[var(--color-success-text)]">
+        <ArrowUp className="h-4 w-4" />
+      </div>
+    )
+  }
+
+  if (type === 'OUT') {
+    return (
+      <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]">
+        <ArrowDown className="h-4 w-4" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-[var(--color-surface-tint)] text-[var(--color-primary)]">
+      <ArrowLeftRight className="h-4 w-4" />
+    </div>
+  )
+}
+
 function LoadingState({ label }: { label: string }) {
   return (
     <div className="flex min-h-56 items-center justify-center px-5 py-6 text-sm text-[var(--color-text-secondary)]">
@@ -1073,6 +1128,40 @@ function getStatusClasses(status: string) {
   }
 
   return 'bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]'
+}
+
+function getMovementLabel(type: InventoryMovement['type']) {
+  if (type === 'IN') {
+    return 'Entrada'
+  }
+
+  if (type === 'OUT') {
+    return 'Salida'
+  }
+
+  return 'Ajuste'
+}
+
+function getMovementSubtitle(movement: InventoryMovement) {
+  const userLabel = `Usuario ${shortId(movement.userId)}`
+
+  return movement.reason ? `${movement.reason} · ${userLabel}` : userLabel
+}
+
+function getMovementSignal(movement: InventoryMovement) {
+  if (movement.type === 'IN') {
+    return '+'
+  }
+
+  if (movement.type === 'OUT') {
+    return '-'
+  }
+
+  return movement.adjustmentDirection === 'DECREASE' ? '-' : '+'
+}
+
+function shortId(value: string) {
+  return value.length > 8 ? value.slice(0, 8) : value
 }
 
 function toCreateProductInput(values: ProductFormValues): CreateProductInput {
