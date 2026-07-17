@@ -7,7 +7,7 @@ import {
   type ColumnDef,
   type PaginationState,
 } from '@tanstack/react-table'
-import { ArrowLeft, ArrowRight, Eye, MessageCircle, SquarePen } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Eye, Link2, MessageCircle, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { SupplierRow } from '@/features/suppliers/lib/supplierRows'
@@ -16,16 +16,18 @@ interface SuppliersTanStackTableProps {
   canManage: boolean
   rows: SupplierRow[]
   globalFilter: string
+  onAssociateProducts: (supplier: SupplierRow) => void
   onEditSupplier: (supplier: SupplierRow) => void
   onViewSupplier: (supplier: SupplierRow) => void
 }
 
 export function SuppliersTanStackTable({
   canManage,
-  rows,
-  globalFilter,
+  onAssociateProducts,
   onEditSupplier,
   onViewSupplier,
+  rows,
+  globalFilter,
 }: SuppliersTanStackTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -68,6 +70,7 @@ export function SuppliersTanStackTable({
       cell: ({ row }: { row: { original: SupplierRow } }) => (
         <ActionsCell
           canManage={canManage}
+          onAssociateProducts={() => onAssociateProducts(row.original)}
           onEdit={() => onEditSupplier(row.original)}
           onView={() => onViewSupplier(row.original)}
         />
@@ -224,10 +227,12 @@ function StatusBadge({ active }: { active: boolean }) {
 
 function ActionsCell({
   canManage,
+  onAssociateProducts,
   onEdit,
   onView,
 }: {
   canManage: boolean
+  onAssociateProducts: () => void
   onEdit: () => void
   onView: () => void
 }) {
@@ -241,6 +246,16 @@ function ActionsCell({
       >
         <Eye className="h-5 w-5" />
       </button>
+      {canManage ? (
+        <button
+          className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-tint)]/18 hover:text-[var(--color-primary)]"
+          onClick={(event) => { event.stopPropagation(); onAssociateProducts() }}
+          title="Asociar productos"
+          type="button"
+        >
+          <Link2 className="h-5 w-5" />
+        </button>
+      ) : null}
       {canManage ? (
         <button
           className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"
