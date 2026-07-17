@@ -35,13 +35,6 @@ export function ProfilePage() {
           </div>
         </div>
       </Card>
-
-      <Card>
-        <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Convencion visual</p>
-        <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-          Esta vista ya usa el estilo base del sistema: superficies blancas, bordes suaves, acento azul clinico y espaciado comodo para operar desde 375px en adelante.
-        </p>
-      </Card>
     </div>
   )
 }

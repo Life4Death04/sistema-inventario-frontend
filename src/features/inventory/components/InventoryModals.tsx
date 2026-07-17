@@ -122,7 +122,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
 }
 
 function RegisterOutputModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
-  const [quantity, setQuantity] = useState(3)
+  const [quantity, setQuantity] = useState(0)
   const [reason, setReason] = useState('Dispensación por Ventanilla')
   const createMovementMutation = useCreateInventoryMovement()
   const resultingStock = Math.max(product.stock - quantity, 0)
