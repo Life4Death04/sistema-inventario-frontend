@@ -56,7 +56,7 @@ El `Dockerfile` construye la SPA con Node.js 22 y `npm ci`, y copia únicamente 
 
 ```bash
 docker build -t sistema-inventario-frontend:local .
-docker run --rm -p 8080:8080 \
+docker run --rm -p 127.0.0.1:8080:8080 \
   -e BACKEND_ORIGIN=https://backend.example.com \
   sistema-inventario-frontend:local
 ```
@@ -64,6 +64,60 @@ docker run --rm -p 8080:8080 \
 `BACKEND_ORIGIN` es obligatorio y acepta únicamente el esquema HTTP(S) y la autoridad del backend, sin credenciales, ruta, consulta, fragmento ni barra final. El backend debe exponer su API bajo `/api`; Nginx conserva ese prefijo al reenviar las solicitudes. La ruta local `/healthz` verifica el proceso del frontend sin consultar el backend.
 
 La configuración de producción también resuelve rutas directas de la SPA mediante `index.html`, evita que errores de `/api` caigan al HTML, conserva la indicación HTTPS válida del proxy frontal, mantiene `index.html` sujeto a revalidación y aplica caché inmutable a los recursos versionados bajo `/assets/`.
+
+### 2.2. Orquestación local con Docker Compose
+
+`compose.yaml` construye el `Dockerfile` anterior y publica el puerto `8080` del contenedor exclusivamente en `http://127.0.0.1:10000`.
+
+Crear el archivo privado de despliegue a partir del ejemplo y completar el origen real del backend localmente:
+
+```bash
+cp .env.deploy.example .env.deploy
+```
+
+`.env.deploy` está ignorado por Git. `BACKEND_ORIGIN` conserva el contrato descrito en la sección anterior. Compose usa `FRONTEND_ENV_FILE` únicamente para interpolar la ruta de `env_file`; el contenido del archivo seleccionado se inyecta al contenedor y no depende de `--env-file`.
+
+Validar la configuración sin imprimir los valores resueltos:
+
+```bash
+docker compose config --quiet
+```
+
+El ejemplo versionado también permite validar el modelo sin crear el archivo privado:
+
+```bash
+FRONTEND_ENV_FILE=.env.deploy.example docker compose config --quiet
+```
+
+Construir e iniciar el servicio:
+
+```bash
+docker compose up --build -d
+```
+
+Consultar estado, salud y logs acotados:
+
+```bash
+docker compose ps
+curl --fail --silent --show-error http://127.0.0.1:10000/healthz
+docker compose logs --tail=100 frontend
+```
+
+Detener y eliminar los recursos del proyecto:
+
+```bash
+docker compose down
+```
+
+Para actualizar, obtener primero la versión autorizada del repositorio y reconstruir únicamente este servicio:
+
+```bash
+docker compose build --pull frontend
+docker compose up -d frontend
+docker compose ps
+```
+
+La publicación fija `127.0.0.1:10000:8080`; por tanto, Docker no expone el frontend en interfaces externas, en `0.0.0.0` ni en el comodín IPv6. En una unidad de trabajo posterior, Tailscale Funnel reenviará el puerto HTTPS público `10000` al destino local `http://127.0.0.1:10000`. La configuración de Funnel y la administración mediante systemd no forman parte de esta orquestación.
 
 ---
 
