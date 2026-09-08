@@ -1,7 +1,13 @@
 import { defineConfig } from '@playwright/test'
+import { loadEnv } from 'vite'
 
 const PORT = 5173
 const BASE_URL = `http://localhost:${PORT}`
+const e2eEnvironment = loadEnv('e2e', process.cwd(), 'E2E_')
+
+for (const [name, value] of Object.entries(e2eEnvironment)) {
+  process.env[name] ??= value
+}
 
 export default defineConfig({
   testDir: './tests/e2e',

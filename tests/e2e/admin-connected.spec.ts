@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import { ensureAuthenticated, saveEvidenceScreenshot, uniqueValue } from './helpers'
+import { ensureAuthenticated, getTestUserPassword, saveEvidenceScreenshot, uniqueValue } from './helpers'
 
 test.describe.configure({ mode: 'serial' })
 
@@ -88,6 +88,7 @@ test('usuarios: create, edit and deactivate', async ({ page }, testInfo) => {
   const uniqueEmail = `${uniqueValue('usuario').replace(/[^a-zA-Z0-9-]/g, '').toLowerCase()}@highmeds.local`
   const initialName = 'Usuario E2E Operativo'
   const editedName = 'Usuario E2E Operativo Editado'
+  const testUserPassword = getTestUserPassword()
 
   await page.goto('/usuarios')
   await page.getByRole('button', { name: 'Nuevo usuario' }).click()
@@ -96,8 +97,8 @@ test('usuarios: create, edit and deactivate', async ({ page }, testInfo) => {
   await expect(createUserDialog.getByRole('heading', { name: 'Nuevo usuario' })).toBeVisible()
   await createUserDialog.getByPlaceholder('Ej. Ana Garcia').fill(initialName)
   await createUserDialog.getByPlaceholder('ana.garcia@highmeds.com').fill(uniqueEmail)
-  await createUserDialog.locator('input[type="password"]').nth(0).fill('ChangeMe123!')
-  await createUserDialog.locator('input[type="password"]').nth(1).fill('ChangeMe123!')
+  await createUserDialog.locator('input[type="password"]').nth(0).fill(testUserPassword)
+  await createUserDialog.locator('input[type="password"]').nth(1).fill(testUserPassword)
   await createUserDialog.getByRole('button', { name: 'Crear usuario' }).click()
 
   await page.getByPlaceholder('Buscar por nombre o correo').fill(uniqueEmail, { timeout: 15000 })
