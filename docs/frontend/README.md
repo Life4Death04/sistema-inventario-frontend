@@ -50,6 +50,21 @@ Para desarrollo:
 2. Levantar el frontend con `npm run dev`.
 3. El dev server proxea `/api/*` al backend (ver `vite.config.ts`).
 
+### 2.1. Imagen de producción
+
+El `Dockerfile` construye la SPA con Node.js 22 y `npm ci`, y copia únicamente `dist/` a una imagen Nginx sin privilegios que escucha en el puerto `8080`.
+
+```bash
+docker build -t sistema-inventario-frontend:local .
+docker run --rm -p 8080:8080 \
+  -e BACKEND_ORIGIN=https://backend.example.com \
+  sistema-inventario-frontend:local
+```
+
+`BACKEND_ORIGIN` es obligatorio y acepta únicamente el esquema HTTP(S) y la autoridad del backend, sin credenciales, ruta, consulta, fragmento ni barra final. El backend debe exponer su API bajo `/api`; Nginx conserva ese prefijo al reenviar las solicitudes. La ruta local `/healthz` verifica el proceso del frontend sin consultar el backend.
+
+La configuración de producción también resuelve rutas directas de la SPA mediante `index.html`, evita que errores de `/api` caigan al HTML, conserva la indicación HTTPS válida del proxy frontal, mantiene `index.html` sujeto a revalidación y aplica caché inmutable a los recursos versionados bajo `/assets/`.
+
 ---
 
 ## 3. Estructura de carpetas
