@@ -1,9 +1,23 @@
 import { expect, type Page, type TestInfo } from '@playwright/test'
 
+function requireE2ECredential(name: 'E2E_ADMIN_EMAIL' | 'E2E_ADMIN_PASSWORD' | 'E2E_NEW_USER_PASSWORD') {
+  const value = process.env[name]
+
+  if (!value) {
+    throw new Error(`Missing required E2E credential: ${name}. Set it in the environment or in .env.e2e.`)
+  }
+
+  return value
+}
+
 export const adminCredentials = {
-  email: 'santiagodrm@gmail.com',
-  password: 'papimami2',
+  email: requireE2ECredential('E2E_ADMIN_EMAIL'),
+  password: requireE2ECredential('E2E_ADMIN_PASSWORD'),
 } as const
+
+export function getTestUserPassword() {
+  return requireE2ECredential('E2E_NEW_USER_PASSWORD')
+}
 
 export function uniqueValue(prefix: string) {
   return `${prefix}-${Date.now()}`

@@ -40,6 +40,10 @@ npm run test:e2e      # correr Playwright contra un backend levantado
 
 **No hay script de lint ni de typecheck aislado**: `npm run build` corre `tsc -b` antes de Vite, así que el build falla si hay errores de tipos.
 
+Los E2E requieren credenciales de prueba inyectadas mediante `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD` y `E2E_NEW_USER_PASSWORD`. Copiar `.env.e2e.example` como `.env.e2e`, completar los valores localmente y no compartir ni versionar ese archivo. Playwright carga ese archivo solo para los E2E; las variables exportadas en el proceso tienen prioridad. Si falta una variable requerida, la suite falla durante la carga con el nombre de la variable ausente y sin imprimir su valor.
+
+Las credenciales que estuvieron expuestas previamente en el historial del repositorio deben rotarse en el sistema correspondiente. La rotación es una acción externa y no forma parte de este frontend.
+
 Para desarrollo:
 
 1. Levantar primero el backend en `http://localhost:3000` (repo `sistema-inventario-backend`).
