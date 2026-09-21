@@ -63,9 +63,13 @@ docker run --rm -p 127.0.0.1:8080:8080 \
 
 `BACKEND_ORIGIN` es obligatorio y acepta únicamente el esquema HTTP(S) y la autoridad del backend, sin credenciales, ruta, consulta, fragmento ni barra final. El backend debe exponer su API bajo `/api`; Nginx conserva ese prefijo al reenviar las solicitudes. La ruta local `/healthz` verifica el proceso del frontend sin consultar el backend.
 
+El puerto de escucha se controla con la variable `PORT` (por defecto `8080` si no se define), para adaptarse a plataformas que asignan el puerto dinámicamente, como Railway (ver [sección 2.3](#23-despliegue-en-railway-actual)).
+
 La configuración de producción también resuelve rutas directas de la SPA mediante `index.html`, evita que errores de `/api` caigan al HTML, conserva la indicación HTTPS válida del proxy frontal, mantiene `index.html` sujeto a revalidación y aplica caché inmutable a los recursos versionados bajo `/assets/`.
 
-### 2.2. Orquestación local con Docker Compose
+### 2.2. Orquestación local con Docker Compose (histórico / homelab)
+
+> ⚠️ **Ruta de despliegue heredada.** Esta orquestación (Compose + publicación en loopback + systemd + Tailscale Funnel) corresponde al despliegue original en servidor personal. El despliegue vigente es Railway ([sección 2.3](#23-despliegue-en-railway-actual)). Esta sección se conserva como referencia y ruta de reversión mientras Railway se valida en producción; no se ha eliminado todavía.
 
 `compose.yaml` construye el `Dockerfile` anterior y publica el puerto `8080` del contenedor exclusivamente en `http://127.0.0.1:10000`.
 
@@ -117,7 +121,43 @@ docker compose up -d frontend
 docker compose ps
 ```
 
-La publicación fija `127.0.0.1:10000:8080`; por tanto, Docker no expone el frontend en interfaces externas, en `0.0.0.0` ni en el comodín IPv6. En una unidad de trabajo posterior, Tailscale Funnel reenviará el puerto HTTPS público `10000` al destino local `http://127.0.0.1:10000`. La configuración de Funnel y la administración mediante systemd no forman parte de esta orquestación.
+La publicación fija `127.0.0.1:10000:8080`; por tanto, Docker no expone el frontend en interfaces externas, en `0.0.0.0` ni en el comodín IPv6. Tailscale Funnel reenvía el puerto HTTPS público `10000` al destino local `http://127.0.0.1:10000`; ver el historial de git para la configuración de Funnel y la unidad systemd asociadas a esta ruta heredada.
+
+### 2.3. Despliegue en Railway (actual)
+
+El frontend se despliega como un servicio de Railway, en el mismo proyecto que el backend (`sistema-inventario-backend`) y la base de datos, para poder comunicarse por red privada.
+
+Railway construye la misma imagen de la [sección 2.1](#21-imagen-de-producción) automáticamente: detecta el `Dockerfile` en la raíz del repositorio sin configuración adicional. No se usa `railway.json`/`railway.toml` (Config as Code está deprecado y Railway no permite adoptarlo en servicios nuevos); la configuración de build, healthcheck y restart policy se define desde el dashboard del servicio (`Settings → Deploy`).
+
+**Variables de servicio requeridas** (`Settings → Variables` del servicio frontend en Railway):
+
+```bash
+# Origen del backend por red privada de Railway (recomendado: mismo proyecto).
+# El hostname es el nombre exacto del servicio backend en Railway, no su
+# dominio público; el puerto es el puerto de escucha del contenedor backend.
+BACKEND_ORIGIN=http://sistema-inventario-backend.railway.internal:8080
+```
+
+`PORT` no se define manualmente: Railway la inyecta de forma dinámica y el contenedor ya la respeta (ver [sección 2.1](#21-imagen-de-producción)).
+
+**Redes** (`Settings → Networking` del servicio frontend):
+
+- Generar un dominio público únicamente para el frontend (`Generate Domain`), ya que es el punto de entrada visible para los usuarios.
+- El backend y la base de datos permanecen sin red pública; solo son alcanzables dentro del proyecto mediante `*.railway.internal`.
+
+**Healthcheck** (`Settings → Deploy` del servicio frontend):
+
+- Ruta: `/healthz` (ya expuesta por Nginx, ver [sección 2.1](#21-imagen-de-producción)).
+- Railway usa esta ruta y el puerto asignado dinámicamente para decidir cuándo el nuevo despliegue reemplaza al anterior sin downtime; no depende del `HEALTHCHECK` del `Dockerfile`, que solo aplica a `docker run`/Compose locales.
+
+**Verificación tras el despliegue:**
+
+```bash
+curl --fail --silent --show-error https://<dominio-del-frontend>.up.railway.app/healthz
+# -> ok
+curl --fail --silent --show-error https://<dominio-del-frontend>.up.railway.app/api/<ruta-existente>
+# -> confirma que Nginx reenvía correctamente al backend por red privada
+```
 
 ---
 
