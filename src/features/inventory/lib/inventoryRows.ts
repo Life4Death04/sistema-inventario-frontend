@@ -1,3 +1,4 @@
+import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Category, Product } from '@/types/api.types'
 
 export interface InventoryRow {
@@ -21,7 +22,7 @@ export interface InventoryRow {
   suppliers: string[]
   createdAt: string
   updatedAt: string
-  status: 'Optimo' | 'Critico' | 'Agotado'
+  status: StockStatus
 }
 
 export function toInventoryRow(product: Product, categoriesById: Map<string, Category>): InventoryRow {
@@ -46,18 +47,6 @@ export function toInventoryRow(product: Product, categoriesById: Map<string, Cat
     suppliers: [],
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
-    status: getInventoryStatus(product.stock, product.minStock),
+    status: getStockStatus(product.stock, product.minStock),
   }
-}
-
-export function getInventoryStatus(stock: number, minStock: number): InventoryRow['status'] {
-  if (stock === 0) {
-    return 'Agotado'
-  }
-
-  if (stock <= minStock) {
-    return 'Critico'
-  }
-
-  return 'Optimo'
 }

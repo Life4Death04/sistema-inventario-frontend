@@ -1,3 +1,4 @@
+import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Product } from '@/types/api.types'
 
 export interface ProductRow {
@@ -23,7 +24,7 @@ export interface ProductRow {
   suppliers: string[]
   createdAt: string
   updatedAt: string
-  status: string
+  status: StockStatus
 }
 
 export function toProductRow(product: Product, categoryName?: string): ProductRow {
@@ -50,18 +51,6 @@ export function toProductRow(product: Product, categoryName?: string): ProductRo
     suppliers: [],
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
-    status: getProductStatus(product.stock, product.minStock),
+    status: getStockStatus(product.stock, product.minStock),
   }
-}
-
-function getProductStatus(stock: number, minStock: number): ProductRow['status'] {
-  if (stock === 0) {
-    return 'Agotado'
-  }
-
-  if (stock <= minStock) {
-    return 'Critico'
-  }
-
-  return 'Optimo'
 }

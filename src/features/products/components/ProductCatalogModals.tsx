@@ -32,6 +32,7 @@ import {
   type UpdateProductInput,
 } from '@/features/products/api/products.api'
 import { useProductDetail } from '@/features/products/api/useProducts'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 import type { ProductRow } from '@/features/products/lib/productRows'
 import { GenerateReplenishmentModal } from '@/features/replenishment/components/ReplenishmentModals'
 import { useSuppliers } from '@/features/suppliers/api/useSuppliers'
@@ -286,7 +287,7 @@ function ProductDetailModal({
               {detail.category?.name ?? 'Sin categoria'}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {product.status}
+              {getStockStatusLabel(product.status)}
             </span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>
@@ -295,7 +296,7 @@ function ProductDetailModal({
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard label="Existencias" value={detail.stock.toLocaleString('es-VE')} />
           <SummaryCard label="Stock minimo" value={detail.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label="Estado" value={product.status} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -462,7 +463,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
               {detail.category?.name ?? 'Sin categoria'}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {product.status}
+              {getStockStatusLabel(product.status)}
             </span>
           </div>
           <p className="mt-2 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>
@@ -1118,12 +1119,12 @@ function InlineError({ label }: { label: string }) {
   )
 }
 
-function getStatusClasses(status: string) {
-  if (status === 'Optimo') {
+function getStatusClasses(status: StockStatus) {
+  if (status === 'healthy') {
     return 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]'
   }
 
-  if (status === 'Critico') {
+  if (status === 'low') {
     return 'bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]'
   }
 

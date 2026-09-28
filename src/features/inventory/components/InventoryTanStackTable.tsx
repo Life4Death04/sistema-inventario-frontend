@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, Minus, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 interface InventoryTanStackTableProps {
   rows: InventoryRow[]
@@ -49,7 +50,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
       accessorKey: 'stock',
       header: 'Existencias',
       cell: ({ row }) => (
-        <span className={`font-data-mono text-sm ${row.original.status === 'Agotado' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text)]'}`}>
+        <span className={`font-data-mono text-sm ${row.original.status === 'out' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text)]'}`}>
           {row.original.stock.toLocaleString('es-VE')}
         </span>
       ),
@@ -194,14 +195,14 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'Optimo') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-success-text)]">Normal</span>
+function StatusBadge({ status }: { status: StockStatus }) {
+  if (status === 'healthy') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-success-text)]">{getStockStatusLabel(status)}</span>
   }
 
-  if (status === 'Critico') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-warning-text)]">Critico</span>
+  if (status === 'low') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-warning-text)]">{getStockStatusLabel(status)}</span>
   }
 
-  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-danger-text)]">Agotado</span>
+  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-danger-text)]">{getStockStatusLabel(status)}</span>
 }

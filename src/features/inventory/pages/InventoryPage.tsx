@@ -7,11 +7,12 @@ import { InventoryModals, type InventoryModalType } from '@/features/inventory/c
 import { InventoryTanStackTable } from '@/features/inventory/components/InventoryTanStackTable'
 import { type InventoryRow, toInventoryRow } from '@/features/inventory/lib/inventoryRows'
 import { useProducts } from '@/features/products/api/useProducts'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 export function InventoryPage() {
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'Optimo' | 'Critico' | 'Agotado'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | StockStatus>('all')
   const [activeModal, setActiveModal] = useState<InventoryModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<InventoryRow | null>(null)
   const { data: productsResponse, error: productsError, isLoading: isLoadingProducts } = useProducts({ active: true, pageSize: 100 })
@@ -47,9 +48,9 @@ export function InventoryPage() {
 
   const stats = {
     total: inventory.length,
-    normal: inventory.filter((product) => product.status === 'Optimo').length,
-    critical: inventory.filter((product) => product.status === 'Critico').length,
-    out: inventory.filter((product) => product.status === 'Agotado').length,
+    normal: inventory.filter((product) => product.status === 'healthy').length,
+    critical: inventory.filter((product) => product.status === 'low').length,
+    out: inventory.filter((product) => product.status === 'out').length,
   }
 
   const openModal = (modalType: InventoryModalType, product: InventoryRow) => {
@@ -101,9 +102,9 @@ export function InventoryPage() {
             <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-1">
               {[
                 { label: 'Todos', value: 'all' },
-                { label: 'Normal', value: 'Optimo' },
-                { label: 'Crítico', value: 'Critico' },
-                { label: 'Agotado', value: 'Agotado' },
+                { label: getStockStatusLabel('healthy'), value: 'healthy' },
+                { label: getStockStatusLabel('low'), value: 'low' },
+                { label: getStockStatusLabel('out'), value: 'out' },
               ].map((item) => (
                 <button
                   key={item.value}

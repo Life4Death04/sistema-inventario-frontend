@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ProductRow } from '@/features/products/lib/productRows'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 interface ProductsTanStackTableProps {
   products: ProductRow[]
@@ -291,14 +292,14 @@ function ActionsCell({
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'Optimo') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{status}</span>
+function StatusBadge({ status }: { status: StockStatus }) {
+  if (status === 'healthy') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{getStockStatusLabel(status)}</span>
   }
 
-  if (status === 'Critico') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{status}</span>
+  if (status === 'low') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{getStockStatusLabel(status)}</span>
   }
 
-  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{status}</span>
+  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{getStockStatusLabel(status)}</span>
 }

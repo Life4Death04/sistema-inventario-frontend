@@ -9,6 +9,7 @@ import {
   useProductInventoryMovements,
 } from '@/features/inventory-movements/api/useInventoryMovements'
 import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { ApiErrorEnvelope, InventoryMovement } from '@/types/api.types'
 
@@ -61,7 +62,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-lg font-medium text-[var(--color-text)]">{product.name}</h4>
             <span className="rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">{product.category}</span>
-            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{product.status}</span>
+            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{getStockStatusLabel(product.status)}</span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{product.code}</p>
         </div>
@@ -69,7 +70,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard label="Existencias" value={product.stock.toLocaleString('es-VE')} />
           <SummaryCard label="Stock minimo" value={product.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label="Estado" value={product.status} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -279,12 +280,12 @@ function MovementIcon({ type }: { type: 'IN' | 'OUT' | 'ADJUSTMENT' }) {
   )
 }
 
-function getStatusClasses(status: string) {
-  if (status === 'Optimo') {
+function getStatusClasses(status: StockStatus) {
+  if (status === 'healthy') {
     return 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]'
   }
 
-  if (status === 'Critico') {
+  if (status === 'low') {
     return 'bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]'
   }
 

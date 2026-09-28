@@ -31,8 +31,8 @@ export function ProductsPage() {
   const products = (productsResponse?.data ?? []).map((product) =>
     toProductRow(product, categoryNames.get(product.categoryId)),
   )
-  const criticalCount = products.filter((product) => product.status === 'Critico').length
-  const outCount = products.filter((product) => product.status === 'Agotado').length
+  const criticalCount = products.filter((product) => product.status === 'low').length
+  const outCount = products.filter((product) => product.status === 'out').length
 
   const openModal = (modalType: ProductModalType, product: ProductRow | null = null) => {
     setSelectedProduct(product)
