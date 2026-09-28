@@ -1,5 +1,8 @@
 FROM node:22.19.0-alpine AS build
 
+ARG VITE_GUEST_EMAIL
+ARG VITE_GUEST_PASSWORD
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
