@@ -14,7 +14,7 @@ import type { RefreshResponse } from '@/types/api.types'
 
 const API_BASE_URL = '/api'
 const API_TIMEOUT_MS = 10_000
-const AUTH_EXCLUDED_PATHS = new Set(['/auth/login', '/auth/refresh', '/auth/logout'])
+const AUTH_EXCLUDED_PATHS = new Set(['/auth/login', '/auth/refresh', '/auth/logout', '/auth/guest/login'])
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean

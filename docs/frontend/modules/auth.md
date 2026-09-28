@@ -22,7 +22,7 @@ Este módulo es **la base de todo lo demás**: cualquier feature con acceso rest
 ```
 src/features/auth/
 ├── api/
-│   └── auth.api.ts              # loginRequest, refreshRequest, logoutRequest, meRequest
+│   └── auth.api.ts              # loginRequest, guestLoginRequest, refreshRequest, logoutRequest, meRequest
 ├── lib/
 │   ├── authSession.ts           # token en memoria + localStorage + versionado
 │   └── permissions.ts           # AppPermission, rolePermissions, helpers
@@ -38,12 +38,13 @@ src/features/auth/
 
 ## Endpoints consumidos
 
-| Método | Path            | Uso                                        |
-| ------ | --------------- | ------------------------------------------ |
-| POST   | `/auth/login`   | Login con email/password → user + JWT      |
-| POST   | `/auth/refresh` | Rotación silenciosa del access token       |
-| POST   | `/auth/logout`  | Invalida refresh token en el backend       |
-| GET    | `/auth/me`      | Bootstrap: recupera al user actual         |
+| Método | Path                | Uso                                        |
+| ------ | ------------------- | ------------------------------------------ |
+| POST   | `/auth/login`       | Login con email/password → user + JWT      |
+| POST   | `/auth/guest/login` | Login como invitado (credenciales resueltas server-side) → user + JWT |
+| POST   | `/auth/refresh`     | Rotación silenciosa del access token       |
+| POST   | `/auth/logout`      | Invalida refresh token en el backend       |
+| GET    | `/auth/me`          | Bootstrap: recupera al user actual         |
 
 Body de login (`LoginFormValues`):
 
@@ -70,6 +71,7 @@ interface AuthState {
   user: AuthUser | null
   isBootstrapping: boolean
   login: (email, password) => Promise<AuthUser>
+  guestLogin: () => Promise<AuthUser>
   logout: () => Promise<void>
   bootstrapSession: () => Promise<void>
   clearSession: () => void
@@ -227,6 +229,7 @@ Comportamiento:
 - Botón de mostrar/ocultar password con `Eye`/`EyeOff` de lucide.
 - No hay "recordarme" (el refresh token cookie ya persiste la sesión entre reloads).
 - El link "Olvidaste tu contraseña" es visual — **no hay flujo de recuperación** implementado.
+- El botón "Ingresar como invitado" llama a `POST /auth/guest/login`. Las credenciales de invitado se resuelven **en el backend** (vía variables de entorno de Railway), nunca en el build del frontend — esto permite rotarlas sin necesitar un rebuild. Si el backend responde 403/404 (modo invitado deshabilitado o no configurado), se muestra "El acceso de invitado no esta configurado".
 
 ### Validación (Zod)
 

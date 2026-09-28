@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios'
 import { create } from 'zustand'
 
-import { loginRequest, logoutRequest, meRequest } from '@/features/auth/api/auth.api'
+import { guestLoginRequest, loginRequest, logoutRequest, meRequest } from '@/features/auth/api/auth.api'
 import {
   clearSessionState,
   getAccessToken,
@@ -14,6 +14,7 @@ interface AuthState {
   user: AuthUser | null
   isBootstrapping: boolean
   login: (email: string, password: string) => Promise<AuthUser>
+  guestLogin: () => Promise<AuthUser>
   logout: () => Promise<void>
   bootstrapSession: () => Promise<void>
   clearSession: () => void
@@ -34,6 +35,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isBootstrapping: true,
   login: async (email, password) => {
     const { user, token } = await loginRequest({ email, password })
+
+    setAccessToken(token)
+    set({ user })
+
+    return user
+  },
+  guestLogin: async () => {
+    const { user, token } = await guestLoginRequest()
 
     setAccessToken(token)
     set({ user })
