@@ -44,11 +44,11 @@ export function LoginPage() {
     },
   })
 
-  const onSubmit = handleSubmit(async (values) => {
+  const performLogin = async (email: string, password: string) => {
     setIsSubmitting(true)
 
     try {
-      await login(values.email, values.password)
+      await login(email, password)
       toast.success('Sesion iniciada correctamente')
       navigate(destination, { replace: true })
     } catch (error) {
@@ -56,7 +56,21 @@ export function LoginPage() {
     } finally {
       setIsSubmitting(false)
     }
-  })
+  }
+
+  const onSubmit = handleSubmit((values) => performLogin(values.email, values.password))
+
+  const handleGuestLogin = () => {
+    const guestEmail = import.meta.env.VITE_GUEST_EMAIL
+    const guestPassword = import.meta.env.VITE_GUEST_PASSWORD
+
+    if (!guestEmail || !guestPassword) {
+      toast.error('El acceso de invitado no esta configurado')
+      return
+    }
+
+    void performLogin(guestEmail, guestPassword)
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f5f8fb] px-4 py-10">
@@ -122,6 +136,16 @@ export function LoginPage() {
               type="submit"
             >
               {isSubmitting ? 'Ingresando...' : 'Iniciar sesion'}
+            </Button>
+
+            <Button
+              className="h-10 w-full rounded-[8px] text-sm font-medium"
+              disabled={isSubmitting}
+              onClick={handleGuestLogin}
+              type="button"
+              variant="secondary"
+            >
+              Ingresar como invitado
             </Button>
           </form>
 
