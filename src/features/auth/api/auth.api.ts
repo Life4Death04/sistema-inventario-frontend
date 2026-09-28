@@ -8,6 +8,12 @@ export async function loginRequest(values: LoginFormValues): Promise<LoginRespon
   return data
 }
 
+export async function guestLoginRequest(): Promise<LoginResponse> {
+  const { data } = await apiClient.post<LoginResponse>('/auth/guest/login')
+
+  return data
+}
+
 export async function refreshRequest(): Promise<RefreshResponse> {
   const { data } = await apiClient.post<RefreshResponse>('/auth/refresh')
 

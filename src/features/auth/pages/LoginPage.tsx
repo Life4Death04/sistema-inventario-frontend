@@ -24,8 +24,25 @@ function getLoginErrorMessage(error: unknown) {
   return 'No fue posible iniciar sesion'
 }
 
+function getGuestLoginErrorMessage(error: unknown) {
+  if (isAxiosError<ApiErrorEnvelope>(error)) {
+    if (error.response?.status === 404 || error.response?.status === 403) {
+      return 'El acceso de invitado no esta configurado'
+    }
+
+    return 'No fue posible iniciar sesion como invitado'
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'No fue posible iniciar sesion como invitado'
+}
+
 export function LoginPage() {
   const login = useAuthStore((state) => state.login)
+  const guestLogin = useAuthStore((state) => state.guestLogin)
   const navigate = useNavigate()
   const location = useLocation()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,16 +77,18 @@ export function LoginPage() {
 
   const onSubmit = handleSubmit((values) => performLogin(values.email, values.password))
 
-  const handleGuestLogin = () => {
-    const guestEmail = import.meta.env.VITE_GUEST_EMAIL
-    const guestPassword = import.meta.env.VITE_GUEST_PASSWORD
+  const handleGuestLogin = async () => {
+    setIsSubmitting(true)
 
-    if (!guestEmail || !guestPassword) {
-      toast.error('El acceso de invitado no esta configurado')
-      return
+    try {
+      await guestLogin()
+      toast.success('Sesion de invitado iniciada correctamente')
+      navigate(destination, { replace: true })
+    } catch (error) {
+      toast.error(getGuestLoginErrorMessage(error))
+    } finally {
+      setIsSubmitting(false)
     }
-
-    void performLogin(guestEmail, guestPassword)
   }
 
   return (
@@ -141,7 +160,7 @@ export function LoginPage() {
             <Button
               className="h-10 w-full rounded-[8px] text-sm font-medium"
               disabled={isSubmitting}
-              onClick={handleGuestLogin}
+              onClick={() => void handleGuestLogin()}
               type="button"
               variant="secondary"
             >
