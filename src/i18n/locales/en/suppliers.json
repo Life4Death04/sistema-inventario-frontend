@@ -1,1 +1,151 @@
-{}
+{
+  "page": {
+    "metrics": {
+      "active": "Active suppliers",
+      "total": "Total suppliers",
+      "inactive": "Inactive suppliers"
+    },
+    "searchPlaceholder": "Search supplier, tax ID, or address...",
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "newSupplierButton": "New supplier",
+    "loading": "Loading suppliers...",
+    "loadError": {
+      "title": "The real suppliers could not be loaded.",
+      "description": "Check the connection with the backend and try again."
+    },
+    "refreshing": "Refreshing list..."
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "activeLower": "active",
+    "inactiveLower": "inactive"
+  },
+  "productsCount_one": "{{count}} product",
+  "productsCount_other": "{{count}} products",
+  "fallback": {
+    "noCategory": "No category"
+  },
+  "table": {
+    "columns": {
+      "supplier": "Supplier",
+      "rif": "Tax ID",
+      "whatsapp": "WhatsApp",
+      "products": "Products",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "fallback": {
+      "noRif": "No tax ID"
+    },
+    "identityRifPrefix": "Tax ID: {{rif}}",
+    "actions": {
+      "viewDetailTitle": "View detail",
+      "associateProductsTitle": "Associate products",
+      "editTitle": "Edit supplier"
+    },
+    "pagination": {
+      "summary": "Showing {{start}}-{{end}} of {{total}} suppliers"
+    }
+  },
+  "modals": {
+    "create": {
+      "title": "New supplier"
+    },
+    "edit": {
+      "title": "Edit supplier",
+      "titleSuffix": "{{name}} · {{status}} status"
+    },
+    "detail": {
+      "noRifRegistered": "No tax ID registered",
+      "metrics": {
+        "associatedProducts": "Associated products",
+        "requestsThisMonth": "Requests (month)",
+        "lastReplenishment": "Last replenishment",
+        "pending": "Pending"
+      },
+      "contact": {
+        "heading": "Contact details",
+        "mainContact": "Main contact",
+        "mainContactValue": "Pending synchronization",
+        "whatsapp": "WhatsApp",
+        "sendMessage": "Send message",
+        "email": "Email",
+        "address": "Address",
+        "registeredOn": "Registered on"
+      },
+      "deactivateButton": "Deactivate supplier",
+      "closeButton": "Close",
+      "editButton": "Edit",
+      "newRequestButton": "New request"
+    },
+    "associateProducts": {
+      "title": "Associate products",
+      "newProductToast": "Product creation is still available from Product catalog",
+      "searchPlaceholder": "Search product in the catalog...",
+      "newProductButton": "New product",
+      "catalogHeading": "Product catalog",
+      "loadingCatalog": "Loading catalog...",
+      "catalogLoadError": "Unable to load the product catalog.",
+      "catalogEmpty": "No products available to associate.",
+      "alreadyAssociated": "Already associated",
+      "stockCount": "{{count}} in stock",
+      "addSelectedButton": "Add selected",
+      "draftHeading": "Products to associate",
+      "draftCount": "{{count}} products associated",
+      "table": {
+        "product": "Product",
+        "supplierCode": "Supplier Code",
+        "price": "Price ($)",
+        "action": "Action"
+      },
+      "empty": "No products selected for this supplier yet.",
+      "pricePendingPlaceholder": "Pending",
+      "priceInputPlaceholder": "0.00",
+      "priceInfo": "The purchase price entered will be used as the main reference for future replenishment orders with this supplier. The supplier's internal code is not yet supported by the current backend.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save associations"
+    }
+  },
+  "form": {
+    "nameLabel": "Legal name / Name",
+    "namePlaceholder": "E.g. Laboratorios Farma C.A.",
+    "rifLabel": "Tax ID",
+    "rifPlaceholder": "J-12345678-9",
+    "statusLabel": "Current status",
+    "whatsappLabel": "WhatsApp",
+    "whatsappHelper": "It will be used to send replenishment requests",
+    "addressLabel": "Address",
+    "addressPlaceholder": "Full address",
+    "deactivateButton": "Deactivate supplier",
+    "cancelButton": "Cancel",
+    "saveButton": "Save changes",
+    "createButton": "Create supplier"
+  },
+  "modalFrame": {
+    "defaultAriaLabel": "Supplier modal"
+  },
+  "toasts": {
+    "created": "Supplier created successfully",
+    "updated": "Supplier updated successfully",
+    "deactivated": "Supplier deactivated successfully",
+    "associationsSaved": "Associations saved successfully"
+  },
+  "validation": {
+    "nameRequired": "The supplier name is required",
+    "selectAtLeastOneProduct": "Select at least one product to associate"
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred while managing suppliers",
+    "duplicateRif": "A supplier with that tax ID already exists",
+    "notFound": "The supplier no longer exists or could not be found",
+    "deactivateFailed": "Unable to deactivate the supplier",
+    "invalidData": "Review the supplier data before saving",
+    "operationFailed": "Unable to complete the supplier operation",
+    "associationSaveFailed": "Unable to save the product associations"
+  }
+}

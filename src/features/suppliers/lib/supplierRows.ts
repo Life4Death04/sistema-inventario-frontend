@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import type { Supplier } from '@/types/api.types'
 
 export interface SupplierRow {
@@ -13,7 +15,7 @@ export interface SupplierRow {
   updatedAt: string
 }
 
-export function toSupplierRow(supplier: Supplier): SupplierRow {
+export function toSupplierRow(supplier: Supplier, t: TFunction): SupplierRow {
   const count = supplier.productsCount
   return {
     id: supplier.id,
@@ -23,17 +25,17 @@ export function toSupplierRow(supplier: Supplier): SupplierRow {
     address: supplier.address,
     active: supplier.active,
     productsCount: count,
-    productsLabel: count === 1 ? '1 producto' : `${count} productos`,
+    productsLabel: t('suppliers:productsCount', { count }),
     createdAt: supplier.createdAt,
     updatedAt: supplier.updatedAt,
   }
 }
 
-export function mergeSupplierRows(activeSuppliers: Supplier[], inactiveSuppliers: Supplier[]) {
+export function mergeSupplierRows(activeSuppliers: Supplier[], inactiveSuppliers: Supplier[], t: TFunction) {
   const rowsById = new Map<string, SupplierRow>()
 
   for (const supplier of [...activeSuppliers, ...inactiveSuppliers]) {
-    rowsById.set(supplier.id, toSupplierRow(supplier))
+    rowsById.set(supplier.id, toSupplierRow(supplier, t))
   }
 
   return [...rowsById.values()].sort((left, right) => left.name.localeCompare(right.name, 'es'))

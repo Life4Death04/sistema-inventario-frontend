@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
 import {
   CircleAlert,
   LoaderCircle,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { useCategories } from '@/features/categories/api/useCategories'
@@ -35,6 +37,8 @@ import type { SupplierRow } from '@/features/suppliers/lib/supplierRows'
 import { queryKeys } from '@/lib/queryKeys'
 import { formatDate } from '@/lib/utils'
 import type { ApiErrorEnvelope, Product, ProductSupplierEntry, UserRole } from '@/types/api.types'
+
+type SuppliersTFunction = TFunction<['suppliers', 'common']>
 
 export type SupplierModalType = 'create' | 'detail' | 'edit' | 'associate-products'
 
@@ -70,6 +74,7 @@ const CATEGORY_QUERY_PARAMS = { limit: 100 }
 const PRODUCT_PAGE_SIZE = 100
 
 export function SupplierModals({ modalType, supplier, onClose, onOpenModal, role }: SupplierModalsProps) {
+  const { t } = useTranslation(['suppliers', 'common'])
   const canManage = canManageSuppliers(role)
   const queryClient = useQueryClient()
 
@@ -85,11 +90,11 @@ export function SupplierModals({ modalType, supplier, onClose, onOpenModal, role
     mutationFn: (input: CreateSupplierInput) => createSupplier(input),
     onSuccess: async () => {
       await invalidateSupplierViews()
-      toast.success('Proveedor creado correctamente')
+      toast.success(t('suppliers:toasts.created'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getSupplierErrorMessage(error, 'create'))
+      toast.error(getSupplierErrorMessage(error, 'create', t))
     },
   })
 
@@ -98,11 +103,11 @@ export function SupplierModals({ modalType, supplier, onClose, onOpenModal, role
       updateSupplier(supplierId, input),
     onSuccess: async () => {
       await invalidateSupplierViews()
-      toast.success('Proveedor actualizado correctamente')
+      toast.success(t('suppliers:toasts.updated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getSupplierErrorMessage(error, 'update'))
+      toast.error(getSupplierErrorMessage(error, 'update', t))
     },
   })
 
@@ -110,11 +115,11 @@ export function SupplierModals({ modalType, supplier, onClose, onOpenModal, role
     mutationFn: (supplierId: string) => deleteSupplier(supplierId),
     onSuccess: async () => {
       await invalidateSupplierViews()
-      toast.success('Proveedor desactivado correctamente')
+      toast.success(t('suppliers:toasts.deactivated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getSupplierErrorMessage(error, 'deactivate'))
+      toast.error(getSupplierErrorMessage(error, 'deactivate', t))
     },
   })
 
@@ -179,8 +184,10 @@ function CreateSupplierModal({
   onClose: () => void
   onSubmit: (values: SupplierFormValues) => void
 }) {
+  const { t } = useTranslation(['suppliers', 'common'])
+
   return (
-    <ModalFrame onClose={onClose} title="Nuevo proveedor">
+    <ModalFrame onClose={onClose} title={t('suppliers:modals.create.title')}>
       <div className="max-h-[614px] flex-1 space-y-6 overflow-y-auto px-6 py-6">
         <SupplierForm isSubmitting={isSubmitting} onClose={onClose} onSubmit={onSubmit} />
       </div>
@@ -203,8 +210,17 @@ function EditSupplierModal({
   onSubmit: (values: SupplierFormValues) => void
   supplier: SupplierRow
 }) {
+  const { t } = useTranslation(['suppliers', 'common'])
+
   return (
-    <ModalFrame onClose={onClose} title="Editar proveedor" titleSuffix={`${supplier.name} · estado ${supplier.active ? 'activo' : 'inactivo'}`}>
+    <ModalFrame
+      onClose={onClose}
+      title={t('suppliers:modals.edit.title')}
+      titleSuffix={t('suppliers:modals.edit.titleSuffix', {
+        name: supplier.name,
+        status: supplier.active ? t('suppliers:status.activeLower') : t('suppliers:status.inactiveLower'),
+      })}
+    >
       <div className="max-h-[614px] flex-1 space-y-6 overflow-y-auto px-6 py-6">
         <SupplierForm
           isSubmitting={isSubmitting || isDeactivating}
@@ -233,6 +249,7 @@ function SupplierDetailModal({
   onEdit: () => void
   supplier: SupplierRow
 }) {
+  const { t } = useTranslation(['suppliers', 'common'])
   const [showReplenishment, setShowReplenishment] = useState(false)
 
   return (
@@ -248,10 +265,10 @@ function SupplierDetailModal({
               <div className="mb-1 flex items-center gap-3">
                 <h2 className="text-[18px] font-medium text-[var(--color-text)]">{supplier.name}</h2>
                 <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${supplier.active ? 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]' : 'bg-[var(--color-surface-strong)] text-[var(--color-text-secondary)]'}`}>
-                  {supplier.active ? 'Activo' : 'Inactivo'}
+                  {supplier.active ? t('suppliers:status.active') : t('suppliers:status.inactive')}
                 </span>
               </div>
-              <p className="font-data-mono text-sm text-[var(--color-text-muted)]">{supplier.rif ?? 'Sin RIF registrado'}</p>
+              <p className="font-data-mono text-sm text-[var(--color-text-muted)]">{supplier.rif ?? t('suppliers:modals.detail.noRifRegistered')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
@@ -268,17 +285,17 @@ function SupplierDetailModal({
 
       <div className="max-h-[70vh] space-y-6 overflow-y-auto p-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <MetricPanel label="Productos asociados" value={String(supplier.productsCount)} />
-          <MetricPanel label="Solicitudes (mes)" value="Pendiente" />
-          <MetricPanel label="Ultima reposicion" value="Pendiente" />
+          <MetricPanel label={t('suppliers:modals.detail.metrics.associatedProducts')} value={String(supplier.productsCount)} />
+          <MetricPanel label={t('suppliers:modals.detail.metrics.requestsThisMonth')} value={t('suppliers:modals.detail.metrics.pending')} />
+          <MetricPanel label={t('suppliers:modals.detail.metrics.lastReplenishment')} value={t('suppliers:modals.detail.metrics.pending')} />
         </div>
 
         <div>
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text)]">Datos de contacto</h3>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text)]">{t('suppliers:modals.detail.contact.heading')}</h3>
           <div className="grid gap-x-6 gap-y-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4 md:grid-cols-2">
-            <ContactField label="Contacto principal" value="Pendiente de sincronizar" />
+            <ContactField label={t('suppliers:modals.detail.contact.mainContact')} value={t('suppliers:modals.detail.contact.mainContactValue')} />
             <div className="space-y-1">
-              <span className="text-sm text-[var(--color-text-muted)]">WhatsApp</span>
+              <span className="text-sm text-[var(--color-text-muted)]">{t('suppliers:modals.detail.contact.whatsapp')}</span>
               {supplier.whatsapp ? (
                 <>
                   <div className="flex items-center gap-2">
@@ -286,16 +303,16 @@ function SupplierDetailModal({
                     <span className="font-data-mono text-sm text-[var(--color-text)]">{formatSupplierPhone(supplier.whatsapp)}</span>
                   </div>
                   <a className="inline-block text-sm text-[var(--color-success-text)] hover:underline" href={toWhatsappHref(supplier.whatsapp)} rel="noreferrer" target="_blank">
-                    Enviar mensaje
+                    {t('suppliers:modals.detail.contact.sendMessage')}
                   </a>
                 </>
               ) : (
-                <span className="text-sm text-[var(--color-text-secondary)]">No disponible</span>
+                <span className="text-sm text-[var(--color-text-secondary)]">{t('common:state.notAvailable')}</span>
               )}
             </div>
-            <ContactField label="Correo electronico" value="No disponible" />
-            <ContactField label="Direccion" value={supplier.address ?? 'No disponible'} fullWidth />
-            <ContactField label="Registrado el" mono value={formatDate(supplier.createdAt)} fullWidth secondaryDivider />
+            <ContactField label={t('suppliers:modals.detail.contact.email')} value={t('common:state.notAvailable')} />
+            <ContactField label={t('suppliers:modals.detail.contact.address')} value={supplier.address ?? t('common:state.notAvailable')} fullWidth />
+            <ContactField label={t('suppliers:modals.detail.contact.registeredOn')} mono value={formatDate(supplier.createdAt)} fullWidth secondaryDivider />
           </div>
         </div>
 
@@ -310,22 +327,22 @@ function SupplierDetailModal({
             type="button"
           >
             {isDeactivating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            Desactivar proveedor
+            {t('suppliers:modals.detail.deactivateButton')}
           </button>
         ) : <div />}
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <Button onClick={onClose} type="button" variant="ghost">
-            Cerrar
+            {t('suppliers:modals.detail.closeButton')}
           </Button>
           {canManage ? (
             <Button onClick={onEdit} type="button" variant="secondary">
-              Editar
+              {t('suppliers:modals.detail.editButton')}
             </Button>
           ) : null}
           {canManage ? (
             <Button onClick={() => setShowReplenishment(true)} type="button">
-              Nueva solicitud
+              {t('suppliers:modals.detail.newRequestButton')}
             </Button>
           ) : null}
         </div>
@@ -342,6 +359,7 @@ function SupplierDetailModal({
 }
 
 function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; supplier: SupplierRow }) {
+  const { t } = useTranslation(['suppliers', 'common'])
   const [catalogSearch, setCatalogSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [draftRows, setDraftRows] = useState<SupplierProductDraft[]>([])
@@ -363,7 +381,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
           const suppliers = await listProductSuppliers(product.id)
           const currentLink = suppliers.find((entry) => entry.supplier.id === supplier.id) ?? null
 
-          return toSupplierDraftRow(product, categoryNames.get(product.categoryId), currentLink, false)
+          return toSupplierDraftRow(product, categoryNames.get(product.categoryId), currentLink, false, t)
         }),
       )
     },
@@ -425,11 +443,11 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
         queryClient.invalidateQueries({ queryKey: ['suppliers', supplier.id, 'associate-products'] }),
       ])
 
-      toast.success('Asociaciones guardadas correctamente')
+      toast.success(t('suppliers:toasts.associationsSaved'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getProductAssociationErrorMessage(error))
+      toast.error(getProductAssociationErrorMessage(error, t))
     },
   })
 
@@ -440,7 +458,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
     return {
       ...product,
       alreadyAssociated,
-      categoryName: categoryNames.get(product.categoryId) ?? 'Sin categoria',
+      categoryName: categoryNames.get(product.categoryId) ?? t('suppliers:fallback.noCategory'),
     }
   })
 
@@ -448,7 +466,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
     const selectedProducts = (catalogProductsQuery.data ?? []).filter((product) => selectedIds.includes(product.id))
 
     if (selectedProducts.length === 0) {
-      toast.error('Seleccione al menos un producto para asociar')
+      toast.error(t('suppliers:validation.selectAtLeastOneProduct'))
       return
     }
 
@@ -456,7 +474,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
       const currentIds = new Set(current.map((row) => row.id))
       const incomingRows = selectedProducts
         .filter((product) => !currentIds.has(product.id))
-        .map((product) => toSupplierDraftRow(product, categoryNames.get(product.categoryId), null, true))
+        .map((product) => toSupplierDraftRow(product, categoryNames.get(product.categoryId), null, true, t))
 
       return [...current, ...incomingRows]
     })
@@ -467,7 +485,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
     <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} paddingless>
       <div className="flex items-start justify-between border-b border-[var(--color-border)] px-6 py-6">
         <div>
-          <h2 className="text-[20px] font-semibold text-[var(--color-text)]">Asociar productos</h2>
+          <h2 className="text-[20px] font-semibold text-[var(--color-text)]">{t('suppliers:modals.associateProducts.title')}</h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{supplier.name}</p>
         </div>
         <button className="text-[var(--color-text-muted)] transition hover:text-[var(--color-text)]" onClick={onClose} type="button">
@@ -483,30 +501,30 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
               <input
                 className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-10 pr-4 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                 onChange={(event) => setCatalogSearch(event.target.value)}
-                placeholder="Buscar producto en el catálogo..."
+                placeholder={t('suppliers:modals.associateProducts.searchPlaceholder')}
                 type="text"
                 value={catalogSearch}
               />
             </label>
             <button
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition hover:bg-[var(--color-surface-strong)]"
-              onClick={() => toast('La creación de productos sigue disponible desde Catalogo de productos')}
+              onClick={() => toast(t('suppliers:modals.associateProducts.newProductToast'))}
               type="button"
             >
               <Plus className="h-4 w-4" />
-              Nuevo producto
+              {t('suppliers:modals.associateProducts.newProductButton')}
             </button>
           </div>
 
           <div>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Catálogo de productos</h3>
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.catalogHeading')}</h3>
             <div className="max-h-[160px] overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-page-bg)]/30">
               {catalogProductsQuery.isLoading ? (
-                <LoadingState label="Cargando catálogo..." compact />
+                <LoadingState label={t('suppliers:modals.associateProducts.loadingCatalog')} compact />
               ) : catalogProductsQuery.isError ? (
-                <InlineError label="No fue posible cargar el catálogo de productos." compact />
+                <InlineError label={t('suppliers:modals.associateProducts.catalogLoadError')} compact />
               ) : catalogRows.length === 0 ? (
-                <EmptyState label="No hay productos disponibles para asociar." compact />
+                <EmptyState label={t('suppliers:modals.associateProducts.catalogEmpty')} compact />
               ) : (
                 catalogRows.map((product) => {
                   const isChecked = selectedIds.includes(product.id)
@@ -534,10 +552,10 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
                         <div className="flex items-center gap-4">
                           <span className="font-data-mono text-xs text-[var(--color-text-secondary)]">SKU: {product.code}</span>
                           {product.alreadyAssociated ? (
-                            <span className="text-sm italic text-[var(--color-text-secondary)]">Ya asociado</span>
+                            <span className="text-sm italic text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.alreadyAssociated')}</span>
                           ) : (
                             <span className={`rounded px-2 py-0.5 font-data-mono text-xs ${product.stock <= product.minStock ? 'bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]' : 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]'}`}>
-                              {product.stock} exist.
+                              {t('suppliers:modals.associateProducts.stockCount', { count: product.stock })}
                             </span>
                           )}
                         </div>
@@ -551,7 +569,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
 
           <div className="flex justify-end">
             <Button onClick={handleAddSelected} type="button" variant="secondary">
-              Añadir seleccionados
+              {t('suppliers:modals.associateProducts.addSelectedButton')}
             </Button>
           </div>
         </div>
@@ -560,25 +578,25 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Productos a asociar</h3>
-            <span className="font-data-mono text-xs text-[var(--color-primary)]">{draftRows.length} productos asociados</span>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.draftHeading')}</h3>
+            <span className="font-data-mono text-xs text-[var(--color-primary)]">{t('suppliers:modals.associateProducts.draftCount', { count: draftRows.length })}</span>
           </div>
 
           <div className="overflow-hidden rounded border border-[var(--color-border)]">
             <table className="w-full border-collapse text-left">
               <thead className="border-b border-[var(--color-border)] bg-[var(--color-page-bg)]">
                 <tr>
-                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">Producto</th>
-                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">Cód. Proveedor</th>
-                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">Precio ($)</th>
-                  <th className="p-3 text-right text-xs font-semibold text-[var(--color-text)]">Acción</th>
+                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.table.product')}</th>
+                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.table.supplierCode')}</th>
+                  <th className="p-3 text-xs font-semibold text-[var(--color-text-secondary)]">{t('suppliers:modals.associateProducts.table.price')}</th>
+                  <th className="p-3 text-right text-xs font-semibold text-[var(--color-text)]">{t('suppliers:modals.associateProducts.table.action')}</th>
                 </tr>
               </thead>
               <tbody>
                 {draftRows.length === 0 ? (
                   <tr>
                     <td className="p-4 text-sm text-[var(--color-text-secondary)]" colSpan={4}>
-                      Aún no hay productos seleccionados para este proveedor.
+                      {t('suppliers:modals.associateProducts.empty')}
                     </td>
                   </tr>
                 ) : (
@@ -590,7 +608,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
                       <td className="p-3">
                         <input
                           className={`w-full border-none bg-transparent p-0 font-data-mono text-sm outline-none ${row.isNew ? 'border-b border-dashed border-[var(--color-primary)]/30 pb-1 text-[var(--color-primary)] placeholder:text-[var(--color-primary)]/50' : 'text-[var(--color-text-secondary)]'}`}
-                          placeholder="Pendiente"
+                          placeholder={t('suppliers:modals.associateProducts.pricePendingPlaceholder')}
                           readOnly
                           value=""
                         />
@@ -607,7 +625,7 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
                               ),
                             )
                           }
-                          placeholder="0.00"
+                          placeholder={t('suppliers:modals.associateProducts.priceInputPlaceholder')}
                           type="text"
                           value={row.referencePrice}
                         />
@@ -630,18 +648,18 @@ function AssociateProductsModal({ onClose, supplier }: { onClose: () => void; su
 
           <p className="flex items-start gap-2 text-sm text-[var(--color-text-secondary)]">
             <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            El precio de compra introducido se utilizará como referencia principal para futuras órdenes de reposición con este proveedor. El código interno del proveedor aún no está soportado por el backend actual.
+            {t('suppliers:modals.associateProducts.priceInfo')}
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-page-bg)]/50 px-6 py-6">
         <Button onClick={onClose} type="button" variant="ghost">
-          Cancelar
+          {t('suppliers:modals.associateProducts.cancelButton')}
         </Button>
         <Button disabled={saveAssociationsMutation.isPending || associatedProductsQuery.isLoading} onClick={() => saveAssociationsMutation.mutate()} type="button">
           {saveAssociationsMutation.isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Guardar asociaciones
+          {t('suppliers:modals.associateProducts.saveButton')}
         </Button>
       </div>
     </ModalFrame>
@@ -661,6 +679,7 @@ function SupplierForm({
   onSubmit: (values: SupplierFormValues) => void
   supplier?: SupplierRow
 }) {
+  const { t } = useTranslation(['suppliers', 'common'])
   const [name, setName] = useState(supplier?.name ?? '')
   const [rif, setRif] = useState(supplier?.rif ?? '')
   const [whatsapp, setWhatsapp] = useState(stripCountryCode(supplier?.whatsapp))
@@ -668,7 +687,7 @@ function SupplierForm({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error('El nombre del proveedor es obligatorio')
+      toast.error(t('suppliers:validation.nameRequired'))
       return
     }
 
@@ -690,29 +709,29 @@ function SupplierForm({
         }}
       >
         <Field>
-          <FieldLabel>Razon social / Nombre</FieldLabel>
-          <TextInput onChange={setName} placeholder="Ej. Laboratorios Farma C.A." value={name} />
+          <FieldLabel>{t('suppliers:form.nameLabel')}</FieldLabel>
+          <TextInput onChange={setName} placeholder={t('suppliers:form.namePlaceholder')} value={name} />
         </Field>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field>
-            <FieldLabel>RIF</FieldLabel>
-            <TextInput mono onChange={setRif} placeholder="J-12345678-9" value={rif} />
+            <FieldLabel>{t('suppliers:form.rifLabel')}</FieldLabel>
+            <TextInput mono onChange={setRif} placeholder={t('suppliers:form.rifPlaceholder')} value={rif} />
           </Field>
           {supplier ? <ReadonlyStatusField active={supplier.active} /> : null}
         </div>
 
         <Field>
-          <FieldLabel icon={<MessageCircle className="h-4 w-4 text-[var(--color-success-text)]" />}>WhatsApp</FieldLabel>
-          <PhoneInput helper="Se usara para enviar las solicitudes de reposicion" onChange={setWhatsapp} value={whatsapp} />
+          <FieldLabel icon={<MessageCircle className="h-4 w-4 text-[var(--color-success-text)]" />}>{t('suppliers:form.whatsappLabel')}</FieldLabel>
+          <PhoneInput helper={t('suppliers:form.whatsappHelper')} onChange={setWhatsapp} value={whatsapp} />
         </Field>
 
         <Field>
-          <FieldLabel>Direccion</FieldLabel>
+          <FieldLabel>{t('suppliers:form.addressLabel')}</FieldLabel>
           <textarea
             className="w-full resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
             onChange={(event) => setAddress(event.target.value)}
-            placeholder="Direccion completa"
+            placeholder={t('suppliers:form.addressPlaceholder')}
             rows={2}
             value={address}
           />
@@ -728,13 +747,13 @@ function SupplierForm({
               onClick={onDeactivate}
               type="button"
             >
-              Desactivar proveedor
+              {t('suppliers:form.deactivateButton')}
             </button>
           ) : null}
         </div>
         <div className="flex gap-3">
           <Button disabled={isSubmitting} onClick={onClose} type="button" variant="ghost">
-            Cancelar
+            {t('suppliers:form.cancelButton')}
           </Button>
           <button
             className="inline-flex min-h-10 items-center rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
@@ -743,7 +762,7 @@ function SupplierForm({
             type="button"
           >
             {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {supplier ? 'Guardar cambios' : 'Crear proveedor'}
+            {supplier ? t('suppliers:form.saveButton') : t('suppliers:form.createButton')}
           </button>
         </div>
       </div>
@@ -766,10 +785,12 @@ function ModalFrame({
   title?: string
   titleSuffix?: string
 }) {
+  const { t } = useTranslation(['suppliers', 'common'])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button className="absolute inset-0 bg-[#23323d]/60 backdrop-blur-sm" onClick={onClose} type="button" />
-      <div aria-label={title ?? 'Modal de proveedor'} aria-modal="true" className={`relative z-10 flex w-full ${maxWidth} flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg`} role="dialog">
+      <div aria-label={title ?? t('suppliers:modalFrame.defaultAriaLabel')} aria-modal="true" className={`relative z-10 flex w-full ${maxWidth} flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg`} role="dialog">
         {paddingless ? null : (
           <div className="flex items-start justify-between border-b border-[var(--color-border)] px-6 py-5">
             <div>
@@ -853,15 +874,17 @@ function PhoneInput({
 }
 
 function ReadonlyStatusField({ active }: { active: boolean }) {
+  const { t } = useTranslation(['suppliers', 'common'])
+
   return (
     <Field>
-      <FieldLabel>Estado actual</FieldLabel>
+      <FieldLabel>{t('suppliers:form.statusLabel')}</FieldLabel>
       <span
         className={`inline-flex rounded-full px-3 py-2 text-sm font-semibold ${
           active ? 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]' : 'bg-[var(--color-surface-strong)] text-[var(--color-text-secondary)]'
         }`}
       >
-        {active ? 'Activo' : 'Inactivo'}
+        {active ? t('suppliers:status.active') : t('suppliers:status.inactive')}
       </span>
     </Field>
   )
@@ -980,6 +1003,7 @@ function toSupplierDraftRow(
   categoryName: string | undefined,
   currentLink: ProductSupplierEntry | null,
   isNew: boolean,
+  t: SuppliersTFunction,
 ): SupplierProductDraft {
   const referencePrice = currentLink?.referencePrice ?? product.price ?? ''
 
@@ -987,7 +1011,7 @@ function toSupplierDraftRow(
     id: product.id,
     code: product.code,
     name: product.name,
-    categoryName: categoryName ?? 'Sin categoria',
+    categoryName: categoryName ?? t('suppliers:fallback.noCategory'),
     referencePrice,
     stock: product.stock,
     minStock: product.minStock,
@@ -1005,9 +1029,13 @@ function buildProductSupplierPayload(supplierId: string, referencePrice: string)
   }
 }
 
-function getSupplierErrorMessage(error: unknown, action: 'create' | 'update' | 'deactivate') {
+function getSupplierErrorMessage(
+  error: unknown,
+  action: 'create' | 'update' | 'deactivate',
+  t: SuppliersTFunction,
+) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'Ocurrio un error inesperado al gestionar proveedores'
+    return t('suppliers:errors.unexpected')
   }
 
   const apiError = error.response?.data
@@ -1023,11 +1051,11 @@ function getSupplierErrorMessage(error: unknown, action: 'create' | 'update' | '
       normalizedMessage.includes('ya existe') ||
       normalizedMessage.includes('duplicate'))
   ) {
-    return 'Ya existe un proveedor con ese RIF'
+    return t('suppliers:errors.duplicateRif')
   }
 
   if (status === 404 || code.includes('NOT_FOUND')) {
-    return 'El proveedor ya no existe o no pudo encontrarse'
+    return t('suppliers:errors.notFound')
   }
 
   if (message) {
@@ -1036,17 +1064,17 @@ function getSupplierErrorMessage(error: unknown, action: 'create' | 'update' | '
 
   if (status === 400) {
     return action === 'deactivate'
-      ? 'No fue posible desactivar el proveedor'
-      : 'Revise los datos del proveedor antes de guardar'
+      ? t('suppliers:errors.deactivateFailed')
+      : t('suppliers:errors.invalidData')
   }
 
-  return 'No fue posible completar la operacion sobre proveedores'
+  return t('suppliers:errors.operationFailed')
 }
 
-function getProductAssociationErrorMessage(error: unknown) {
+function getProductAssociationErrorMessage(error: unknown, t: SuppliersTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'No fue posible guardar las asociaciones de productos'
+    return t('suppliers:errors.associationSaveFailed')
   }
 
-  return error.response?.data.message ?? 'No fue posible guardar las asociaciones de productos'
+  return error.response?.data.message ?? t('suppliers:errors.associationSaveFailed')
 }

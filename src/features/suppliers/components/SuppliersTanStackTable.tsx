@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, Eye, Link2, MessageCircle, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { SupplierRow } from '@/features/suppliers/lib/supplierRows'
 
@@ -29,6 +30,7 @@ export function SuppliersTanStackTable({
   rows,
   globalFilter,
 }: SuppliersTanStackTableProps) {
+  const { t } = useTranslation(['suppliers', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -41,32 +43,32 @@ export function SuppliersTanStackTable({
   const columns: ColumnDef<SupplierRow>[] = [
     {
       accessorKey: 'name',
-      header: 'Proveedor',
+      header: t('suppliers:table.columns.supplier'),
       cell: ({ row }) => <SupplierIdentityCell supplier={row.original} />,
     },
     {
       accessorKey: 'rif',
-      header: 'RIF',
-      cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-secondary)]">{row.original.rif ?? 'Sin RIF'}</span>,
+      header: t('suppliers:table.columns.rif'),
+      cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-secondary)]">{row.original.rif ?? t('suppliers:table.fallback.noRif')}</span>,
     },
     {
       accessorKey: 'whatsapp',
-      header: 'WhatsApp',
+      header: t('suppliers:table.columns.whatsapp'),
       cell: ({ row }) => <WhatsappCell whatsapp={row.original.whatsapp} />,
     },
     {
       accessorKey: 'productsLabel',
-      header: 'Productos',
+      header: t('suppliers:table.columns.products'),
       cell: ({ row }) => <ProductsCell label={row.original.productsLabel} />,
     },
     {
       accessorKey: 'active',
-      header: 'Estado',
+      header: t('suppliers:table.columns.status'),
       cell: ({ row }) => <StatusBadge active={row.original.active} />,
     },
     {
       id: 'actions',
-      header: 'Acciones',
+      header: t('suppliers:table.columns.actions'),
       cell: ({ row }: { row: { original: SupplierRow } }) => (
         <ActionsCell
           canManage={canManage}
@@ -144,7 +146,7 @@ export function SuppliersTanStackTable({
 
       <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
         <span className="text-sm text-[var(--color-text-secondary)]">
-          Mostrando {pageStart}-{pageEnd} de {totalRows} proveedores
+          {t('suppliers:table.pagination.summary', { start: pageStart, end: pageEnd, total: totalRows })}
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -184,17 +186,23 @@ export function SuppliersTanStackTable({
 }
 
 function SupplierIdentityCell({ supplier }: { supplier: SupplierRow }) {
+  const { t } = useTranslation(['suppliers', 'common'])
+
   return (
     <div className="flex flex-col">
       <span className="text-sm font-medium text-[var(--color-text)]">{supplier.name}</span>
-      <span className="mt-0.5 font-data-mono text-xs text-[var(--color-text-muted)]">RIF: {supplier.rif ?? 'Sin RIF'}</span>
+      <span className="mt-0.5 font-data-mono text-xs text-[var(--color-text-muted)]">
+        {t('suppliers:table.identityRifPrefix', { rif: supplier.rif ?? t('suppliers:table.fallback.noRif') })}
+      </span>
     </div>
   )
 }
 
 function WhatsappCell({ whatsapp }: { whatsapp: string | null }) {
+  const { t } = useTranslation('common')
+
   if (!whatsapp) {
-    return <span className="text-sm italic text-[var(--color-text-muted)]">No disponible</span>
+    return <span className="text-sm italic text-[var(--color-text-muted)]">{t('common:state.notAvailable')}</span>
   }
 
   return (
@@ -214,13 +222,15 @@ function ProductsCell({ label }: { label: string }) {
 }
 
 function StatusBadge({ active }: { active: boolean }) {
+  const { t } = useTranslation('suppliers')
+
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${
         active ? 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]' : 'bg-[var(--color-surface-strong)] text-[var(--color-text-secondary)]'
       }`}
     >
-      {active ? 'Activo' : 'Inactivo'}
+      {active ? t('suppliers:status.active') : t('suppliers:status.inactive')}
     </span>
   )
 }
@@ -236,12 +246,14 @@ function ActionsCell({
   onEdit: () => void
   onView: () => void
 }) {
+  const { t } = useTranslation('suppliers')
+
   return (
     <div className="inline-flex items-center justify-end gap-1">
       <button
         className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-tint)]/18 hover:text-[var(--color-primary)]"
         onClick={(event) => { event.stopPropagation(); onView() }}
-        title="Ver detalle"
+        title={t('suppliers:table.actions.viewDetailTitle')}
         type="button"
       >
         <Eye className="h-5 w-5" />
@@ -250,7 +262,7 @@ function ActionsCell({
         <button
           className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-tint)]/18 hover:text-[var(--color-primary)]"
           onClick={(event) => { event.stopPropagation(); onAssociateProducts() }}
-          title="Asociar productos"
+          title={t('suppliers:table.actions.associateProductsTitle')}
           type="button"
         >
           <Link2 className="h-5 w-5" />
@@ -260,7 +272,7 @@ function ActionsCell({
         <button
           className="rounded p-1.5 text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-primary)]"
           onClick={(event) => { event.stopPropagation(); onEdit() }}
-          title="Editar proveedor"
+          title={t('suppliers:table.actions.editTitle')}
           type="button"
         >
           <SquarePen className="h-5 w-5" />
