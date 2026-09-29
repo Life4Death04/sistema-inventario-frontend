@@ -1,14 +1,9 @@
 import { Menu } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { getRouteMeta } from '@/components/layout/navigation'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-
-const roleLabels = {
-  ADMIN: 'Administrador',
-  MANAGER: 'Encargado de inventario',
-  OPERATOR: 'Personal operativo',
-}
 
 interface HeaderProps {
   isChromeVisible: boolean
@@ -16,9 +11,12 @@ interface HeaderProps {
 }
 
 export function Header({ isChromeVisible, onMenuToggle }: HeaderProps) {
+  const { t } = useTranslation(['layout', 'profile'])
   const user = useAuthStore((state) => state.user)
   const location = useLocation()
-  const routeMeta = getRouteMeta(location.pathname)
+  const routeKey = getRouteMeta(location.pathname)
+  const routeLabel = routeKey ? t(`layout:nav.${routeKey}.label`) : t('layout:routeMeta.fallback.label')
+  const routeDescription = routeKey ? t(`layout:nav.${routeKey}.description`) : t('layout:routeMeta.fallback.description')
 
   return (
     <header
@@ -38,15 +36,15 @@ export function Header({ isChromeVisible, onMenuToggle }: HeaderProps) {
           </button>
 
           <div className="min-w-0">
-            <p className="truncate text-[22px] font-semibold leading-7 text-[var(--color-primary)] sm:text-[24px] sm:leading-8">{routeMeta.label}</p>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{routeMeta.description}</p>
+            <p className="truncate text-[22px] font-semibold leading-7 text-[var(--color-primary)] sm:text-[24px] sm:leading-8">{routeLabel}</p>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{routeDescription}</p>
           </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold text-[var(--color-text)]">{user?.fullName}</p>
-            <p className="text-xs text-[var(--color-text-secondary)]">{user ? roleLabels[user.role] : ''}</p>
+            <p className="text-xs text-[var(--color-text-secondary)]">{user ? t(`profile:roles.${user.role}`) : ''}</p>
           </div>
 
           <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-tint)] text-sm font-semibold text-[var(--color-primary)]">

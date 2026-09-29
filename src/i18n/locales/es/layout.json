@@ -1,1 +1,20 @@
-{}
+{
+  "sidebar": {
+    "tagline": "Gestion farmaceutica",
+    "logout": "Cerrar sesion",
+    "loggingOut": "Cerrando sesion..."
+  },
+  "nav": {
+    "inventory": { "label": "Existencias", "description": "Monitoree stock, minimos y diferencias operativas." },
+    "movements": { "label": "Movimientos", "description": "Registre entradas, salidas y ajustes del inventario." },
+    "products": { "label": "Catalogo", "description": "Gestione y visualice el inventario general." },
+    "alerts": { "label": "Alertas", "description": "Priorice incidencias y productos de riesgo." },
+    "replenishment": { "label": "Reposicion", "description": "Haga seguimiento a solicitudes y compras pendientes." },
+    "suppliers": { "label": "Proveedores", "description": "Centralice aliados comerciales y referencias de suministro." },
+    "users": { "label": "Usuarios", "description": "Administre roles, accesos y responsables del sistema." },
+    "profile": { "label": "Mi Perfil", "description": "Consulte sus datos y rol dentro del sistema." }
+  },
+  "routeMeta": {
+    "fallback": { "label": "Sistema", "description": "Gestion operativa del inventario farmaceutico." }
+  }
+}

@@ -1,1 +1,20 @@
-{}
+{
+  "sidebar": {
+    "tagline": "Pharmaceutical management",
+    "logout": "Log out",
+    "loggingOut": "Logging out..."
+  },
+  "nav": {
+    "inventory": { "label": "Stock", "description": "Monitor stock levels, minimums, and operational discrepancies." },
+    "movements": { "label": "Movements", "description": "Record inventory entries, exits, and adjustments." },
+    "products": { "label": "Catalog", "description": "Manage and view the general inventory." },
+    "alerts": { "label": "Alerts", "description": "Prioritize incidents and at-risk products." },
+    "replenishment": { "label": "Replenishment", "description": "Track pending requests and purchases." },
+    "suppliers": { "label": "Suppliers", "description": "Centralize business partners and supply references." },
+    "users": { "label": "Users", "description": "Manage roles, access, and system administrators." },
+    "profile": { "label": "My Profile", "description": "View your data and role within the system." }
+  },
+  "routeMeta": {
+    "fallback": { "label": "System", "description": "Operational management of pharmaceutical inventory." }
+  }
+}
