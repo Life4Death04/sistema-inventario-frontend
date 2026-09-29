@@ -1,0 +1,58 @@
+{
+  "modal": {
+    "title": "Gestion de categorias",
+    "subtitle": "Administre nombres y descripciones usados en el catalogo de productos."
+  },
+  "list": {
+    "heading": "Categorias registradas",
+    "availableCount": "{{count}} disponibles para futuros productos",
+    "newButton": "Nueva",
+    "loading": "Cargando categorias...",
+    "loadError": "No fue posible cargar las categorias reales. Intente nuevamente para continuar gestionandolas.",
+    "retry": "Reintentar",
+    "empty": {
+      "title": "Aun no hay categorias",
+      "description": "Cree la primera para dejar listo el selector de productos."
+    },
+    "editingBadge": "Editando",
+    "noDescription": "Sin descripcion"
+  },
+  "form": {
+    "createTitle": "Crear categoria",
+    "editTitle": "Editar categoria",
+    "createDescription": "Use nombres claros para que el catalogo quede legible.",
+    "editDescription": "Los cambios impactan etiquetas y selectores relacionados con productos.",
+    "newCategoryButton": "Nueva categoria",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Ej. Analgesicos",
+    "descriptionLabel": "Descripcion",
+    "descriptionPlaceholder": "Contexto breve para el equipo de inventario",
+    "infoBox": {
+      "edit": "Editando <bold>{{categoryName}}</bold>. Si esta categoria ya esta asociada a productos, eliminarla puede devolver un conflicto del backend.",
+      "create": "Las categorias nuevas quedaran disponibles para los selectores reales de productos. Si la consulta falla en esos modales, el frontend conserva su fallback seguro."
+    },
+    "updatingData": "Actualizando datos...",
+    "deleteButton": "Eliminar categoria",
+    "closeButton": "Cerrar",
+    "saving": "Guardando...",
+    "submitCreate": "Crear categoria",
+    "submitUpdate": "Guardar cambios"
+  },
+  "toasts": {
+    "created": "Categoria creada correctamente",
+    "updated": "Categoria actualizada correctamente",
+    "deleted": "Categoria eliminada correctamente"
+  },
+  "validation": {
+    "nameRequired": "El nombre de la categoria es obligatorio",
+    "selectToEdit": "Seleccione una categoria para editar",
+    "selectToDelete": "Seleccione una categoria para eliminar"
+  },
+  "errors": {
+    "unexpected": "Ocurrio un error inesperado al gestionar categorias",
+    "deleteConflict": "No se puede eliminar la categoria porque tiene productos asociados",
+    "duplicateName": "Ya existe una categoria con ese nombre",
+    "invalidData": "Revise los datos ingresados antes de guardar la categoria",
+    "operationFailed": "No fue posible completar la operacion sobre categorias"
+  }
+}
