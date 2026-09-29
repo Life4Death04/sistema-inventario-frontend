@@ -1,17 +1,21 @@
 import { Search } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useCategories } from '@/features/categories/api/useCategories'
 import { InventoryModals, type InventoryModalType } from '@/features/inventory/components/InventoryModals'
 import { InventoryTanStackTable } from '@/features/inventory/components/InventoryTanStackTable'
 import { type InventoryRow, toInventoryRow } from '@/features/inventory/lib/inventoryRows'
 import { useProducts } from '@/features/products/api/useProducts'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 export function InventoryPage() {
+  const { t } = useTranslation(['inventory', 'common'])
+  const { t: commonT } = useTranslation(['common'])
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'Optimo' | 'Critico' | 'Agotado'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | StockStatus>('all')
   const [activeModal, setActiveModal] = useState<InventoryModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<InventoryRow | null>(null)
   const { data: productsResponse, error: productsError, isLoading: isLoadingProducts } = useProducts({ active: true, pageSize: 100 })
@@ -22,8 +26,8 @@ export function InventoryPage() {
   const inventory = useMemo(() => {
     const categoriesById = new Map(categories.map((category) => [category.id, category]))
 
-    return (productsResponse?.data ?? []).map((product) => toInventoryRow(product, categoriesById))
-  }, [categories, productsResponse])
+    return (productsResponse?.data ?? []).map((product) => toInventoryRow(product, categoriesById, t))
+  }, [categories, productsResponse, t])
 
   const filteredInventory = useMemo(
     () =>
@@ -47,9 +51,9 @@ export function InventoryPage() {
 
   const stats = {
     total: inventory.length,
-    normal: inventory.filter((product) => product.status === 'Optimo').length,
-    critical: inventory.filter((product) => product.status === 'Critico').length,
-    out: inventory.filter((product) => product.status === 'Agotado').length,
+    normal: inventory.filter((product) => product.status === 'healthy').length,
+    critical: inventory.filter((product) => product.status === 'low').length,
+    out: inventory.filter((product) => product.status === 'out').length,
   }
 
   const openModal = (modalType: InventoryModalType, product: InventoryRow) => {
@@ -61,15 +65,15 @@ export function InventoryPage() {
     <>
       <section className="space-y-6">
         <div>
-          <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">Existencias</h2>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Monitoree stock, minimos y salidas operativas del inventario.</p>
+          <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">{t('inventory:page.title')}</h2>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t('inventory:page.subtitle')}</p>
         </div>
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Productos en inventario" tone="default" value={stats.total} />
-          <MetricCard label="Stock normal" tone="success" value={stats.normal} />
-          <MetricCard label="Stock crítico" tone="warning" value={stats.critical} />
-          <MetricCard label="Agotados" tone="danger" value={stats.out} />
+          <MetricCard label={t('inventory:page.metrics.total')} tone="default" value={stats.total} />
+          <MetricCard label={t('inventory:page.metrics.normal')} tone="success" value={stats.normal} />
+          <MetricCard label={t('inventory:page.metrics.critical')} tone="warning" value={stats.critical} />
+          <MetricCard label={t('inventory:page.metrics.out')} tone="danger" value={stats.out} />
         </section>
 
         <section className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 xl:flex-row xl:items-center xl:justify-between">
@@ -79,7 +83,7 @@ export function InventoryPage() {
               <input
                 className="block w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] py-2 pl-10 pr-3 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]"
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar producto"
+                placeholder={t('inventory:page.filters.searchPlaceholder')}
                 type="text"
                 value={query}
               />
@@ -90,7 +94,7 @@ export function InventoryPage() {
               onChange={(event) => setCategoryFilter(event.target.value)}
               value={categoryFilter}
             >
-              <option value="">Categoría</option>
+              <option value="">{t('inventory:page.filters.categoryDefaultOption')}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -100,10 +104,10 @@ export function InventoryPage() {
 
             <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-1">
               {[
-                { label: 'Todos', value: 'all' },
-                { label: 'Normal', value: 'Optimo' },
-                { label: 'Crítico', value: 'Critico' },
-                { label: 'Agotado', value: 'Agotado' },
+                { label: t('inventory:page.filters.statusAll'), value: 'all' },
+                { label: getStockStatusLabel('healthy', commonT), value: 'healthy' },
+                { label: getStockStatusLabel('low', commonT), value: 'low' },
+                { label: getStockStatusLabel('out', commonT), value: 'out' },
               ].map((item) => (
                 <button
                   key={item.value}
@@ -119,8 +123,8 @@ export function InventoryPage() {
 
         </section>
 
-        {isLoading ? <InventoryStateMessage label="Cargando existencias reales..." /> : null}
-        {!isLoading && hasError ? <InventoryStateMessage label="No fue posible cargar el inventario real." tone="error" /> : null}
+        {isLoading ? <InventoryStateMessage label={t('inventory:page.loading')} /> : null}
+        {!isLoading && hasError ? <InventoryStateMessage label={t('inventory:page.loadError')} tone="error" /> : null}
         {!isLoading && !hasError ? (
           <InventoryTanStackTable
             globalFilter={query}
@@ -143,5 +147,4 @@ function InventoryStateMessage({ label, tone = 'muted' }: { label: string; tone?
     </div>
   )
 }
-
 

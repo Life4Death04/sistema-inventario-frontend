@@ -7,10 +7,13 @@ import {
   type ColumnDef,
   type PaginationState,
 } from '@tanstack/react-table'
+import type { TFunction } from 'i18next'
 import { ArrowLeft, ArrowRight, SquarePen, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ReplenishmentRow } from '@/features/replenishment/lib/replenishmentView'
+import type { ReplenishmentStatus } from '@/types/api.types'
 
 interface ReplenishmentTanStackTableProps {
   canShowMenu: (request: ReplenishmentRow) => boolean
@@ -27,6 +30,7 @@ export function ReplenishmentTanStackTable({
   onChangeStatus,
   onOpenDetail,
 }: ReplenishmentTanStackTableProps) {
+  const { t } = useTranslation(['replenishment', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -39,38 +43,36 @@ export function ReplenishmentTanStackTable({
   const columns: ColumnDef<ReplenishmentRow>[] = [
     {
       accessorKey: 'id',
-      header: 'N.º',
+      header: t('replenishment:table.columns.id'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text)]">{row.original.id.toUpperCase().replace('REQ-', 'R-')}</span>,
     },
     {
       accessorKey: 'items',
-      header: 'Productos',
+      header: t('replenishment:table.columns.products'),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="font-medium text-[var(--color-text)]">
-            {row.original.items === null ? 'Sin resumen' : row.original.items === 1 ? '1 producto' : `${row.original.items} productos`}
-          </span>
+          <span className="font-medium text-[var(--color-text)]">{getItemsCountLabel(row.original.items, t)}</span>
         </div>
       ),
     },
     {
       accessorKey: 'supplier',
-      header: 'Proveedor',
+      header: t('replenishment:table.columns.supplier'),
       cell: ({ row }) => <span className="text-sm text-[var(--color-text)]">{row.original.supplier}</span>,
     },
     {
       accessorKey: 'requestedAt',
-      header: 'Fecha',
+      header: t('replenishment:table.columns.date'),
       cell: ({ row }) => <span className="text-sm text-[var(--color-text-secondary)]">{new Date(row.original.requestedAt).toLocaleDateString('es-VE')}</span>,
     },
     {
       accessorKey: 'status',
-      header: 'Estado',
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      header: t('replenishment:table.columns.status'),
+      cell: ({ row }) => <StatusBadge status={row.original.rawStatus} />,
     },
     {
       id: 'actions',
-      header: 'Acciones',
+      header: t('replenishment:table.columns.actions'),
       cell: ({ row }) => {
         const showMenu = canShowMenu(row.original)
 
@@ -82,7 +84,7 @@ export function ReplenishmentTanStackTable({
                 event.stopPropagation()
                 onOpenDetail(row.original)
               }}
-              title="Ver detalle"
+              title={t('replenishment:table.actions.viewDetailTitle')}
               type="button"
             >
               <View className="h-4 w-4" />
@@ -94,7 +96,7 @@ export function ReplenishmentTanStackTable({
                   event.stopPropagation()
                   onChangeStatus(row.original)
                 }}
-                title="Cambiar estado"
+                title={t('replenishment:table.actions.changeStatusTitle')}
                 type="button"
               >
                 <SquarePen className="h-4 w-4" />
@@ -164,7 +166,7 @@ export function ReplenishmentTanStackTable({
 
       <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[rgba(245,248,251,0.5)] px-6 py-4">
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Mostrando <span className="font-medium text-[var(--color-text)]">{pageStart}-{pageEnd}</span> de <span className="font-medium text-[var(--color-text)]">{totalRows}</span> solicitudes
+          {t('replenishment:table.pagination.summary', { start: pageStart, end: pageEnd, total: totalRows })}
         </p>
         <div className="flex items-center gap-1">
           <button className="flex h-8 w-8 items-center justify-center rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface)] disabled:opacity-50" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()} type="button">
@@ -189,15 +191,30 @@ export function ReplenishmentTanStackTable({
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'Pendiente') {
-    return <span className="rounded-md bg-[var(--color-surface-container)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-text-secondary)]">Pendiente</span>
+function StatusBadge({ status }: { status: ReplenishmentStatus }) {
+  const { t } = useTranslation(['replenishment'])
+  const label = t(`replenishment:status.${status}`)
+
+  if (status === 'PENDING') {
+    return <span className="rounded-md bg-[var(--color-surface-container)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-text-secondary)]">{label}</span>
   }
-  if (status === 'Enviada') {
-    return <span className="rounded-md bg-[var(--color-surface-tint)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-primary)]">Enviada</span>
+  if (status === 'SENT') {
+    return <span className="rounded-md bg-[var(--color-surface-tint)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-primary)]">{label}</span>
   }
-  if (status === 'Recibida') {
-    return <span className="rounded-md bg-[var(--color-success-bg)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-success-text)]">Recibida</span>
+  if (status === 'RECEIVED') {
+    return <span className="rounded-md bg-[var(--color-success-bg)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-success-text)]">{label}</span>
   }
-  return <span className="rounded-md bg-[var(--color-danger-bg)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-danger-text)]">Cancelada</span>
+  return <span className="rounded-md bg-[var(--color-danger-bg)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-danger-text)]">{label}</span>
+}
+
+function getItemsCountLabel(items: number | null, t: TFunction<['replenishment', 'common']>) {
+  if (items === null) {
+    return t('replenishment:table.itemsCount.none')
+  }
+
+  if (items === 1) {
+    return t('replenishment:table.itemsCount.one')
+  }
+
+  return t('replenishment:table.itemsCount.other', { count: items })
 }

@@ -12,8 +12,10 @@ import {
 import { ArrowLeft, ArrowRight, ArrowUpDown, MoreVertical, Pill } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import type { ProductRow } from '@/features/products/lib/productRows'
+import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 interface ProductsTanStackTableProps {
   products: ProductRow[]
@@ -32,6 +34,7 @@ export function ProductsTanStackTable({
   onProductSelect,
   renderActionsMenu,
 }: ProductsTanStackTableProps) {
+  const { t } = useTranslation(['products', 'common'])
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -41,12 +44,12 @@ export function ProductsTanStackTable({
   const columns: ColumnDef<ProductRow>[] = [
     {
       accessorKey: 'code',
-      header: 'Codigo',
+      header: t('products:table.columns.code'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text)]">{row.original.code}</span>,
     },
     {
       accessorKey: 'name',
-      header: 'Producto',
+      header: t('products:table.columns.product'),
       cell: ({ row }) => (
         <div>
           <div className="font-medium text-[var(--color-text)]">{row.original.name}</div>
@@ -58,16 +61,16 @@ export function ProductsTanStackTable({
     },
     {
       accessorKey: 'activeIngredient',
-      header: 'Principio activo',
+      header: t('products:table.columns.activeIngredient'),
     },
     {
       accessorKey: 'unitContent',
-      header: 'Contenido',
+      header: t('products:table.columns.content'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-secondary)]">{row.original.unitContent} {row.original.unit}</span>,
     },
     {
       accessorKey: 'category',
-      header: 'Categoria',
+      header: t('products:table.columns.category'),
       cell: ({ row }) => (
         <div className="inline-flex items-center gap-2 rounded-[4px] bg-[#e1f5ee] px-2 py-1 text-[#086b53]">
           <Pill className="h-3.5 w-3.5" />
@@ -77,17 +80,17 @@ export function ProductsTanStackTable({
     },
     {
       accessorKey: 'stock',
-      header: 'Stock',
+      header: t('products:table.columns.stock'),
       cell: ({ row }) => (
         <div className="text-right text-sm text-[var(--color-text)]">
           <div className="font-data-mono font-medium">{row.original.stock.toLocaleString('es-VE')}</div>
-          <div className="mt-1 text-xs text-[var(--color-text-muted)]">Min. {row.original.minStock.toLocaleString('es-VE')}</div>
+          <div className="mt-1 text-xs text-[var(--color-text-muted)]">{t('products:table.columns.minStockPrefix')} {row.original.minStock.toLocaleString('es-VE')}</div>
         </div>
       ),
     },
     {
       accessorKey: 'status',
-      header: 'Estado',
+      header: t('products:table.columns.status'),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
@@ -193,7 +196,7 @@ export function ProductsTanStackTable({
 
       <div className="flex flex-col gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-strong)] px-6 py-4 text-sm text-[var(--color-text-secondary)] md:flex-row md:items-center md:justify-between">
         <span>
-          Mostrando {pageStart} a {pageEnd} de {totalRows} productos
+          {t('products:table.pagination.summary', { start: pageStart, end: pageEnd, total: totalRows })}
         </span>
         <div className="flex items-center gap-2 self-end md:self-auto">
           <button
@@ -291,14 +294,16 @@ function ActionsCell({
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'Optimo') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{status}</span>
+function StatusBadge({ status }: { status: StockStatus }) {
+  const { t } = useTranslation(['common'])
+
+  if (status === 'healthy') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
-  if (status === 'Critico') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{status}</span>
+  if (status === 'low') {
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
-  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{status}</span>
+  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{getStockStatusLabel(status, t)}</span>
 }

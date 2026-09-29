@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
 import { AlertTriangle, Circle, CircleDot, LoaderCircle, MessageCircle, Plus, Send, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import toast from 'react-hot-toast'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -25,6 +27,8 @@ import { queryKeys, receiveReplenishmentInvalidationKeys } from '@/lib/queryKeys
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { ApiErrorEnvelope, ReplenishmentStatus } from '@/types/api.types'
 import { type ReplenishmentDetail, type ReplenishmentRow, toReplenishmentDetail } from '@/features/replenishment/lib/replenishmentView'
+
+type ReplenishmentTFunction = TFunction<['replenishment', 'products', 'common']>
 
 export type ReplenishmentModalType = 'generate' | 'detail' | 'change-status'
 
@@ -81,6 +85,8 @@ export function GenerateReplenishmentModal({
   initialSupplierId?: string
   onClose: () => void
 }) {
+  const { t } = useTranslation(['replenishment', 'products', 'common'])
+  const { t: productT } = useTranslation(['products', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const queryClient = useQueryClient()
@@ -99,7 +105,7 @@ export function GenerateReplenishmentModal({
     supplierId: selectedSupplierId || undefined,
   })
   const supplierOptions = suppliersResponse?.data ?? []
-  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product))
+  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product, productT))
 
   const handleSupplierChange = (supplierId: string) => {
     setSelectedSupplierId(supplierId)
@@ -121,11 +127,11 @@ export function GenerateReplenishmentModal({
     },
     onSuccess: async (request) => {
       await invalidateReplenishmentQueries(queryClient, request.id)
-      toast.success(submitMode === 'send' ? 'Solicitud enviada correctamente' : 'Solicitud creada correctamente')
+      toast.success(submitMode === 'send' ? t('replenishment:toasts.requestSent') : t('replenishment:toasts.requestCreated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getReplenishmentErrorMessage(error, 'create'))
+      toast.error(getReplenishmentErrorMessage(error, 'create', t))
     },
     onSettled: () => {
       setSubmitMode(null)
@@ -137,7 +143,7 @@ export function GenerateReplenishmentModal({
       return
     }
 
-    const validationError = validateCreateReplenishment(selectedSupplierId, selectedProducts)
+    const validationError = validateCreateReplenishment(selectedSupplierId, selectedProducts, t)
 
     if (validationError) {
       toast.error(validationError)
@@ -149,12 +155,12 @@ export function GenerateReplenishmentModal({
   }
 
   return (
-    <ModalFrame maxWidth="max-w-[880px]" onClose={onClose} title="Nueva solicitud de reposición">
+    <ModalFrame maxWidth="max-w-[880px]" onClose={onClose} title={t('replenishment:modals.generate.title')}>
       <div className="relative flex-1 overflow-y-auto bg-[var(--color-page-bg)] p-6 space-y-6">
         <div>
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Proveedor</label>
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.supplier.label')}</label>
           <select className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white py-2.5 pl-3 pr-10 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" onChange={(event) => handleSupplierChange(event.target.value)} value={selectedSupplierId}>
-            <option value="">Seleccionar proveedor</option>
+            <option value="">{t('replenishment:modals.generate.supplier.placeholder')}</option>
             {supplierOptions.map((supplier) => (
               <option key={supplier.id} value={supplier.id}>
                 {supplier.name}
@@ -163,24 +169,24 @@ export function GenerateReplenishmentModal({
           </select>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {selectedSupplierId
-              ? 'Mostrando solo productos asociados a este proveedor. Si omite el precio unitario, el backend lo resolverá desde la referencia.'
-              : 'Seleccione un proveedor para ver sus productos asociados.'}
+              ? t('replenishment:modals.generate.supplier.hintWithSupplier')
+              : t('replenishment:modals.generate.supplier.hintWithoutSupplier')}
           </p>
         </div>
 
         {(isLoadingSuppliers || (isLoadingProducts && selectedSupplierId)) && selectedProducts.length === 0 ? <Loading /> : null}
 
         <div>
-          <h4 className="mb-3 text-[20px] font-semibold text-[var(--color-text)]">Productos a solicitar</h4>
+          <h4 className="mb-3 text-[20px] font-semibold text-[var(--color-text)]">{t('replenishment:modals.generate.productsHeading')}</h4>
           <Card className="overflow-hidden p-0">
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-left">
                 <thead className="bg-[var(--color-surface-tint)]/50">
                   <tr>
-                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Producto</th>
-                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Existencias</th>
-                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Cantidad</th>
-                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Precio unit.</th>
+                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.table.product')}</th>
+                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.table.stock')}</th>
+                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.table.quantity')}</th>
+                    <th className="border-b border-[var(--color-border)] px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.table.unitPrice')}</th>
                     <th className="border-b border-[var(--color-border)] px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]"></th>
                   </tr>
                 </thead>
@@ -196,7 +202,7 @@ export function GenerateReplenishmentModal({
                         <input className="w-16 rounded border border-[var(--color-border)] px-2 py-1 text-right font-data-mono text-sm outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" min="1" onChange={(event) => updateSelectedProduct(setSelectedProducts, product.id, { requestedQuantity: Number(event.target.value) || 0 })} type="number" value={product.requestedQuantity} />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <input className="w-24 rounded border border-[var(--color-border)] px-2 py-1 text-right font-data-mono text-sm outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" min="0" onChange={(event) => updateSelectedProduct(setSelectedProducts, product.id, { unitPrice: event.target.value })} placeholder="Auto" type="number" value={product.unitPrice} />
+                        <input className="w-24 rounded border border-[var(--color-border)] px-2 py-1 text-right font-data-mono text-sm outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" min="0" onChange={(event) => updateSelectedProduct(setSelectedProducts, product.id, { unitPrice: event.target.value })} placeholder={t('replenishment:modals.generate.table.unitPricePlaceholder')} type="number" value={product.unitPrice} />
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button className="text-[var(--color-text-muted)] transition hover:text-[var(--color-danger-text)]" onClick={() => setSelectedProducts((current) => current.filter((item) => item.id !== product.id))} type="button">
@@ -208,7 +214,7 @@ export function GenerateReplenishmentModal({
                   {selectedProducts.length === 0 ? (
                     <tr>
                       <td className="px-4 py-4 text-sm text-[var(--color-text-secondary)]" colSpan={5}>
-                        No hay productos seleccionados.
+                        {t('replenishment:modals.generate.table.empty')}
                       </td>
                     </tr>
                   ) : null}
@@ -219,20 +225,20 @@ export function GenerateReplenishmentModal({
           <div className="mt-3">
             <button className="inline-flex items-center gap-2 px-2 py-1 text-sm font-medium text-[var(--color-primary-strong)] transition hover:text-[var(--color-primary)]" onClick={() => setIsAssociateOpen(true)} type="button">
               <Plus className="h-4 w-4" />
-              Añadir producto
+              {t('replenishment:modals.generate.addProductButton')}
             </button>
           </div>
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Nota para el proveedor (Opcional)</label>
-          <textarea className="min-h-24 w-full resize-none rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white p-3 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" onChange={(event) => setNote(event.target.value)} placeholder="Escriba aquí instrucciones adicionales..." value={note} />
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.generate.noteLabel')}</label>
+          <textarea className="min-h-24 w-full resize-none rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white p-3 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" onChange={(event) => setNote(event.target.value)} placeholder={t('replenishment:modals.generate.notePlaceholder')} value={note} />
         </div>
 
         <div className="rounded-[var(--radius-control)] border border-[var(--color-surface-tint)]/50 bg-[var(--color-surface-tint)] p-4">
           <div className="flex flex-col gap-2 text-sm text-[var(--color-text)] sm:flex-row sm:items-center sm:justify-between">
-            <span>Total de líneas: <span className="font-data-mono font-semibold">{selectedProducts.length}</span></span>
-            <span>Unidades: <span className="font-data-mono font-semibold">{totalUnits}</span></span>
+            <span>{t('replenishment:modals.generate.summary.lines')} <span className="font-data-mono font-semibold">{selectedProducts.length}</span></span>
+            <span>{t('replenishment:modals.generate.summary.units')} <span className="font-data-mono font-semibold">{totalUnits}</span></span>
           </div>
         </div>
 
@@ -250,14 +256,14 @@ export function GenerateReplenishmentModal({
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4">
-        <Button disabled={createMutation.isPending} onClick={onClose} type="button" variant="ghost">Cancelar</Button>
+        <Button disabled={createMutation.isPending} onClick={onClose} type="button" variant="ghost">{t('replenishment:modals.generate.cancelButton')}</Button>
         <Button disabled={!canManage || createMutation.isPending} onClick={() => handleSubmit('pending')} type="button" variant="secondary">
           {createMutation.isPending && submitMode === 'pending' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Guardar como pendiente
+          {t('replenishment:modals.generate.saveAsPendingButton')}
         </Button>
         <Button disabled={!canManage || createMutation.isPending} onClick={() => handleSubmit('send')} type="button">
           {createMutation.isPending && submitMode === 'send' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-          Generar y enviar
+          {t('replenishment:modals.generate.generateAndSendButton')}
         </Button>
       </div>
     </ModalFrame>
@@ -275,6 +281,7 @@ function AssociateProductsOverlay({
   products: ProductRow[]
   selectedProducts: SelectedReplenishmentProduct[]
 }) {
+  const { t } = useTranslation(['replenishment'])
   const [onlyLowStock, setOnlyLowStock] = useState(true)
   const [query, setQuery] = useState('')
   const [draftSelection, setDraftSelection] = useState<SelectedReplenishmentProduct[]>([])
@@ -295,8 +302,8 @@ function AssociateProductsOverlay({
       <div className="relative z-10 flex max-h-[82vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl">
         <div className="flex items-start justify-between border-b border-[var(--color-border)] px-6 py-4">
           <div>
-            <h4 className="text-[20px] font-medium leading-tight text-[var(--color-text)]">Añadir productos</h4>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">La validación proveedor-producto se resuelve al guardar la solicitud.</p>
+            <h4 className="text-[20px] font-medium leading-tight text-[var(--color-text)]">{t('replenishment:modals.associateProducts.title')}</h4>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t('replenishment:modals.associateProducts.description')}</p>
           </div>
           <button className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-muted)] transition hover:bg-[var(--color-page-bg)] hover:text-[var(--color-text-secondary)]" onClick={onClose} type="button">
             <X className="h-4 w-4" />
@@ -304,11 +311,11 @@ function AssociateProductsOverlay({
         </div>
 
         <div className="flex flex-col gap-4 border-b border-[var(--color-border)] px-6 py-4">
-          <input className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white px-4 py-2 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, SKU o principio activo..." type="text" value={query} />
+          <input className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white px-4 py-2 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]" onChange={(event) => setQuery(event.target.value)} placeholder={t('replenishment:modals.associateProducts.searchPlaceholder')} type="text" value={query} />
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[var(--color-text-secondary)]">Mostrando {visibleProducts.length} productos</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">{t('replenishment:modals.associateProducts.showingCount', { count: visibleProducts.length })}</span>
             <label className="group flex cursor-pointer items-center gap-2">
-              <span className="text-sm text-[var(--color-text)] transition group-hover:text-[var(--color-primary)]">Solo bajo stock</span>
+              <span className="text-sm text-[var(--color-text)] transition group-hover:text-[var(--color-primary)]">{t('replenishment:modals.associateProducts.onlyLowStockLabel')}</span>
               <button className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${onlyLowStock ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-text-muted)]'}`} onClick={() => setOnlyLowStock((current) => !current)} type="button">
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${onlyLowStock ? 'translate-x-4' : 'translate-x-1'}`} />
               </button>
@@ -341,14 +348,14 @@ function AssociateProductsOverlay({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <span className="truncate text-sm font-medium text-[var(--color-text)]">{product.name}</span>
-                      {alreadyAdded ? <span className="rounded bg-[var(--color-surface-dim)] px-2 py-0.5 text-[12px] text-[var(--color-text-muted)]">Ya añadido</span> : selected ? <div className="flex items-center gap-1 rounded border border-[var(--color-border)] bg-white px-2 py-0.5"><span className="text-[11px] uppercase text-[var(--color-text-secondary)]">Sugerido:</span><span className="font-data-mono text-sm text-[var(--color-primary)]">{suggested}</span></div> : null}
+                      {alreadyAdded ? <span className="rounded bg-[var(--color-surface-dim)] px-2 py-0.5 text-[12px] text-[var(--color-text-muted)]">{t('replenishment:modals.associateProducts.alreadyAdded')}</span> : selected ? <div className="flex items-center gap-1 rounded border border-[var(--color-border)] bg-white px-2 py-0.5"><span className="text-[11px] uppercase text-[var(--color-text-secondary)]">{t('replenishment:modals.associateProducts.suggestedLabel')}</span><span className="font-data-mono text-sm text-[var(--color-primary)]">{suggested}</span></div> : null}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 font-data-mono text-xs text-[var(--color-text-secondary)]">
                       <span>{product.code}</span>
                       <span className="h-1 w-1 rounded-full bg-[var(--color-outline-variant,#c2c6d2)]" />
-                      <span className={product.stock === 0 ? 'text-[var(--color-danger-text)]' : product.stock <= product.minStock ? 'text-[var(--color-warning-text)]' : 'text-[var(--color-success-text)]'}>Stock: {product.stock}</span>
+                      <span className={product.stock === 0 ? 'text-[var(--color-danger-text)]' : product.stock <= product.minStock ? 'text-[var(--color-warning-text)]' : 'text-[var(--color-success-text)]'}>{t('replenishment:modals.associateProducts.stockLabel', { value: product.stock })}</span>
                       <span className="h-1 w-1 rounded-full bg-[var(--color-outline-variant,#c2c6d2)]" />
-                      <span>Mín: {product.minStock}</span>
+                      <span>{t('replenishment:modals.associateProducts.minLabel', { value: product.minStock })}</span>
                     </div>
                   </div>
                 </button>
@@ -358,10 +365,10 @@ function AssociateProductsOverlay({
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4">
-          <span className="text-sm font-medium text-[var(--color-text-secondary)]">{draftSelection.length} productos seleccionados</span>
+          <span className="text-sm font-medium text-[var(--color-text-secondary)]">{t('replenishment:modals.associateProducts.selectedCount', { count: draftSelection.length })}</span>
           <div className="flex gap-3">
-            <Button onClick={onClose} type="button" variant="ghost">Cancelar</Button>
-            <Button onClick={() => onAdd(draftSelection)} type="button">Añadir ({draftSelection.length})</Button>
+            <Button onClick={onClose} type="button" variant="ghost">{t('replenishment:modals.associateProducts.cancelButton')}</Button>
+            <Button onClick={() => onAdd(draftSelection)} type="button">{t('replenishment:modals.associateProducts.addButton', { count: draftSelection.length })}</Button>
           </div>
         </div>
       </div>
@@ -378,13 +385,14 @@ function ReplenishmentDetailModal({
   onOpenModal: (modalType: ReplenishmentModalType, request: ReplenishmentRow | null) => void
   request: ReplenishmentRow
 }) {
+  const { t } = useTranslation(['replenishment', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const detailQuery = useReplenishmentRequest(request.id)
 
   if (detailQuery.isLoading) {
     return (
-      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title="Detalle de reposición">
+      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={t('replenishment:modals.detail.title')}>
         <div className="p-6">
           <Loading />
         </div>
@@ -394,30 +402,30 @@ function ReplenishmentDetailModal({
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title="Detalle de reposición">
-        <div className="p-6 text-sm text-[var(--color-danger-text)]">No fue posible cargar el detalle real de la solicitud.</div>
+      <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={t('replenishment:modals.detail.title')}>
+        <div className="p-6 text-sm text-[var(--color-danger-text)]">{t('replenishment:modals.detail.loadError')}</div>
       </ModalFrame>
     )
   }
 
-  const details = toReplenishmentDetail(detailQuery.data)
+  const details = toReplenishmentDetail(detailQuery.data, t)
   const canChange = canManage && canChangeStatus(details.rawStatus)
 
   return (
-    <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={`Solicitud ${formatRequestCode(details.id)}`}>
+    <ModalFrame maxWidth="max-w-[720px]" onClose={onClose} title={t('replenishment:modals.detail.requestTitle', { code: formatRequestCode(details.id) })}>
       <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h4 className="font-data-mono text-[20px] font-semibold text-[var(--color-text)]">Solicitud {formatRequestCode(details.id)}</h4>
-              <StatusTag status={details.status} />
+              <h4 className="font-data-mono text-[20px] font-semibold text-[var(--color-text)]">{t('replenishment:modals.detail.requestTitle', { code: formatRequestCode(details.id) })}</h4>
+              <StatusTag status={details.rawStatus} />
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <span>{details.supplier}</span>
               <div className="h-1 w-1 rounded-full bg-[var(--color-text-muted)]" />
               <div className="flex items-center gap-1 rounded-[4px] bg-[#E1F5EE] px-1.5 py-0.5 text-[#0F6E56]">
                 <MessageCircle className="h-3.5 w-3.5" />
-                <span className="font-data-mono text-xs">WhatsApp</span>
+                <span className="font-data-mono text-xs">{t('replenishment:modals.detail.whatsappBadge')}</span>
               </div>
             </div>
           </div>
@@ -430,22 +438,22 @@ function ReplenishmentDetailModal({
         </div>
 
         <div className="grid grid-cols-1 gap-4 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-4 sm:grid-cols-2">
-          <MetadataItem label="Creada por" value={`${details.requestedBy} · ${formatDate(details.requestedAt)}`} />
-          <MetadataItem label="Enviada" value={details.sentAt ? `${formatDate(details.sentAt)} · por WhatsApp` : 'No enviada'} />
-          <MetadataItem label="Recibida" value={details.receivedAt ? formatDate(details.receivedAt) : '—'} />
-          <MetadataItem label="Notas" value={details.notes || 'Sin notas'} />
+          <MetadataItem label={t('replenishment:modals.detail.metadata.createdBy')} value={t('replenishment:modals.detail.metadata.createdByValue', { name: details.requestedBy, date: formatDate(details.requestedAt) })} />
+          <MetadataItem label={t('replenishment:modals.detail.metadata.sent')} value={details.sentAt ? t('replenishment:modals.detail.metadata.sentValue', { date: formatDate(details.sentAt) }) : t('replenishment:modals.detail.metadata.notSent')} />
+          <MetadataItem label={t('replenishment:modals.detail.metadata.received')} value={details.receivedAt ? formatDate(details.receivedAt) : t('replenishment:modals.detail.metadata.notReceived')} />
+          <MetadataItem label={t('replenishment:modals.detail.metadata.notes')} value={details.notes || t('replenishment:modals.detail.metadata.noNotes')} />
         </div>
 
         <div className="flex flex-col gap-3">
-          <h5 className="text-[20px] font-semibold text-[var(--color-text)]">Productos solicitados</h5>
+          <h5 className="text-[20px] font-semibold text-[var(--color-text)]">{t('replenishment:modals.detail.itemsHeading')}</h5>
           <div className="overflow-hidden rounded-[8px] border border-[var(--color-border)]">
             <table className="min-w-full border-collapse text-left">
               <thead className="bg-[var(--color-page-bg)] border-b border-[var(--color-border)]">
                 <tr>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Producto</th>
-                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Cantidad</th>
-                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Precio unitario</th>
-                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Subtotal</th>
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.detail.table.product')}</th>
+                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.detail.table.quantity')}</th>
+                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.detail.table.unitPrice')}</th>
+                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.detail.table.subtotal')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)] text-sm">
@@ -464,21 +472,21 @@ function ReplenishmentDetailModal({
             </table>
             <div className="bg-[var(--color-page-bg)] p-3 border-t border-[var(--color-border)] flex flex-col items-end gap-1">
               <div className="flex gap-4 font-data-mono text-sm text-[var(--color-text)]">
-                <span>Total estimado:</span>
+                <span>{t('replenishment:modals.detail.totalEstimated')}</span>
                 <span>{formatCurrency(details.items.reduce((acc, item) => acc + (item.subtotal ?? 0), 0))}</span>
               </div>
-              <span className="text-[11px] text-[var(--color-text-muted)]">Precios registrados al momento de la solicitud</span>
+              <span className="text-[11px] text-[var(--color-text-muted)]">{t('replenishment:modals.detail.pricesNote')}</span>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
-          <h5 className="text-[20px] font-semibold text-[var(--color-text)]">Historial de estados</h5>
+          <h5 className="text-[20px] font-semibold text-[var(--color-text)]">{t('replenishment:modals.detail.timelineHeading')}</h5>
           <div className="ml-2 border-l-2 border-[var(--color-border)] pl-4 flex flex-col gap-4 py-2">
-            <TimelineItem active label="Pendiente" meta={`${details.requestedBy} · ${shortDate(details.requestedAt)}`} />
-            <TimelineItem active={details.rawStatus !== 'PENDING'} label="Enviada" meta={details.sentAt ? shortDate(details.sentAt) : 'pendiente'} primary={details.rawStatus !== 'PENDING'} />
-            <TimelineItem active={details.rawStatus === 'RECEIVED'} label="Recibida" meta={details.receivedAt ? shortDate(details.receivedAt) : 'pendiente'} success={details.rawStatus === 'RECEIVED'} />
-            <TimelineItem active={details.rawStatus === 'CANCELLED'} cancel label="Cancelada" meta={details.rawStatus === 'CANCELLED' ? 'cerrada' : 'pendiente'} />
+            <TimelineItem active label={t('replenishment:status.PENDING')} meta={`${details.requestedBy} · ${shortDate(details.requestedAt)}`} />
+            <TimelineItem active={details.rawStatus !== 'PENDING'} label={t('replenishment:status.SENT')} meta={details.sentAt ? shortDate(details.sentAt) : t('replenishment:modals.detail.timeline.pending')} primary={details.rawStatus !== 'PENDING'} />
+            <TimelineItem active={details.rawStatus === 'RECEIVED'} label={t('replenishment:status.RECEIVED')} meta={details.receivedAt ? shortDate(details.receivedAt) : t('replenishment:modals.detail.timeline.pending')} success={details.rawStatus === 'RECEIVED'} />
+            <TimelineItem active={details.rawStatus === 'CANCELLED'} cancel label={t('replenishment:status.CANCELLED')} meta={details.rawStatus === 'CANCELLED' ? t('replenishment:modals.detail.timeline.closed') : t('replenishment:modals.detail.timeline.pending')} />
           </div>
         </div>
       </div>
@@ -487,17 +495,18 @@ function ReplenishmentDetailModal({
         <div className="flex flex-wrap items-center gap-3">
           {canChange ? (
             <button className="inline-flex items-center gap-2 rounded-[8px] border border-transparent px-3 py-2 text-sm text-[var(--color-text-secondary)] transition hover:border-[var(--color-outline-variant,#c2c6d2)] hover:bg-[var(--color-surface-variant)]" onClick={() => onOpenModal('change-status', request)} type="button">
-              Cambiar estado
+              {t('replenishment:modals.detail.changeStatusButton')}
             </button>
           ) : null}
         </div>
-        {canManage && details.rawStatus === 'SENT' ? <Button onClick={() => onOpenModal('change-status', request)} type="button">Confirmar recepción</Button> : null}
+        {canManage && details.rawStatus === 'SENT' ? <Button onClick={() => onOpenModal('change-status', request)} type="button">{t('replenishment:modals.detail.confirmReceiptButton')}</Button> : null}
       </div>
     </ModalFrame>
   )
 }
 
 function ChangeStatusModal({ onClose, request }: { onClose: () => void; request: ReplenishmentRow }) {
+  const { t } = useTranslation(['replenishment', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const queryClient = useQueryClient()
@@ -509,11 +518,11 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
     mutationFn: () => sendReplenishmentRequest(request.id),
     onSuccess: async (updated) => {
       await invalidateReplenishmentQueries(queryClient, updated.id, true)
-      toast.success('Solicitud enviada correctamente')
+      toast.success(t('replenishment:toasts.requestSent'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getReplenishmentErrorMessage(error, 'send'))
+      toast.error(getReplenishmentErrorMessage(error, 'send', t))
     },
   })
 
@@ -521,11 +530,11 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
     mutationFn: () => cancelReplenishmentRequest(request.id),
     onSuccess: async (updated) => {
       await invalidateReplenishmentQueries(queryClient, updated.id, true)
-      toast.success('Solicitud cancelada correctamente')
+      toast.success(t('replenishment:toasts.requestCancelled'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getReplenishmentErrorMessage(error, 'cancel'))
+      toast.error(getReplenishmentErrorMessage(error, 'cancel', t))
     },
   })
 
@@ -533,17 +542,17 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
     mutationFn: (input: ReceiveReplenishmentRequestInput) => receiveReplenishmentRequest(request.id, input),
     onSuccess: async (updated) => {
       await invalidateReplenishmentReceiveQueries(queryClient, updated.id)
-      toast.success('Recepción confirmada correctamente')
+      toast.success(t('replenishment:toasts.receiptConfirmed'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getReplenishmentErrorMessage(error, 'receive'))
+      toast.error(getReplenishmentErrorMessage(error, 'receive', t))
     },
   })
 
   if (detailQuery.isLoading) {
     return (
-      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title="Cambiar estado">
+      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title={t('replenishment:modals.changeStatus.title')}>
         <div className="p-6">
           <Loading />
         </div>
@@ -553,13 +562,13 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title="Cambiar estado">
-        <div className="p-6 text-sm text-[var(--color-danger-text)]">No fue posible cargar la solicitud real.</div>
+      <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title={t('replenishment:modals.changeStatus.title')}>
+        <div className="p-6 text-sm text-[var(--color-danger-text)]">{t('replenishment:modals.changeStatus.loadError')}</div>
       </ModalFrame>
     )
   }
 
-  const details = toReplenishmentDetail(detailQuery.data)
+  const details = toReplenishmentDetail(detailQuery.data, t)
   const availableActions = getAvailableActions(details.rawStatus)
 
   if (!canManage || availableActions.length === 0) {
@@ -569,40 +578,40 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
   const isPending = sendMutation.isPending || cancelMutation.isPending || receiveMutation.isPending
 
   return (
-    <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title="Cambiar estado">
+    <ModalFrame maxWidth="max-w-[460px]" onClose={onClose} title={t('replenishment:modals.changeStatus.title')}>
       <div className="p-6 flex flex-col gap-6">
         <div>
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-sm text-[var(--color-text-secondary)]">Estado actual:</span>
-            <StatusTag status={details.status} />
+            <span className="text-sm text-[var(--color-text-secondary)]">{t('replenishment:modals.changeStatus.currentStatusLabel')}</span>
+            <StatusTag status={details.rawStatus} />
           </div>
 
           <div className="mt-2 flex items-center justify-between relative before:absolute before:left-4 before:right-[30%] before:top-1/2 before:h-[2px] before:-translate-y-1/2 before:bg-[var(--color-border)] before:content-['']">
-            <StepperStatusNode active label="Pendiente" />
-            <StepperStatusNode active={details.rawStatus !== 'PENDING'} label="Enviada" primary={details.rawStatus !== 'PENDING'} />
-            <StepperStatusNode active={details.rawStatus === 'RECEIVED' || selectedAction === 'receive'} label="Recibida" success={details.rawStatus === 'RECEIVED' || selectedAction === 'receive'} />
+            <StepperStatusNode active label={t('replenishment:status.PENDING')} />
+            <StepperStatusNode active={details.rawStatus !== 'PENDING'} label={t('replenishment:status.SENT')} primary={details.rawStatus !== 'PENDING'} />
+            <StepperStatusNode active={details.rawStatus === 'RECEIVED' || selectedAction === 'receive'} label={t('replenishment:status.RECEIVED')} success={details.rawStatus === 'RECEIVED' || selectedAction === 'receive'} />
             <div className="mx-2 hidden h-6 border-l border-[var(--color-border)] sm:block" />
-            <StepperStatusNode active={details.rawStatus === 'CANCELLED' || selectedAction === 'cancel'} cancel label="Cancelada" />
+            <StepperStatusNode active={details.rawStatus === 'CANCELLED' || selectedAction === 'cancel'} cancel label={t('replenishment:status.CANCELLED')} />
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="mb-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Nuevo Estado</label>
+          <label className="mb-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.changeStatus.newStatusLabel')}</label>
           <div className="grid grid-cols-2 gap-3">
-            {availableActions.includes('send') ? <StatusOption checked={selectedAction === 'send'} label="Enviada" onClick={() => setSelectedAction('send')} /> : null}
-            {availableActions.includes('receive') ? <StatusOption checked={selectedAction === 'receive'} label="Recibida" success onClick={() => setSelectedAction('receive')} /> : null}
-            {availableActions.includes('cancel') ? <StatusOption checked={selectedAction === 'cancel'} danger label="Cancelada" onClick={() => setSelectedAction('cancel')} /> : null}
+            {availableActions.includes('send') ? <StatusOption checked={selectedAction === 'send'} label={t('replenishment:status.SENT')} onClick={() => setSelectedAction('send')} /> : null}
+            {availableActions.includes('receive') ? <StatusOption checked={selectedAction === 'receive'} label={t('replenishment:status.RECEIVED')} success onClick={() => setSelectedAction('receive')} /> : null}
+            {availableActions.includes('cancel') ? <StatusOption checked={selectedAction === 'cancel'} danger label={t('replenishment:status.CANCELLED')} onClick={() => setSelectedAction('cancel')} /> : null}
           </div>
         </div>
 
         {selectedAction === 'receive' ? (
           <>
             <div className="flex flex-col gap-3">
-              <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Productos recibidos</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('replenishment:modals.changeStatus.receivedProductsLabel')}</label>
               <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
                 <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[rgba(213,229,242,0.30)] p-3">
-                  <span className="text-sm text-[var(--color-text-secondary)]">Producto</span>
-                  <span className="text-sm text-[var(--color-text-secondary)]">Cant. Recibida</span>
+                  <span className="text-sm text-[var(--color-text-secondary)]">{t('replenishment:modals.changeStatus.productColumn')}</span>
+                  <span className="text-sm text-[var(--color-text-secondary)]">{t('replenishment:modals.changeStatus.receivedQuantityColumn')}</span>
                 </div>
                 {details.items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between border-b border-[var(--color-border)] p-3 last:border-b-0">
@@ -618,13 +627,15 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
         {selectedAction === 'cancel' ? (
           <div className="flex items-start gap-2 rounded border border-[var(--color-danger-bg)] bg-[rgba(251,231,228,0.40)] p-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 text-[var(--color-danger-text)]" />
-            <p className="text-sm text-[var(--color-danger-text)]">La solicitud se cerrará y <strong>no afectará el inventario</strong>. Esta acción no se puede deshacer.</p>
+            <p className="text-sm text-[var(--color-danger-text)]">
+              <Trans components={{ bold: <strong /> }} i18nKey="replenishment:modals.changeStatus.cancelWarning" ns={['replenishment', 'common']} />
+            </p>
           </div>
         ) : null}
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-container-lowest,#ffffff)] p-4">
-        <Button disabled={isPending} onClick={onClose} type="button" variant="secondary">Cancelar</Button>
+        <Button disabled={isPending} onClick={onClose} type="button" variant="secondary">{t('replenishment:modals.changeStatus.cancelButton')}</Button>
         <button
           className={`inline-flex min-h-10 items-center justify-center rounded-[var(--radius-control)] px-4 py-2 text-sm font-semibold text-white transition ${selectedAction === 'cancel' ? 'bg-[var(--color-danger-text)] hover:opacity-90' : 'bg-[var(--color-primary)] hover:opacity-90'} disabled:cursor-not-allowed disabled:opacity-70`}
           disabled={isPending}
@@ -639,7 +650,7 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
               return
             }
 
-            const validationError = validateReceivedQuantities(details, receivedQuantities)
+            const validationError = validateReceivedQuantities(details, receivedQuantities, t)
 
             if (validationError) {
               toast.error(validationError)
@@ -656,7 +667,11 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
           type="button"
         >
           {isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {selectedAction === 'cancel' ? 'Cancelar solicitud' : selectedAction === 'receive' ? 'Confirmar recepción' : 'Marcar como enviada'}
+          {selectedAction === 'cancel'
+            ? t('replenishment:modals.changeStatus.submit.cancel')
+            : selectedAction === 'receive'
+              ? t('replenishment:modals.changeStatus.submit.receive')
+              : t('replenishment:modals.changeStatus.submit.send')}
         </button>
       </div>
     </ModalFrame>
@@ -746,17 +761,20 @@ function StatusOption({ checked, label, onClick, success = false, danger = false
   )
 }
 
-function StatusTag({ status }: { status: string }) {
-  if (status === 'Pendiente') {
-    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-surface-container)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Pendiente</span>
+function StatusTag({ status }: { status: ReplenishmentStatus }) {
+  const { t } = useTranslation(['replenishment'])
+  const label = t(`replenishment:status.${status}`)
+
+  if (status === 'PENDING') {
+    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-surface-container)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{label}</span>
   }
-  if (status === 'Enviada') {
-    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">Enviada</span>
+  if (status === 'SENT') {
+    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">{label}</span>
   }
-  if (status === 'Recibida') {
-    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">Recibida</span>
+  if (status === 'RECEIVED') {
+    return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{label}</span>
   }
-  return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">Cancelada</span>
+  return <span className="inline-flex items-center rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{label}</span>
 }
 
 type SelectedReplenishmentProduct = {
@@ -814,34 +832,34 @@ function toCreateReplenishmentInput(
   }
 }
 
-function validateCreateReplenishment(supplierId: string, selectedProducts: SelectedReplenishmentProduct[]) {
+function validateCreateReplenishment(supplierId: string, selectedProducts: SelectedReplenishmentProduct[], t: ReplenishmentTFunction) {
   if (!supplierId) {
-    return 'Seleccione un proveedor válido'
+    return t('replenishment:validation.supplierRequired')
   }
 
   if (selectedProducts.length === 0) {
-    return 'Debe seleccionar al menos un producto'
+    return t('replenishment:validation.productsRequired')
   }
 
   for (const product of selectedProducts) {
     if (product.requestedQuantity <= 0) {
-      return `La cantidad solicitada para ${product.name} debe ser mayor que cero`
+      return t('replenishment:validation.quantityPositive', { name: product.name })
     }
 
     if (product.unitPrice.trim() && Number(product.unitPrice) <= 0) {
-      return `El precio unitario de ${product.name} debe ser mayor que cero`
+      return t('replenishment:validation.unitPricePositive', { name: product.name })
     }
   }
 
   return null
 }
 
-function validateReceivedQuantities(details: ReplenishmentDetail, receivedQuantities: Record<string, number>) {
+function validateReceivedQuantities(details: ReplenishmentDetail, receivedQuantities: Record<string, number>, t: ReplenishmentTFunction) {
   for (const item of details.items) {
     const quantity = receivedQuantities[item.id] ?? item.receivedQuantity
 
     if (quantity < 0) {
-      return `La cantidad recibida de ${item.name} no puede ser negativa`
+      return t('replenishment:validation.receivedQuantityNegative', { name: item.name })
     }
   }
 
@@ -892,9 +910,9 @@ async function invalidateReplenishmentReceiveQueries(queryClient: ReturnType<typ
   await Promise.all(invalidations)
 }
 
-function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create' | 'receive' | 'send') {
+function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create' | 'receive' | 'send', t: ReplenishmentTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'No fue posible completar la operación de reposición'
+    return t('replenishment:errors.unexpected')
   }
 
   const message = error.response?.data.message?.trim()
@@ -905,26 +923,26 @@ function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create
   }
 
   if (code.includes('UNIT_PRICE_REQUIRED')) {
-    return 'Debe indicar el precio unitario o configurar una referencia para ese proveedor'
+    return t('replenishment:errors.unitPriceRequired')
   }
 
   if (code.includes('INVALID_STATE_TRANSITION')) {
-    return 'La solicitud ya no está en un estado válido para esa acción'
+    return t('replenishment:errors.invalidStateTransition')
   }
 
   if (action === 'send') {
-    return 'No fue posible enviar la solicitud'
+    return t('replenishment:errors.sendFailed')
   }
 
   if (action === 'receive') {
-    return 'No fue posible confirmar la recepción'
+    return t('replenishment:errors.receiveFailed')
   }
 
   if (action === 'cancel') {
-    return 'No fue posible cancelar la solicitud'
+    return t('replenishment:errors.cancelFailed')
   }
 
-  return 'No fue posible crear la solicitud'
+  return t('replenishment:errors.createFailed')
 }
 
 function shortDate(value: string) {

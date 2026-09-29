@@ -1,0 +1,105 @@
+{
+  "page": {
+    "title": "Inventory",
+    "subtitle": "Monitor stock, minimums, and operational outputs of the inventory.",
+    "metrics": {
+      "total": "Products in inventory",
+      "normal": "Normal stock",
+      "critical": "Critical stock",
+      "out": "Out of stock"
+    },
+    "filters": {
+      "searchPlaceholder": "Search product",
+      "categoryDefaultOption": "Category",
+      "statusAll": "All"
+    },
+    "loading": "Loading inventory...",
+    "loadError": "Unable to load the inventory."
+  },
+  "table": {
+    "columns": {
+      "product": "Product",
+      "category": "Category",
+      "stock": "Stock",
+      "minStock": "Min. stock",
+      "status": "Status",
+      "actions": "Action"
+    },
+    "actions": {
+      "registerOutput": "Register output",
+      "viewDetail": "View detail"
+    },
+    "pagination": {
+      "summary": "Showing <range>{{start}}-{{end}}</range> of <total>{{total}}</total> products"
+    }
+  },
+  "fallback": {
+    "noActiveIngredient": "No active ingredient",
+    "noCategory": "No category",
+    "noPresentation": "No presentation",
+    "noBrand": "No brand"
+  },
+  "modals": {
+    "detail": {
+      "title": "Product detail",
+      "summary": {
+        "stock": "Stock",
+        "minStock": "Minimum stock",
+        "status": "Status"
+      },
+      "fields": {
+        "category": "Category",
+        "unitPrice": "Unit price",
+        "supplier": "Supplier",
+        "lastUpdate": "Last update",
+        "presentation": "Presentation",
+        "content": "Content",
+        "activeIngredient": "Active ingredient"
+      },
+      "recentMovements": {
+        "heading": "Recent movements",
+        "loading": "Loading history...",
+        "loadError": "Unable to load the history.",
+        "empty": "No recent movements.",
+        "userLabel": "User {{id}}",
+        "types": {
+          "in": "Inbound",
+          "out": "Outbound",
+          "adjustment": "Adjustment"
+        }
+      },
+      "closeButton": "Close"
+    },
+    "output": {
+      "title": "Register output",
+      "fields": {
+        "product": "Product",
+        "quantity": "Quantity",
+        "reason": "Reason"
+      },
+      "reasons": {
+        "dispensing": "Counter dispensing",
+        "expiration": "Expiration",
+        "damage": "Damage",
+        "lossOrShrinkage": "Loss/Shrinkage",
+        "inventoryAdjustment": "Inventory adjustment",
+        "supplierReturn": "Return to supplier"
+      },
+      "resultingStock": "Current stock: <mono>{{current}}</mono> -> result: <result>{{result}}</result>",
+      "belowMinimumWarning": "The result will fall below the minimum stock ({{minStock}})",
+      "cancelButton": "Cancel",
+      "submitButton": "Register output",
+      "submitting": "Registering..."
+    }
+  },
+  "toasts": {
+    "outputRegistered": "Output registered successfully"
+  },
+  "validation": {
+    "quantityPositive": "Quantity must be greater than zero",
+    "reasonRequired": "Select a reason for the output"
+  },
+  "errors": {
+    "registerOutputFailed": "Unable to register the output"
+  }
+}

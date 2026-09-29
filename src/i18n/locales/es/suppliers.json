@@ -1,0 +1,151 @@
+{
+  "page": {
+    "metrics": {
+      "active": "Proveedores activos",
+      "total": "Total de proveedores",
+      "inactive": "Proveedores inactivos"
+    },
+    "searchPlaceholder": "Buscar proveedor, RIF o direccion...",
+    "filters": {
+      "all": "Todos",
+      "active": "Activos",
+      "inactive": "Inactivos"
+    },
+    "newSupplierButton": "Nuevo proveedor",
+    "loading": "Cargando proveedores...",
+    "loadError": {
+      "title": "No fue posible cargar los proveedores reales.",
+      "description": "Verifique la conexion con el backend e intente nuevamente."
+    },
+    "refreshing": "Actualizando listado..."
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "activeLower": "activo",
+    "inactiveLower": "inactivo"
+  },
+  "productsCount_one": "{{count}} producto",
+  "productsCount_other": "{{count}} productos",
+  "fallback": {
+    "noCategory": "Sin categoria"
+  },
+  "table": {
+    "columns": {
+      "supplier": "Proveedor",
+      "rif": "RIF",
+      "whatsapp": "WhatsApp",
+      "products": "Productos",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "fallback": {
+      "noRif": "Sin RIF"
+    },
+    "identityRifPrefix": "RIF: {{rif}}",
+    "actions": {
+      "viewDetailTitle": "Ver detalle",
+      "associateProductsTitle": "Asociar productos",
+      "editTitle": "Editar proveedor"
+    },
+    "pagination": {
+      "summary": "Mostrando {{start}}-{{end}} de {{total}} proveedores"
+    }
+  },
+  "modals": {
+    "create": {
+      "title": "Nuevo proveedor"
+    },
+    "edit": {
+      "title": "Editar proveedor",
+      "titleSuffix": "{{name}} · estado {{status}}"
+    },
+    "detail": {
+      "noRifRegistered": "Sin RIF registrado",
+      "metrics": {
+        "associatedProducts": "Productos asociados",
+        "requestsThisMonth": "Solicitudes (mes)",
+        "lastReplenishment": "Ultima reposicion",
+        "pending": "Pendiente"
+      },
+      "contact": {
+        "heading": "Datos de contacto",
+        "mainContact": "Contacto principal",
+        "mainContactValue": "Pendiente de sincronizar",
+        "whatsapp": "WhatsApp",
+        "sendMessage": "Enviar mensaje",
+        "email": "Correo electronico",
+        "address": "Direccion",
+        "registeredOn": "Registrado el"
+      },
+      "deactivateButton": "Desactivar proveedor",
+      "closeButton": "Cerrar",
+      "editButton": "Editar",
+      "newRequestButton": "Nueva solicitud"
+    },
+    "associateProducts": {
+      "title": "Asociar productos",
+      "newProductToast": "La creación de productos sigue disponible desde Catalogo de productos",
+      "searchPlaceholder": "Buscar producto en el catálogo...",
+      "newProductButton": "Nuevo producto",
+      "catalogHeading": "Catálogo de productos",
+      "loadingCatalog": "Cargando catálogo...",
+      "catalogLoadError": "No fue posible cargar el catálogo de productos.",
+      "catalogEmpty": "No hay productos disponibles para asociar.",
+      "alreadyAssociated": "Ya asociado",
+      "stockCount": "{{count}} exist.",
+      "addSelectedButton": "Añadir seleccionados",
+      "draftHeading": "Productos a asociar",
+      "draftCount": "{{count}} productos asociados",
+      "table": {
+        "product": "Producto",
+        "supplierCode": "Cód. Proveedor",
+        "price": "Precio ($)",
+        "action": "Acción"
+      },
+      "empty": "Aún no hay productos seleccionados para este proveedor.",
+      "pricePendingPlaceholder": "Pendiente",
+      "priceInputPlaceholder": "0.00",
+      "priceInfo": "El precio de compra introducido se utilizará como referencia principal para futuras órdenes de reposición con este proveedor. El código interno del proveedor aún no está soportado por el backend actual.",
+      "cancelButton": "Cancelar",
+      "saveButton": "Guardar asociaciones"
+    }
+  },
+  "form": {
+    "nameLabel": "Razon social / Nombre",
+    "namePlaceholder": "Ej. Laboratorios Farma C.A.",
+    "rifLabel": "RIF",
+    "rifPlaceholder": "J-12345678-9",
+    "statusLabel": "Estado actual",
+    "whatsappLabel": "WhatsApp",
+    "whatsappHelper": "Se usara para enviar las solicitudes de reposicion",
+    "addressLabel": "Direccion",
+    "addressPlaceholder": "Direccion completa",
+    "deactivateButton": "Desactivar proveedor",
+    "cancelButton": "Cancelar",
+    "saveButton": "Guardar cambios",
+    "createButton": "Crear proveedor"
+  },
+  "modalFrame": {
+    "defaultAriaLabel": "Modal de proveedor"
+  },
+  "toasts": {
+    "created": "Proveedor creado correctamente",
+    "updated": "Proveedor actualizado correctamente",
+    "deactivated": "Proveedor desactivado correctamente",
+    "associationsSaved": "Asociaciones guardadas correctamente"
+  },
+  "validation": {
+    "nameRequired": "El nombre del proveedor es obligatorio",
+    "selectAtLeastOneProduct": "Seleccione al menos un producto para asociar"
+  },
+  "errors": {
+    "unexpected": "Ocurrio un error inesperado al gestionar proveedores",
+    "duplicateRif": "Ya existe un proveedor con ese RIF",
+    "notFound": "El proveedor ya no existe o no pudo encontrarse",
+    "deactivateFailed": "No fue posible desactivar el proveedor",
+    "invalidData": "Revise los datos del proveedor antes de guardar",
+    "operationFailed": "No fue posible completar la operacion sobre proveedores",
+    "associationSaveFailed": "No fue posible guardar las asociaciones de productos"
+  }
+}

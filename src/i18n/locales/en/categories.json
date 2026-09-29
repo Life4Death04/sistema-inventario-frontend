@@ -1,0 +1,58 @@
+{
+  "modal": {
+    "title": "Category management",
+    "subtitle": "Manage the names and descriptions used across the product catalog."
+  },
+  "list": {
+    "heading": "Registered categories",
+    "availableCount": "{{count}} available for future products",
+    "newButton": "New",
+    "loading": "Loading categories...",
+    "loadError": "Unable to load the categories. Try again to keep managing them.",
+    "retry": "Retry",
+    "empty": {
+      "title": "No categories yet",
+      "description": "Create the first one to enable the product selector."
+    },
+    "editingBadge": "Editing",
+    "noDescription": "No description"
+  },
+  "form": {
+    "createTitle": "Create category",
+    "editTitle": "Edit category",
+    "createDescription": "Use clear names to keep the catalog readable.",
+    "editDescription": "Changes affect labels and selectors related to products.",
+    "newCategoryButton": "New category",
+    "nameLabel": "Name",
+    "namePlaceholder": "E.g. Pain relievers",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Brief context for the inventory team",
+    "infoBox": {
+      "edit": "Editing <bold>{{categoryName}}</bold>. If this category is already linked to products, deleting it may return a conflict from the backend.",
+      "create": "New categories will be available in the real product selectors. If the request fails in those modals, the frontend keeps its safe fallback."
+    },
+    "updatingData": "Updating data...",
+    "deleteButton": "Delete category",
+    "closeButton": "Close",
+    "saving": "Saving...",
+    "submitCreate": "Create category",
+    "submitUpdate": "Save changes"
+  },
+  "toasts": {
+    "created": "Category created successfully",
+    "updated": "Category updated successfully",
+    "deleted": "Category deleted successfully"
+  },
+  "validation": {
+    "nameRequired": "The category name is required",
+    "selectToEdit": "Select a category to edit",
+    "selectToDelete": "Select a category to delete"
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred while managing categories",
+    "deleteConflict": "This category cannot be deleted because it has associated products",
+    "duplicateName": "A category with that name already exists",
+    "invalidData": "Review the entered data before saving the category",
+    "operationFailed": "Unable to complete the category operation"
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "page": {
+    "title": "Catalogo de Productos",
+    "subtitle": "Gestione y visualice el inventario general.",
+    "searchPlaceholder": "Buscar por codigo, nombre o principio activo...",
+    "categoriesButton": "Categorias",
+    "newProductButton": "Nuevo producto",
+    "metrics": {
+      "products": "Productos",
+      "critical": "Criticos",
+      "outOfStock": "Agotados"
+    },
+    "loadError": "No se pudieron cargar los productos reales en este momento.",
+    "actionsMenu": {
+      "viewDetail": "Ver detalle",
+      "edit": "Editar",
+      "registerMovement": "Registrar movimiento",
+      "generateReplenishment": "Generar reposicion",
+      "deactivate": "Desactivar"
+    }
+  },
+  "table": {
+    "columns": {
+      "code": "Codigo",
+      "product": "Producto",
+      "activeIngredient": "Principio activo",
+      "content": "Contenido",
+      "category": "Categoria",
+      "stock": "Stock",
+      "minStockPrefix": "Min.",
+      "status": "Estado"
+    },
+    "pagination": {
+      "summary": "Mostrando {{start}} a {{end}} de {{total}} productos"
+    }
+  },
+  "fallback": {
+    "noActiveIngredient": "Sin principio activo",
+    "noDescription": "Sin descripcion",
+    "noCategory": "Sin categoria",
+    "noPresentation": "Sin presentacion",
+    "noBrand": "Sin marca",
+    "noPrice": "Sin precio",
+    "notAssigned": "No asignado"
+  },
+  "placeholders": {
+    "select": "Seleccionar"
+  },
+  "units": {
+    "UNIT": "Unidad",
+    "MG": "Miligramos",
+    "G": "Gramos",
+    "KG": "Kilogramos",
+    "ML": "Mililitros",
+    "L": "Litros"
+  },
+  "modals": {
+    "new": {
+      "title": "Nuevo Producto",
+      "inventorySectionHeading": "Inventario",
+      "fields": {
+        "name": {
+          "label": "Nombre del producto",
+          "placeholder": "Ej. Amoxicilina 500mg",
+          "requiredError": "El nombre es obligatorio"
+        },
+        "sku": {
+          "label": "SKU / Codigo",
+          "placeholder": "SKU-"
+        },
+        "activeIngredient": {
+          "label": "Principio activo",
+          "placeholder": "Ej. Ibuprofeno"
+        },
+        "category": {
+          "label": "Categoria"
+        },
+        "price": {
+          "label": "Precio (USD)",
+          "placeholder": "0.00"
+        },
+        "initialSupplier": {
+          "label": "Proveedor inicial"
+        },
+        "brand": {
+          "label": "Marca"
+        },
+        "presentation": {
+          "label": "Presentacion"
+        },
+        "initialStock": {
+          "label": "Stock inicial",
+          "placeholder": "0"
+        },
+        "minStock": {
+          "label": "Stock minimo",
+          "placeholder": "10"
+        },
+        "unit": {
+          "label": "Unidad"
+        },
+        "unitContent": {
+          "label": "Contenido por unidad",
+          "placeholder": "Ej. 500"
+        },
+        "description": {
+          "label": "Descripcion",
+          "placeholder": "Detalles adicionales del producto"
+        }
+      },
+      "cancelButton": "Cancelar",
+      "submitButton": "Guardar producto"
+    },
+    "detail": {
+      "title": "Detalle del producto",
+      "loadingLabel": "Cargando detalle del producto...",
+      "loadErrorLabel": "No fue posible cargar el detalle real del producto.",
+      "summary": {
+        "stock": "Existencias",
+        "minStock": "Stock minimo",
+        "status": "Estado"
+      },
+      "fields": {
+        "category": "Categoria",
+        "unitPrice": "Precio unitario",
+        "supplier": "Proveedor",
+        "lastUpdate": "Ultima actualizacion",
+        "presentation": "Presentacion",
+        "content": "Contenido",
+        "activeIngredient": "Principio activo",
+        "description": "Descripcion"
+      },
+      "recentMovements": {
+        "heading": "Movimientos recientes",
+        "loading": "Cargando historial real...",
+        "loadError": "No fue posible cargar el historial real.",
+        "empty": "Sin movimientos recientes.",
+        "userLabel": "Usuario {{id}}",
+        "types": {
+          "in": "Entrada",
+          "out": "Salida",
+          "adjustment": "Ajuste"
+        }
+      },
+      "actions": {
+        "registerMovement": "Registrar movimiento",
+        "generateReplenishment": "Generar reposicion"
+      },
+      "closeButton": "Cerrar",
+      "editButton": "Editar"
+    },
+    "edit": {
+      "title": "Editar Producto",
+      "loadingLabel": "Cargando datos del producto...",
+      "loadErrorLabel": "No fue posible cargar los datos reales del producto.",
+      "fields": {
+        "name": { "label": "Nombre del producto" },
+        "code": { "label": "Codigo" },
+        "brand": { "label": "Marca" },
+        "presentation": { "label": "Presentacion" },
+        "activeIngredient": { "label": "Principio activo" },
+        "description": { "label": "Descripcion" },
+        "currentStock": { "label": "Stock actual" },
+        "minStock": { "label": "Stock minimo" },
+        "category": { "label": "Categoria" },
+        "unitPrice": { "label": "Precio unitario" },
+        "unit": { "label": "Unidad" },
+        "content": { "label": "Contenido" },
+        "lastUpdate": { "label": "Ultima actualizacion" }
+      },
+      "suppliers": {
+        "heading": "Proveedores asociados",
+        "description": "Las asociaciones reales se guardan por `supplierId`.",
+        "empty": "No hay proveedores asociados todavía.",
+        "referencePrice": "Precio de referencia: {{price}}",
+        "pricePending": "Pendiente",
+        "removeButton": "Quitar",
+        "associateLabel": "Asociar proveedor",
+        "associatePlaceholder": "Seleccionar proveedor",
+        "associateButton": "Asociar"
+      },
+      "deactivateFromMenuButton": "Desactivar desde menu",
+      "cancelButton": "Cancelar",
+      "saveButton": "Guardar cambios"
+    },
+    "registerMovement": {
+      "title": "Registrar movimiento",
+      "codeLabel": "COD: {{code}}",
+      "types": {
+        "IN": "Entrada",
+        "OUT": "Salida",
+        "ADJUSTMENT": "Ajuste"
+      },
+      "adjustmentDirection": {
+        "label": "Direccion del ajuste",
+        "increase": "Incrementar",
+        "decrease": "Disminuir"
+      },
+      "fields": {
+        "quantity": { "label": "Cantidad" },
+        "reason": { "label": "Motivo" }
+      },
+      "reasons": {
+        "IN": {
+          "supplierReceipt": "Recepcion de proveedor",
+          "customerReturn": "Devolucion de cliente",
+          "inventoryAdjustmentIncrease": "Ajuste de inventario (+)"
+        },
+        "OUT": {
+          "counterDispensing": "Dispensacion en ventanilla",
+          "lossOrExpiration": "Merma o vencimiento",
+          "transferToOtherSite": "Traslado a otra sede"
+        },
+        "ADJUSTMENT": {
+          "physicalCount": "Conteo fisico",
+          "manualCorrection": "Correccion manual",
+          "internalAudit": "Auditoria interna"
+        }
+      },
+      "resultingStock": "Existencias actuales: <mono>{{current}}</mono> -> resultado: <result>{{result}}</result>",
+      "cancelButton": "Cancelar",
+      "submitButton": "Registrar"
+    },
+    "deactivate": {
+      "title": "Desactivar producto",
+      "confirmMessage": "¿Desactivar <bold>{{name}}</bold>? Dejara de aparecer en el catalogo activo, pero se conservara su historial de movimientos.",
+      "cancelButton": "Cancelar",
+      "deactivateButton": "Desactivar"
+    }
+  },
+  "toasts": {
+    "productCreated": "Producto creado correctamente",
+    "productUpdated": "Producto actualizado correctamente",
+    "productDeactivated": "Producto desactivado correctamente",
+    "supplierAttached": "Proveedor asociado correctamente",
+    "supplierDetached": "Proveedor desasociado correctamente",
+    "movementRegistered": "Movimiento registrado correctamente"
+  },
+  "validation": {
+    "nameRequired": "El nombre del producto es obligatorio",
+    "codeRequired": "El código del producto es obligatorio",
+    "categoryRequired": "Seleccione una categoría válida",
+    "unitContentRequired": "El contenido por unidad es obligatorio",
+    "pricePositive": "El precio no puede ser negativo",
+    "minStockPositive": "El stock mínimo no puede ser negativo",
+    "initialStockPositive": "El stock inicial no puede ser negativo",
+    "quantityPositive": "La cantidad debe ser mayor que cero",
+    "reasonRequired": "Seleccione un motivo para el movimiento"
+  },
+  "errors": {
+    "unexpected": "Ocurrió un error inesperado al gestionar productos",
+    "duplicateCode": "Ya existe un producto con ese código",
+    "categoryNotFound": "La categoría seleccionada ya no existe",
+    "supplierAssociationFailed": "El proveedor seleccionado ya no existe o no se pudo asociar",
+    "supplierNotFound": "El proveedor seleccionado ya no existe",
+    "deactivateConflict": "No se pudo desactivar el producto por una restricción del backend",
+    "notFound": "El producto ya no existe o no pudo encontrarse",
+    "supplierUpdateFailed": "No fue posible actualizar los proveedores asociados del producto",
+    "operationFailed": "No fue posible completar la operación sobre productos",
+    "registerMovementFailed": "No fue posible registrar el movimiento"
+  }
+}

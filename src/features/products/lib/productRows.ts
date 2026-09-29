@@ -1,4 +1,9 @@
+import type { TFunction } from 'i18next'
+
+import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Product } from '@/types/api.types'
+
+export type ProductsTFunction = TFunction<['products', 'common']>
 
 export interface ProductRow {
   id: string
@@ -23,26 +28,26 @@ export interface ProductRow {
   suppliers: string[]
   createdAt: string
   updatedAt: string
-  status: string
+  status: StockStatus
 }
 
-export function toProductRow(product: Product, categoryName?: string): ProductRow {
+export function toProductRow(product: Product, t: ProductsTFunction, categoryName?: string): ProductRow {
   return {
     id: product.id,
     code: product.code,
     name: product.name,
     activeIngredient: product.activeIngredient,
-    activeIngredientLabel: product.activeIngredient ?? 'Sin principio activo',
+    activeIngredientLabel: product.activeIngredient ?? t('products:fallback.noActiveIngredient'),
     description: product.description,
-    descriptionLabel: product.description ?? 'Sin descripcion',
+    descriptionLabel: product.description ?? t('products:fallback.noDescription'),
     categoryId: product.categoryId,
-    category: categoryName ?? 'Sin categoria',
+    category: categoryName ?? t('products:fallback.noCategory'),
     stock: product.stock,
     minStock: product.minStock,
     presentation: product.presentation,
-    presentationLabel: product.presentation ?? 'Sin presentacion',
+    presentationLabel: product.presentation ?? t('products:fallback.noPresentation'),
     brand: product.brand,
-    brandLabel: product.brand ?? 'Sin marca',
+    brandLabel: product.brand ?? t('products:fallback.noBrand'),
     unit: product.unit,
     unitContent: product.unitContent,
     price: product.price,
@@ -50,18 +55,6 @@ export function toProductRow(product: Product, categoryName?: string): ProductRo
     suppliers: [],
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
-    status: getProductStatus(product.stock, product.minStock),
+    status: getStockStatus(product.stock, product.minStock),
   }
-}
-
-function getProductStatus(stock: number, minStock: number): ProductRow['status'] {
-  if (stock === 0) {
-    return 'Agotado'
-  }
-
-  if (stock <= minStock) {
-    return 'Critico'
-  }
-
-  return 'Optimo'
 }

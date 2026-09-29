@@ -1,0 +1,26 @@
+{
+  "page": {
+    "title": "Alertas de inventario",
+    "metrics": {
+      "active": "Alertas activas",
+      "critical": "Criticas",
+      "out": "Agotadas"
+    },
+    "loadError": "No fue posible cargar las alertas desde productos reales."
+  },
+  "empty": {
+    "noActiveAlerts": "No hay alertas activas. Todos los productos están por encima del stock mínimo."
+  },
+  "level": {
+    "critical": "Critico",
+    "out": "Agotado"
+  },
+  "card": {
+    "generatedAt": "Generada: {{date}}",
+    "currentStockLabel": "Stock actual:",
+    "actions": {
+      "generateReplenishment": "Generar reposicion",
+      "viewProduct": "Ver producto"
+    }
+  }
+}

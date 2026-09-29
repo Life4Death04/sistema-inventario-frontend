@@ -1,5 +1,6 @@
 import { ArrowLeftRight, FolderTree, Package2, Plus, Search, SquarePen, TriangleAlert, View } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Loading } from '@/components/ui/Loading'
 import { CategoryManagementModal } from '@/features/categories/components/CategoryManagementModal'
@@ -12,6 +13,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function ProductsPage() {
+  const { t } = useTranslation(['products', 'common'])
   const user = useAuthStore((state) => state.user)
   const [query, setQuery] = useState('')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
@@ -29,10 +31,10 @@ export function ProductsPage() {
   })
   const categoryNames = new Map((categoriesResponse?.data ?? []).map((category) => [category.id, category.name]))
   const products = (productsResponse?.data ?? []).map((product) =>
-    toProductRow(product, categoryNames.get(product.categoryId)),
+    toProductRow(product, t, categoryNames.get(product.categoryId)),
   )
-  const criticalCount = products.filter((product) => product.status === 'Critico').length
-  const outCount = products.filter((product) => product.status === 'Agotado').length
+  const criticalCount = products.filter((product) => product.status === 'low').length
+  const outCount = products.filter((product) => product.status === 'out').length
 
   const openModal = (modalType: ProductModalType, product: ProductRow | null = null) => {
     setSelectedProduct(product)
@@ -60,7 +62,7 @@ export function ProductsPage() {
         type="button"
       >
         <View className="h-4 w-4 text-[#5c6b78]" />
-        Ver detalle
+        {t('products:page.actionsMenu.viewDetail')}
       </button>
       {canManage ? (
         <button
@@ -72,7 +74,7 @@ export function ProductsPage() {
           type="button"
         >
           <SquarePen className="h-4 w-4 text-[#5c6b78]" />
-          Editar
+          {t('products:page.actionsMenu.edit')}
         </button>
       ) : null}
       {canOpenMovement ? (
@@ -85,7 +87,7 @@ export function ProductsPage() {
           type="button"
         >
           <ArrowLeftRight className="h-4 w-4 text-[#5c6b78]" />
-          Registrar movimiento
+          {t('products:page.actionsMenu.registerMovement')}
         </button>
       ) : null}
       {canUseReplenishment ? (
@@ -98,7 +100,7 @@ export function ProductsPage() {
           type="button"
         >
           <Package2 className="h-4 w-4 text-[#5c6b78]" />
-          Generar reposicion
+          {t('products:page.actionsMenu.generateReplenishment')}
         </button>
       ) : null}
       {canManage ? <div className="mx-4 h-px bg-[#e5ecf1]" /> : null}
@@ -112,7 +114,7 @@ export function ProductsPage() {
           type="button"
         >
           <TriangleAlert className="h-4 w-4" />
-          Desactivar
+          {t('products:page.actionsMenu.deactivate')}
         </button>
       ) : null}
     </div>
@@ -123,8 +125,8 @@ export function ProductsPage() {
       <section className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-[30px] font-semibold leading-[38px] text-[#0e1d27]">Catalogo de Productos</h2>
-          <p className="mt-1 text-sm text-[#5c6b78]">Gestione y visualice el inventario general.</p>
+          <h2 className="text-[30px] font-semibold leading-[38px] text-[#0e1d27]">{t('products:page.title')}</h2>
+          <p className="mt-1 text-sm text-[#5c6b78]">{t('products:page.subtitle')}</p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -133,7 +135,7 @@ export function ProductsPage() {
             <input
               className="h-10 w-full rounded-[8px] border border-[#e5ecf1] bg-white pl-10 pr-4 text-sm outline-none transition focus:border-[#004782] focus:ring-1 focus:ring-[#004782] sm:w-80"
               onChange={(event) => handleQueryChange(event.target.value)}
-              placeholder="Buscar por codigo, nombre o principio activo..."
+              placeholder={t('products:page.searchPlaceholder')}
               type="text"
               value={query}
             />
@@ -146,7 +148,7 @@ export function ProductsPage() {
               type="button"
             >
               <FolderTree className="h-4 w-4" />
-              Categorias
+              {t('products:page.categoriesButton')}
             </button>
           ) : null}
 
@@ -157,7 +159,7 @@ export function ProductsPage() {
               type="button"
             >
               <Plus className="h-4 w-4" />
-              Nuevo producto
+              {t('products:page.newProductButton')}
             </button>
           ) : null}
         </div>
@@ -165,22 +167,22 @@ export function ProductsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-[12px] border border-[#e5ecf1] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">Productos</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">{t('products:page.metrics.products')}</p>
           <p className="mt-2 text-2xl font-semibold text-[#0e1d27]">{products.length}</p>
         </div>
         <div className="rounded-[12px] border border-[#e5ecf1] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">Criticos</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">{t('products:page.metrics.critical')}</p>
           <p className="mt-2 text-2xl font-semibold text-[#9a5b00]">{criticalCount}</p>
         </div>
         <div className="rounded-[12px] border border-[#e5ecf1] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">Agotados</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5c6b78]">{t('products:page.metrics.outOfStock')}</p>
           <p className="mt-2 text-2xl font-semibold text-[#b0301f]">{outCount}</p>
         </div>
       </div>
 
       <div className="overflow-hidden rounded-[12px] border border-[#e5ecf1] bg-white">
         {isLoading ? <Loading /> : null}
-        {isError ? <ProductsLoadError /> : null}
+        {isError ? <ProductsLoadError label={t('products:page.loadError')} /> : null}
         {!isLoading && !isError ? (
           <ProductsTanStackTable
             globalFilter={query}
@@ -200,10 +202,10 @@ export function ProductsPage() {
   )
 }
 
-function ProductsLoadError() {
+function ProductsLoadError({ label }: { label: string }) {
   return (
     <div className="rounded-[var(--radius-panel)] border border-[var(--color-danger-text)]/20 bg-[var(--color-danger-bg)] px-4 py-3 text-sm text-[var(--color-danger-text)]">
-      No se pudieron cargar los productos reales en este momento.
+      {label}
     </div>
   )
 }

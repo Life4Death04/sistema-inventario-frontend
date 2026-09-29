@@ -1,0 +1,163 @@
+{
+  "page": {
+    "metrics": {
+      "pending": "Pendientes",
+      "sent": "Enviadas",
+      "receivedThisMonth": "Recibidas (mes)",
+      "cancelledThisMonth": "Canceladas (mes)"
+    },
+    "newRequestButton": "Nueva solicitud",
+    "searchPlaceholder": "Buscar por n.º, producto o proveedor",
+    "loadError": "No fue posible cargar las solicitudes reales de reposición.",
+    "empty": "No hay solicitudes de reposición para mostrar."
+  },
+  "filters": {
+    "all": "Todas"
+  },
+  "status": {
+    "PENDING": "Pendiente",
+    "SENT": "Enviada",
+    "RECEIVED": "Recibida",
+    "CANCELLED": "Cancelada"
+  },
+  "fallback": {
+    "notSent": "No enviada"
+  },
+  "table": {
+    "columns": {
+      "id": "N.º",
+      "products": "Productos",
+      "supplier": "Proveedor",
+      "date": "Fecha",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "itemsCount": {
+      "none": "Sin resumen",
+      "one": "1 producto",
+      "other": "{{count}} productos"
+    },
+    "actions": {
+      "viewDetailTitle": "Ver detalle",
+      "changeStatusTitle": "Cambiar estado"
+    },
+    "pagination": {
+      "summary": "Mostrando {{start}}-{{end}} de {{total}} solicitudes"
+    }
+  },
+  "modals": {
+    "generate": {
+      "title": "Nueva solicitud de reposición",
+      "supplier": {
+        "label": "Proveedor",
+        "placeholder": "Seleccionar proveedor",
+        "hintWithSupplier": "Mostrando solo productos asociados a este proveedor. Si omite el precio unitario, el backend lo resolverá desde la referencia.",
+        "hintWithoutSupplier": "Seleccione un proveedor para ver sus productos asociados."
+      },
+      "productsHeading": "Productos a solicitar",
+      "table": {
+        "product": "Producto",
+        "stock": "Existencias",
+        "quantity": "Cantidad",
+        "unitPrice": "Precio unit.",
+        "unitPricePlaceholder": "Auto",
+        "empty": "No hay productos seleccionados."
+      },
+      "addProductButton": "Añadir producto",
+      "noteLabel": "Nota para el proveedor (Opcional)",
+      "notePlaceholder": "Escriba aquí instrucciones adicionales...",
+      "summary": {
+        "lines": "Total de líneas:",
+        "units": "Unidades:"
+      },
+      "cancelButton": "Cancelar",
+      "saveAsPendingButton": "Guardar como pendiente",
+      "generateAndSendButton": "Generar y enviar"
+    },
+    "associateProducts": {
+      "title": "Añadir productos",
+      "description": "La validación proveedor-producto se resuelve al guardar la solicitud.",
+      "searchPlaceholder": "Buscar por nombre, SKU o principio activo...",
+      "showingCount": "Mostrando {{count}} productos",
+      "onlyLowStockLabel": "Solo bajo stock",
+      "alreadyAdded": "Ya añadido",
+      "suggestedLabel": "Sugerido:",
+      "stockLabel": "Stock: {{value}}",
+      "minLabel": "Mín: {{value}}",
+      "selectedCount": "{{count}} productos seleccionados",
+      "cancelButton": "Cancelar",
+      "addButton": "Añadir ({{count}})"
+    },
+    "detail": {
+      "title": "Detalle de reposición",
+      "requestTitle": "Solicitud {{code}}",
+      "loadError": "No fue posible cargar el detalle real de la solicitud.",
+      "whatsappBadge": "WhatsApp",
+      "metadata": {
+        "createdBy": "Creada por",
+        "createdByValue": "{{name}} · {{date}}",
+        "sent": "Enviada",
+        "sentValue": "{{date}} · por WhatsApp",
+        "notSent": "No enviada",
+        "received": "Recibida",
+        "notReceived": "—",
+        "notes": "Notas",
+        "noNotes": "Sin notas"
+      },
+      "itemsHeading": "Productos solicitados",
+      "table": {
+        "product": "Producto",
+        "quantity": "Cantidad",
+        "unitPrice": "Precio unitario",
+        "subtotal": "Subtotal"
+      },
+      "totalEstimated": "Total estimado:",
+      "pricesNote": "Precios registrados al momento de la solicitud",
+      "timelineHeading": "Historial de estados",
+      "timeline": {
+        "pending": "pendiente",
+        "closed": "cerrada"
+      },
+      "changeStatusButton": "Cambiar estado",
+      "confirmReceiptButton": "Confirmar recepción"
+    },
+    "changeStatus": {
+      "title": "Cambiar estado",
+      "loadError": "No fue posible cargar la solicitud real.",
+      "currentStatusLabel": "Estado actual:",
+      "newStatusLabel": "Nuevo Estado",
+      "receivedProductsLabel": "Productos recibidos",
+      "productColumn": "Producto",
+      "receivedQuantityColumn": "Cant. Recibida",
+      "cancelWarning": "La solicitud se cerrará y <bold>no afectará el inventario</bold>. Esta acción no se puede deshacer.",
+      "cancelButton": "Cancelar",
+      "submit": {
+        "cancel": "Cancelar solicitud",
+        "receive": "Confirmar recepción",
+        "send": "Marcar como enviada"
+      }
+    }
+  },
+  "toasts": {
+    "requestSent": "Solicitud enviada correctamente",
+    "requestCreated": "Solicitud creada correctamente",
+    "requestCancelled": "Solicitud cancelada correctamente",
+    "receiptConfirmed": "Recepción confirmada correctamente"
+  },
+  "validation": {
+    "supplierRequired": "Seleccione un proveedor válido",
+    "productsRequired": "Debe seleccionar al menos un producto",
+    "quantityPositive": "La cantidad solicitada para {{name}} debe ser mayor que cero",
+    "unitPricePositive": "El precio unitario de {{name}} debe ser mayor que cero",
+    "receivedQuantityNegative": "La cantidad recibida de {{name}} no puede ser negativa"
+  },
+  "errors": {
+    "unexpected": "No fue posible completar la operación de reposición",
+    "unitPriceRequired": "Debe indicar el precio unitario o configurar una referencia para ese proveedor",
+    "invalidStateTransition": "La solicitud ya no está en un estado válido para esa acción",
+    "sendFailed": "No fue posible enviar la solicitud",
+    "receiveFailed": "No fue posible confirmar la recepción",
+    "cancelFailed": "No fue posible cancelar la solicitud",
+    "createFailed": "No fue posible crear la solicitud"
+  }
+}

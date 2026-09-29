@@ -1,6 +1,7 @@
 import { Plus, Search } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Loading } from '@/components/ui/Loading'
 import { canManageUsers } from '@/features/auth/lib/permissions'
@@ -11,6 +12,7 @@ import { UsersTanStackTable } from '@/features/users/components/UsersTanStackTab
 import { toUserRow, type UserRow } from '@/features/users/lib/userRows'
 
 export function UsersPage() {
+  const { t } = useTranslation(['users', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = canManageUsers(user?.role)
   const [query, setQuery] = useState('')
@@ -44,10 +46,10 @@ export function UsersPage() {
     <>
       <section className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          <MetricCard label="Usuarios activos" tone="default" value={metrics.active} />
-          <MetricCard label="Administradores" tone="default" value={metrics.admins} />
-          <MetricCard label="Encargados" tone="default" value={metrics.managers} />
-          <MetricCard label="Operativos" tone="default" value={metrics.operators} />
+          <MetricCard label={t('users:page.metrics.active')} tone="default" value={metrics.active} />
+          <MetricCard label={t('users:page.metrics.admins')} tone="default" value={metrics.admins} />
+          <MetricCard label={t('users:page.metrics.managers')} tone="default" value={metrics.managers} />
+          <MetricCard label={t('users:page.metrics.operators')} tone="default" value={metrics.operators} />
         </div>
 
         <section className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -57,7 +59,7 @@ export function UsersPage() {
               <input
                 className="h-10 w-full rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] pl-10 pr-4 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por nombre o correo"
+                placeholder={t('users:page.searchPlaceholder')}
                 type="text"
                 value={query}
               />
@@ -65,10 +67,10 @@ export function UsersPage() {
 
             <div className="flex flex-wrap rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] p-1">
               {[
-                { key: 'ALL', label: 'Todos' },
-                { key: 'ADMIN', label: 'Administradores' },
-                { key: 'MANAGER', label: 'Encargados' },
-                { key: 'OPERATOR', label: 'Operativos' },
+                { key: 'ALL', label: t('users:page.filters.all') },
+                { key: 'ADMIN', label: t('users:page.filters.admins') },
+                { key: 'MANAGER', label: t('users:page.filters.managers') },
+                { key: 'OPERATOR', label: t('users:page.filters.operators') },
               ].map((item) => (
                 <button
                   key={item.key}
@@ -89,7 +91,7 @@ export function UsersPage() {
               type="button"
             >
               <Plus className="h-4 w-4" />
-              Nuevo usuario
+              {t('users:page.newUserButton')}
             </button>
           ) : null}
         </section>
@@ -115,9 +117,11 @@ export function UsersPage() {
 
 
 function LoadErrorMessage() {
+  const { t } = useTranslation(['users', 'common'])
+
   return (
     <div className="rounded-[var(--radius-panel)] border border-[var(--color-danger-text)]/20 bg-[var(--color-danger-bg)] px-4 py-3 text-sm text-[var(--color-danger-text)]">
-      No se pudieron cargar los usuarios reales en este momento.
+      {t('users:page.loadError')}
     </div>
   )
 }

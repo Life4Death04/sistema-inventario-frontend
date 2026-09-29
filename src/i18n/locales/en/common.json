@@ -1,0 +1,15 @@
+{
+  "appName": "High Meds C.A.",
+  "language": {
+    "spanish": "Español",
+    "english": "English"
+  },
+  "state": {
+    "notAvailable": "Not available"
+  },
+  "stockStatus": {
+    "healthy": "Normal",
+    "low": "Critical",
+    "out": "Out of stock"
+  }
+}

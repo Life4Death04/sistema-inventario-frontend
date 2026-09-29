@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
 import { Eye, EyeOff, Lock, Mail, Pill } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
@@ -12,19 +14,22 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { LoginFormValues } from '@/types/common.types'
 import type { ApiErrorEnvelope } from '@/types/api.types'
 
-function getLoginErrorMessage(error: unknown) {
+type AuthTFunction = TFunction<['auth', 'common']>
+
+function getLoginErrorMessage(error: unknown, t: AuthTFunction) {
   if (isAxiosError<ApiErrorEnvelope>(error)) {
-    return /*error.response?.data.message ??*/ 'Correo y/o contraseña incorrectos'
+    return /*error.response?.data.message ??*/ t('auth:errors.invalidCredentials')
   }
 
   if (error instanceof Error) {
     return error.message
   }
 
-  return 'No fue posible iniciar sesion'
+  return t('auth:errors.loginFailed')
 }
 
 export function LoginPage() {
+  const { t } = useTranslation(['auth', 'common'])
   const login = useAuthStore((state) => state.login)
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,10 +54,10 @@ export function LoginPage() {
 
     try {
       await login(email, password)
-      toast.success('Sesion iniciada correctamente')
+      toast.success(t('auth:toasts.loginSuccess'))
       navigate(destination, { replace: true })
     } catch (error) {
-      toast.error(getLoginErrorMessage(error))
+      toast.error(getLoginErrorMessage(error, t))
     } finally {
       setIsSubmitting(false)
     }
@@ -65,7 +70,7 @@ export function LoginPage() {
     const guestPassword = import.meta.env.VITE_GUEST_PASSWORD
 
     if (!guestEmail || !guestPassword) {
-      toast.error('El acceso de invitado no esta configurado')
+      toast.error(t('auth:errors.guestNotConfigured'))
       return
     }
 
@@ -80,14 +85,14 @@ export function LoginPage() {
             <div className="mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-[12px] bg-[#e1f5ee]">
               <Pill className="h-7 w-7 text-[#0f6e56]" />
             </div>
-            <h1 className="text-[20px] font-semibold text-[#004782]">High Meds C.A.</h1>
-            <p className="mt-1 text-[13px] text-[#5c6b78]">Sistema de gestion de inventario</p>
+            <h1 className="text-[20px] font-semibold text-[#004782]">{t('common:appName')}</h1>
+            <p className="mt-1 text-[13px] text-[#5c6b78]">{t('auth:subtitle')}</p>
           </div>
 
           <form className="flex flex-col gap-5" onSubmit={onSubmit}>
             <div className="flex flex-col gap-1">
               <label className="sr-only" htmlFor="email">
-                Correo electronico
+                {t('auth:fields.email.label')}
               </label>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#95a3ae]" />
@@ -95,7 +100,7 @@ export function LoginPage() {
                   {...register('email')}
                   className="h-11 w-full rounded-[8px] border border-[#e5ecf1] bg-white pl-10 pr-4 text-sm text-[#0e1d27] outline-none transition focus:border-[#004782] focus:ring-2 focus:ring-[#004782]/10"
                   id="email"
-                  placeholder="Correo electronico"
+                  placeholder={t('auth:fields.email.placeholder')}
                   type="email"
                 />
               </div>
@@ -104,7 +109,7 @@ export function LoginPage() {
 
             <div className="flex flex-col gap-1">
               <label className="sr-only" htmlFor="password">
-                Contrasena
+                {t('auth:fields.password.label')}
               </label>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#95a3ae]" />
@@ -112,7 +117,7 @@ export function LoginPage() {
                   {...register('password')}
                   className="h-11 w-full rounded-[8px] border border-[#e5ecf1] bg-white pl-10 pr-10 text-sm text-[#0e1d27] outline-none transition focus:border-[#004782] focus:ring-2 focus:ring-[#004782]/10"
                   id="password"
-                  placeholder="Contrasena"
+                  placeholder={t('auth:fields.password.placeholder')}
                   type={showPassword ? 'text' : 'password'}
                 />
                 <button
@@ -127,7 +132,7 @@ export function LoginPage() {
             </div>
 
             <div className="-mt-2 flex justify-end">
-              <span className="text-[13px] text-[#004782]">Olvidaste tu contrasena?</span>
+              <span className="text-[13px] text-[#004782]">{t('auth:forgotPassword')}</span>
             </div>
 
             <Button
@@ -135,7 +140,7 @@ export function LoginPage() {
               disabled={isSubmitting}
               type="submit"
             >
-              {isSubmitting ? 'Ingresando...' : 'Iniciar sesion'}
+              {isSubmitting ? t('auth:actions.submitting') : t('auth:actions.submit')}
             </Button>
 
             <Button
@@ -145,13 +150,13 @@ export function LoginPage() {
               type="button"
               variant="secondary"
             >
-              Ingresar como invitado
+              {t('auth:actions.guestLogin')}
             </Button>
           </form>
 
         </div>
 
-        <footer className="mt-8 text-center text-[11px] leading-4 text-[#95a3ae]">Aragua de Maturin, Monagas · Acceso restringido</footer>
+        <footer className="mt-8 text-center text-[11px] leading-4 text-[#95a3ae]">{t('auth:footer')}</footer>
       </div>
     </div>
   )

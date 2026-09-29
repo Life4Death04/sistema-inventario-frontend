@@ -1,0 +1,105 @@
+{
+  "page": {
+    "title": "Existencias",
+    "subtitle": "Monitoree stock, minimos y salidas operativas del inventario.",
+    "metrics": {
+      "total": "Productos en inventario",
+      "normal": "Stock normal",
+      "critical": "Stock crítico",
+      "out": "Agotados"
+    },
+    "filters": {
+      "searchPlaceholder": "Buscar producto",
+      "categoryDefaultOption": "Categoría",
+      "statusAll": "Todos"
+    },
+    "loading": "Cargando existencias reales...",
+    "loadError": "No fue posible cargar el inventario real."
+  },
+  "table": {
+    "columns": {
+      "product": "Producto",
+      "category": "Categoria",
+      "stock": "Existencias",
+      "minStock": "Stock min.",
+      "status": "Estado",
+      "actions": "Accion"
+    },
+    "actions": {
+      "registerOutput": "Registrar salida",
+      "viewDetail": "Ver detalle"
+    },
+    "pagination": {
+      "summary": "Mostrando <range>{{start}}-{{end}}</range> de <total>{{total}}</total> productos"
+    }
+  },
+  "fallback": {
+    "noActiveIngredient": "Sin principio activo",
+    "noCategory": "Sin categoria",
+    "noPresentation": "Sin presentacion",
+    "noBrand": "Sin marca"
+  },
+  "modals": {
+    "detail": {
+      "title": "Detalle del producto",
+      "summary": {
+        "stock": "Existencias",
+        "minStock": "Stock minimo",
+        "status": "Estado"
+      },
+      "fields": {
+        "category": "Categoria",
+        "unitPrice": "Precio unitario",
+        "supplier": "Proveedor",
+        "lastUpdate": "Ultima actualizacion",
+        "presentation": "Presentacion",
+        "content": "Contenido",
+        "activeIngredient": "Principio activo"
+      },
+      "recentMovements": {
+        "heading": "Movimientos recientes",
+        "loading": "Cargando historial real...",
+        "loadError": "No fue posible cargar el historial real.",
+        "empty": "Sin movimientos recientes.",
+        "userLabel": "Usuario {{id}}",
+        "types": {
+          "in": "Entrada",
+          "out": "Salida",
+          "adjustment": "Ajuste"
+        }
+      },
+      "closeButton": "Cerrar"
+    },
+    "output": {
+      "title": "Registrar salida",
+      "fields": {
+        "product": "Producto",
+        "quantity": "Cantidad",
+        "reason": "Motivo"
+      },
+      "reasons": {
+        "dispensing": "Dispensación por Ventanilla",
+        "expiration": "Vencimiento",
+        "damage": "Daño",
+        "lossOrShrinkage": "Pérdida/Merma",
+        "inventoryAdjustment": "Ajuste de inventario",
+        "supplierReturn": "Devolución a proveedor"
+      },
+      "resultingStock": "Existencias actuales: <mono>{{current}}</mono> -> resultado: <result>{{result}}</result>",
+      "belowMinimumWarning": "El resultado quedará por debajo del stock mínimo ({{minStock}})",
+      "cancelButton": "Cancelar",
+      "submitButton": "Registrar salida",
+      "submitting": "Registrando..."
+    }
+  },
+  "toasts": {
+    "outputRegistered": "Salida registrada correctamente"
+  },
+  "validation": {
+    "quantityPositive": "La cantidad debe ser mayor que cero",
+    "reasonRequired": "Seleccione un motivo para la salida"
+  },
+  "errors": {
+    "registerOutputFailed": "No fue posible registrar la salida"
+  }
+}

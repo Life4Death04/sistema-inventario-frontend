@@ -1,9 +1,11 @@
 import type { ProductRow } from '@/features/products/lib/productRows'
 
+export type InventoryAlertLevel = 'critical' | 'out'
+
 export interface InventoryAlertRow {
   id: string
-  level: 'critical' | 'out'
-  label: 'Critico' | 'Agotado'
+  /** Stable semantic key. Never store a translated label here: branch and sort on this, translate only at render time. */
+  level: InventoryAlertLevel
   generatedAt: string
   product: ProductRow
 }
@@ -30,7 +32,6 @@ export function toInventoryAlertRows(products: ProductRow[], generatedAt: string
     .map((product) => ({
       id: `alert-${product.id}`,
       level: product.stock === 0 ? ('out' as const) : ('critical' as const),
-      label: product.stock === 0 ? ('Agotado' as const) : ('Critico' as const),
       generatedAt,
       product,
     }))

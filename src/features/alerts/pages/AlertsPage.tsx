@@ -1,6 +1,7 @@
 import { AlertTriangle, CircleAlert, Eye, Package2 } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -14,6 +15,7 @@ import { ProductCatalogModals, type ProductModalType } from '@/features/products
 import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function AlertsPage() {
+  const { t } = useTranslation(['products', 'alerts', 'common'])
   const user = useAuthStore((state) => state.user)
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
@@ -26,8 +28,8 @@ export function AlertsPage() {
   )
 
   const activeProducts = useMemo(
-    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, categoryNames.get(product.categoryId))),
-    [categoryNames, activeProductsResponse],
+    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, t, categoryNames.get(product.categoryId))),
+    [categoryNames, activeProductsResponse, t],
   )
 
   const generatedAt = new Date(dataUpdatedAt || Date.now()).toISOString()
@@ -56,21 +58,19 @@ export function AlertsPage() {
     <>
       <section className="space-y-6">
         <div>
-          <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">Alertas de inventario</h2>
+          <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">{t('alerts:page.title')}</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-          <MetricCard label="Alertas activas" tone="default" value={metrics.active} />
-          <MetricCard label="Criticas" tone="warning" value={metrics.critical} />
-          <MetricCard label="Agotadas" tone="danger" value={metrics.out} />
+          <MetricCard label={t('alerts:page.metrics.active')} tone="default" value={metrics.active} />
+          <MetricCard label={t('alerts:page.metrics.critical')} tone="warning" value={metrics.critical} />
+          <MetricCard label={t('alerts:page.metrics.out')} tone="danger" value={metrics.out} />
         </div>
 
         <div className="space-y-4">
           {isLoading ? <Loading /> : null}
-          {!isLoading && isError ? <AlertsStateMessage label="No fue posible cargar las alertas desde productos reales." tone="error" /> : null}
-          {!isLoading && !isError && activeAlerts.length === 0 ? (
-            <AlertsStateMessage label="No hay alertas activas. Todos los productos están por encima del stock mínimo." />
-          ) : null}
+          {!isLoading && isError ? <AlertsStateMessage label={t('alerts:page.loadError')} tone="error" /> : null}
+          {!isLoading && !isError && activeAlerts.length === 0 ? <AlertsStateMessage label={t('alerts:empty.noActiveAlerts')} /> : null}
           {!isLoading && !isError
             ? activeAlerts.map((alert) => (
                 <AlertCard key={alert.id} alert={alert} canUseReplenishment={hasPermission(user?.role, 'manage:replenishment')} onOpenModal={openModal} />
@@ -93,6 +93,7 @@ function AlertCard({
   canUseReplenishment: boolean
   onOpenModal: (modalType: ProductModalType, product: ProductRow | null) => void
 }) {
+  const { t } = useTranslation(['alerts'])
   const statusClasses = getStatusClasses(alert)
   const Icon = statusClasses.icon
 
@@ -109,14 +110,14 @@ function AlertCard({
               <h3 className="text-base font-semibold text-[var(--color-text)] sm:text-lg">{alert.product.name}</h3>
               <span className="font-data-mono text-xs text-[var(--color-text-secondary)]">{alert.product.code}</span>
               <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${statusClasses.badgeClassName}`}>
-                {alert.label}
+                {alert.level === 'out' ? t('alerts:level.out') : t('alerts:level.critical')}
               </span>
             </div>
 
-            <p className="text-sm text-[var(--color-text-secondary)]">Generada: {formatAlertDate(alert.generatedAt)}</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">{t('alerts:card.generatedAt', { date: formatAlertDate(alert.generatedAt) })}</p>
 
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-[var(--color-text-secondary)]">Stock actual:</span>
+              <span className="text-[var(--color-text-secondary)]">{t('alerts:card.currentStockLabel')}</span>
               <span className={`font-data-mono text-base font-semibold ${statusClasses.stockClassName}`}>{alert.product.stock}</span>
               <span className="text-[var(--color-text-secondary)]">/ {alert.product.minStock}</span>
             </div>
@@ -127,12 +128,12 @@ function AlertCard({
           {canUseReplenishment ? (
             <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('replenishment', alert.product)} type="button">
               <Package2 className="mr-2 h-4 w-4" />
-              Generar reposicion
+              {t('alerts:card.actions.generateReplenishment')}
             </Button>
           ) : null}
           <Button className="flex-1 md:flex-none" onClick={() => onOpenModal('detail', alert.product)} type="button" variant="secondary">
             <Eye className="mr-2 h-4 w-4" />
-            Ver producto
+            {t('alerts:card.actions.viewProduct')}
           </Button>
         </div>
       </div>

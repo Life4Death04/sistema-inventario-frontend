@@ -1,6 +1,7 @@
 import { LogOut, X } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { navigation, profileNavigationItem } from '@/components/layout/navigation'
 import { useActiveAlertCount } from '@/features/alerts/api/useActiveAlertCount'
@@ -14,6 +15,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
+  const { t } = useTranslation(['layout', 'common'])
   const logout = useAuthStore((state) => state.logout)
   const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
@@ -50,8 +52,8 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
       >
         <div className="flex items-start justify-between border-b border-[var(--color-border)] p-5 sm:p-6">
           <div>
-            <h2 className="text-[20px] font-semibold text-[var(--color-primary)]">High Meds C.A.</h2>
-            <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">Gestion farmaceutica</p>
+            <h2 className="text-[20px] font-semibold text-[var(--color-primary)]">{t('common:appName')}</h2>
+            <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">{t('layout:sidebar.tagline')}</p>
           </div>
 
           <button className="rounded-[var(--radius-control)] p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-strong)] md:hidden" onClick={onClose} type="button">
@@ -79,7 +81,7 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
                 to={item.to}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1 truncate">{item.label}</span>
+                <span className="flex-1 truncate">{t(`layout:nav.${item.key}.label`)}</span>
                 {showBadge ? (
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-danger-text)] px-1.5 font-data-mono text-[10px] font-bold leading-none text-white">
                     {activeAlertCount > 99 ? '99+' : activeAlertCount}
@@ -104,7 +106,7 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
               to={profileNavigationItem.to}
             >
               <profileNavigationItem.icon className="h-4 w-4 shrink-0" />
-              {profileNavigationItem.label}
+              {t(`layout:nav.${profileNavigationItem.key}.label`)}
             </NavLink>
           ) : null}
 
@@ -117,7 +119,7 @@ export function Sidebar({ isChromeVisible, isOpen, onClose }: SidebarProps) {
             type="button"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            {isLoggingOut ? 'Cerrando sesion...' : 'Cerrar sesion'}
+            {isLoggingOut ? t('layout:sidebar.loggingOut') : t('layout:sidebar.logout')}
           </button>
         </div>
       </aside>

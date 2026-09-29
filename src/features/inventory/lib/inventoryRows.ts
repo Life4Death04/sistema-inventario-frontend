@@ -1,4 +1,9 @@
+import type { TFunction } from 'i18next'
+
+import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Category, Product } from '@/types/api.types'
+
+export type InventoryTFunction = TFunction<['inventory', 'common']>
 
 export interface InventoryRow {
   id: string
@@ -21,24 +26,24 @@ export interface InventoryRow {
   suppliers: string[]
   createdAt: string
   updatedAt: string
-  status: 'Optimo' | 'Critico' | 'Agotado'
+  status: StockStatus
 }
 
-export function toInventoryRow(product: Product, categoriesById: Map<string, Category>): InventoryRow {
+export function toInventoryRow(product: Product, categoriesById: Map<string, Category>, t: InventoryTFunction): InventoryRow {
   return {
     id: product.id,
     code: product.code,
     name: product.name,
     activeIngredient: product.activeIngredient,
-    activeIngredientLabel: product.activeIngredient ?? 'Sin principio activo',
+    activeIngredientLabel: product.activeIngredient ?? t('inventory:fallback.noActiveIngredient'),
     categoryId: product.categoryId,
-    category: categoriesById.get(product.categoryId)?.name ?? 'Sin categoria',
+    category: categoriesById.get(product.categoryId)?.name ?? t('inventory:fallback.noCategory'),
     stock: product.stock,
     minStock: product.minStock,
     presentation: product.presentation,
-    presentationLabel: product.presentation ?? 'Sin presentacion',
+    presentationLabel: product.presentation ?? t('inventory:fallback.noPresentation'),
     brand: product.brand,
-    brandLabel: product.brand ?? 'Sin marca',
+    brandLabel: product.brand ?? t('inventory:fallback.noBrand'),
     unit: product.unit,
     unitContent: product.unitContent,
     price: product.price,
@@ -46,18 +51,6 @@ export function toInventoryRow(product: Product, categoriesById: Map<string, Cat
     suppliers: [],
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
-    status: getInventoryStatus(product.stock, product.minStock),
+    status: getStockStatus(product.stock, product.minStock),
   }
-}
-
-export function getInventoryStatus(stock: number, minStock: number): InventoryRow['status'] {
-  if (stock === 0) {
-    return 'Agotado'
-  }
-
-  if (stock <= minStock) {
-    return 'Critico'
-  }
-
-  return 'Optimo'
 }
