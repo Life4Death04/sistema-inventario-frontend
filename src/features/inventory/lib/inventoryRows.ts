@@ -3,6 +3,8 @@ import type { TFunction } from 'i18next'
 import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Category, Product } from '@/types/api.types'
 
+export type InventoryTFunction = TFunction<['inventory', 'common']>
+
 export interface InventoryRow {
   id: string
   code: string
@@ -27,7 +29,7 @@ export interface InventoryRow {
   status: StockStatus
 }
 
-export function toInventoryRow(product: Product, categoriesById: Map<string, Category>, t: TFunction): InventoryRow {
+export function toInventoryRow(product: Product, categoriesById: Map<string, Category>, t: InventoryTFunction): InventoryRow {
   return {
     id: product.id,
     code: product.code,

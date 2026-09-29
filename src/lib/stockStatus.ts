@@ -14,6 +14,6 @@ export function getStockStatus(stock: number, minStock: number): StockStatus {
   return 'healthy'
 }
 
-export function getStockStatusLabel(status: StockStatus, t: TFunction<'common'>): string {
+export function getStockStatusLabel(status: StockStatus, t: TFunction<['common']>): string {
   return t(`common:stockStatus.${status}`)
 }

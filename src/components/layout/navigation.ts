@@ -2,9 +2,11 @@ import { AlertTriangle, Boxes, ClipboardList, PackagePlus, ShieldCheck, Truck, U
 
 import type { AppPermission } from '@/features/auth/lib/permissions'
 
+export type NavigationKey = 'inventory' | 'movements' | 'products' | 'alerts' | 'replenishment' | 'suppliers' | 'users' | 'profile'
+
 export interface NavigationItem {
   to: string
-  key: string
+  key: NavigationKey
   icon: LucideIcon
   permission: AppPermission
 }
@@ -19,7 +21,7 @@ export const navigation: NavigationItem[] = [
   { to: '/usuarios', key: 'users', icon: Users, permission: 'view:users' },
 ]
 
-export const profileNavigationItem = {
+export const profileNavigationItem: NavigationItem = {
   to: '/perfil',
   key: 'profile',
   icon: UserCircle2,

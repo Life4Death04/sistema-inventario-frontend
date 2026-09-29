@@ -12,6 +12,7 @@ import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 
 export function InventoryPage() {
   const { t } = useTranslation(['inventory', 'common'])
+  const { t: commonT } = useTranslation(['common'])
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | StockStatus>('all')
@@ -104,9 +105,9 @@ export function InventoryPage() {
             <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-1">
               {[
                 { label: t('inventory:page.filters.statusAll'), value: 'all' },
-                { label: getStockStatusLabel('healthy', t), value: 'healthy' },
-                { label: getStockStatusLabel('low', t), value: 'low' },
-                { label: getStockStatusLabel('out', t), value: 'out' },
+                { label: getStockStatusLabel('healthy', commonT), value: 'healthy' },
+                { label: getStockStatusLabel('low', commonT), value: 'low' },
+                { label: getStockStatusLabel('out', commonT), value: 'out' },
               ].map((item) => (
                 <button
                   key={item.value}
@@ -146,5 +147,4 @@ function InventoryStateMessage({ label, tone = 'muted' }: { label: string; tone?
     </div>
   )
 }
-
 

@@ -3,6 +3,8 @@ import type { TFunction } from 'i18next'
 import type { ReplenishmentRequestView, ReplenishmentRequestWithItemsView } from '@/features/replenishment/api/replenishmentRequests.api'
 import type { ReplenishmentStatus } from '@/types/api.types'
 
+export type ReplenishmentTFunction = TFunction<['replenishment', 'common']>
+
 export interface ReplenishmentRow {
   id: string
   supplier: string
@@ -43,11 +45,11 @@ export interface ReplenishmentDetail {
   items: ReplenishmentDetailItem[]
 }
 
-export function getReplenishmentStatusLabel(status: ReplenishmentStatus, t: TFunction): string {
+export function getReplenishmentStatusLabel(status: ReplenishmentStatus, t: ReplenishmentTFunction): string {
   return t(`replenishment:status.${status}`)
 }
 
-export function toReplenishmentRow(request: ReplenishmentRequestView, t: TFunction): ReplenishmentRow {
+export function toReplenishmentRow(request: ReplenishmentRequestView, t: ReplenishmentTFunction): ReplenishmentRow {
   return {
     id: request.id,
     supplier: request.supplier.name,
@@ -63,7 +65,7 @@ export function toReplenishmentRow(request: ReplenishmentRequestView, t: TFuncti
   }
 }
 
-export function toReplenishmentDetail(request: ReplenishmentRequestWithItemsView, t: TFunction): ReplenishmentDetail {
+export function toReplenishmentDetail(request: ReplenishmentRequestWithItemsView, t: ReplenishmentTFunction): ReplenishmentDetail {
   return {
     id: request.id,
     supplier: request.supplier.name,

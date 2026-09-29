@@ -28,6 +28,8 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import type { ApiErrorEnvelope, ReplenishmentStatus } from '@/types/api.types'
 import { type ReplenishmentDetail, type ReplenishmentRow, toReplenishmentDetail } from '@/features/replenishment/lib/replenishmentView'
 
+type ReplenishmentTFunction = TFunction<['replenishment', 'products', 'common']>
+
 export type ReplenishmentModalType = 'generate' | 'detail' | 'change-status'
 
 interface ReplenishmentModalsProps {
@@ -83,7 +85,8 @@ export function GenerateReplenishmentModal({
   initialSupplierId?: string
   onClose: () => void
 }) {
-  const { t } = useTranslation(['replenishment', 'products'])
+  const { t } = useTranslation(['replenishment', 'products', 'common'])
+  const { t: productT } = useTranslation(['products', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const queryClient = useQueryClient()
@@ -102,7 +105,7 @@ export function GenerateReplenishmentModal({
     supplierId: selectedSupplierId || undefined,
   })
   const supplierOptions = suppliersResponse?.data ?? []
-  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product, t))
+  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product, productT))
 
   const handleSupplierChange = (supplierId: string) => {
     setSelectedSupplierId(supplierId)
@@ -278,7 +281,7 @@ function AssociateProductsOverlay({
   products: ProductRow[]
   selectedProducts: SelectedReplenishmentProduct[]
 }) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment'])
   const [onlyLowStock, setOnlyLowStock] = useState(true)
   const [query, setQuery] = useState('')
   const [draftSelection, setDraftSelection] = useState<SelectedReplenishmentProduct[]>([])
@@ -382,7 +385,7 @@ function ReplenishmentDetailModal({
   onOpenModal: (modalType: ReplenishmentModalType, request: ReplenishmentRow | null) => void
   request: ReplenishmentRow
 }) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const detailQuery = useReplenishmentRequest(request.id)
@@ -503,7 +506,7 @@ function ReplenishmentDetailModal({
 }
 
 function ChangeStatusModal({ onClose, request }: { onClose: () => void; request: ReplenishmentRow }) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment', 'common'])
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const queryClient = useQueryClient()
@@ -625,7 +628,7 @@ function ChangeStatusModal({ onClose, request }: { onClose: () => void; request:
           <div className="flex items-start gap-2 rounded border border-[var(--color-danger-bg)] bg-[rgba(251,231,228,0.40)] p-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 text-[var(--color-danger-text)]" />
             <p className="text-sm text-[var(--color-danger-text)]">
-              <Trans components={{ bold: <strong /> }} i18nKey="replenishment:modals.changeStatus.cancelWarning" />
+              <Trans components={{ bold: <strong /> }} i18nKey="replenishment:modals.changeStatus.cancelWarning" ns={['replenishment', 'common']} />
             </p>
           </div>
         ) : null}
@@ -759,7 +762,7 @@ function StatusOption({ checked, label, onClick, success = false, danger = false
 }
 
 function StatusTag({ status }: { status: ReplenishmentStatus }) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment'])
   const label = t(`replenishment:status.${status}`)
 
   if (status === 'PENDING') {
@@ -829,7 +832,7 @@ function toCreateReplenishmentInput(
   }
 }
 
-function validateCreateReplenishment(supplierId: string, selectedProducts: SelectedReplenishmentProduct[], t: TFunction) {
+function validateCreateReplenishment(supplierId: string, selectedProducts: SelectedReplenishmentProduct[], t: ReplenishmentTFunction) {
   if (!supplierId) {
     return t('replenishment:validation.supplierRequired')
   }
@@ -851,7 +854,7 @@ function validateCreateReplenishment(supplierId: string, selectedProducts: Selec
   return null
 }
 
-function validateReceivedQuantities(details: ReplenishmentDetail, receivedQuantities: Record<string, number>, t: TFunction) {
+function validateReceivedQuantities(details: ReplenishmentDetail, receivedQuantities: Record<string, number>, t: ReplenishmentTFunction) {
   for (const item of details.items) {
     const quantity = receivedQuantities[item.id] ?? item.receivedQuantity
 
@@ -907,7 +910,7 @@ async function invalidateReplenishmentReceiveQueries(queryClient: ReturnType<typ
   await Promise.all(invalidations)
 }
 
-function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create' | 'receive' | 'send', t: TFunction) {
+function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create' | 'receive' | 'send', t: ReplenishmentTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('replenishment:errors.unexpected')
   }

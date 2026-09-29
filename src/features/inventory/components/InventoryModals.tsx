@@ -56,6 +56,7 @@ function ModalFrame({ children, title, onClose, maxWidth = 'max-w-[560px]' }: { 
 
 function InventoryDetailModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
   const { t } = useTranslation(['inventory', 'common'])
+  const { t: commonT } = useTranslation(['common'])
   const { data, error, isLoading } = useProductInventoryMovements(product.id, { limit: 3 })
   const history = data?.data ?? []
   const latestUpdate = history[0]?.createdAt
@@ -68,7 +69,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-lg font-medium text-[var(--color-text)]">{product.name}</h4>
             <span className="rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">{product.category}</span>
-            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{getStockStatusLabel(product.status, t)}</span>
+            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{getStockStatusLabel(product.status, commonT)}</span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{product.code}</p>
         </div>
@@ -76,7 +77,7 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard label={t('inventory:modals.detail.summary.stock')} value={product.stock.toLocaleString('es-VE')} />
           <SummaryCard label={t('inventory:modals.detail.summary.minStock')} value={product.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label={t('inventory:modals.detail.summary.status')} value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard badge label={t('inventory:modals.detail.summary.status')} value={getStockStatusLabel(product.status, commonT)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -203,6 +204,7 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
                   result: <span className="font-data-mono font-medium text-[var(--color-text)]" />,
                 }}
                 i18nKey="inventory:modals.output.resultingStock"
+                ns={['inventory', 'common']}
                 values={{ current: product.stock, result: resultingStock }}
               />
             </span>

@@ -327,6 +327,7 @@ export function CategoryManagementModal({ open, onClose }: CategoryManagementMod
                 <Trans
                   components={{ bold: <span className="font-semibold text-[var(--color-text)]" /> }}
                   i18nKey="categories:form.infoBox.edit"
+                  ns={['categories', 'common']}
                   values={{ categoryName: selectedCategory.name }}
                 />
               ) : (

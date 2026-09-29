@@ -166,6 +166,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
               total: <span className="font-medium text-[var(--color-text)]" />,
             }}
             i18nKey="inventory:table.pagination.summary"
+            ns={['inventory', 'common']}
             values={{ end: pageEnd, start: pageStart, total: totalRows }}
           />
         </span>
@@ -205,7 +206,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
 }
 
 function StatusBadge({ status }: { status: StockStatus }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common'])
 
   if (status === 'healthy') {
     return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-success-text)]">{getStockStatusLabel(status, t)}</span>

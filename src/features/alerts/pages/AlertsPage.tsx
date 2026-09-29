@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next'
 import { AlertTriangle, CircleAlert, Eye, Package2 } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { useMemo, useState } from 'react'
@@ -16,7 +15,7 @@ import { ProductCatalogModals, type ProductModalType } from '@/features/products
 import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function AlertsPage() {
-  const { t } = useTranslation(['alerts', 'products'])
+  const { t } = useTranslation(['products', 'alerts', 'common'])
   const user = useAuthStore((state) => state.user)
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
@@ -28,16 +27,9 @@ export function AlertsPage() {
     [categoriesResponse],
   )
 
-  // FOLLOW-UP: `toProductRow` declares its param as a bare `TFunction`, which resolves to
-  // `TFunction<'common'>` because `defaultNS` is 'common'. Any namespace-scoped `t` is therefore
-  // rejected at the call site even though the prefixed keys resolve correctly at runtime.
-  // The cast is a local boundary workaround; the real fix belongs in
-  // src/features/products/lib/productRows.ts (widen the param to the namespaces it actually reads).
-  const productRowT = t as unknown as TFunction
-
   const activeProducts = useMemo(
-    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, productRowT, categoryNames.get(product.categoryId))),
-    [categoryNames, activeProductsResponse, productRowT],
+    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, t, categoryNames.get(product.categoryId))),
+    [categoryNames, activeProductsResponse, t],
   )
 
   const generatedAt = new Date(dataUpdatedAt || Date.now()).toISOString()

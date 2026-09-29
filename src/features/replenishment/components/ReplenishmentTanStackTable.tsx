@@ -30,7 +30,7 @@ export function ReplenishmentTanStackTable({
   onChangeStatus,
   onOpenDetail,
 }: ReplenishmentTanStackTableProps) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -192,7 +192,7 @@ export function ReplenishmentTanStackTable({
 }
 
 function StatusBadge({ status }: { status: ReplenishmentStatus }) {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment'])
   const label = t(`replenishment:status.${status}`)
 
   if (status === 'PENDING') {
@@ -207,7 +207,7 @@ function StatusBadge({ status }: { status: ReplenishmentStatus }) {
   return <span className="rounded-md bg-[var(--color-danger-bg)] px-2 py-1 text-[11px] font-bold uppercase text-[var(--color-danger-text)]">{label}</span>
 }
 
-function getItemsCountLabel(items: number | null, t: TFunction) {
+function getItemsCountLabel(items: number | null, t: TFunction<['replenishment', 'common']>) {
   if (items === null) {
     return t('replenishment:table.itemsCount.none')
   }

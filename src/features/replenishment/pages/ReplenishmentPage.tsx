@@ -17,7 +17,7 @@ const STATUS_FILTERS = ['all', 'PENDING', 'SENT', 'RECEIVED', 'CANCELLED'] as co
 type StatusFilter = (typeof STATUS_FILTERS)[number]
 
 export function ReplenishmentPage() {
-  const { t } = useTranslation('replenishment')
+  const { t } = useTranslation(['replenishment', 'common'])
   const user = useAuthStore((state) => state.user)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -117,5 +117,4 @@ function ReplenishmentStateMessage({ label, tone = 'muted' }: { label: string; t
 function canChangeReplenishmentStatus(status: ReplenishmentRow['rawStatus']) {
   return status === 'PENDING' || status === 'SENT'
 }
-
 

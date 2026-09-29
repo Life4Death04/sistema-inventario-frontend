@@ -3,6 +3,8 @@ import type { TFunction } from 'i18next'
 import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Product } from '@/types/api.types'
 
+export type ProductsTFunction = TFunction<['products', 'common']>
+
 export interface ProductRow {
   id: string
   code: string
@@ -29,7 +31,7 @@ export interface ProductRow {
   status: StockStatus
 }
 
-export function toProductRow(product: Product, t: TFunction, categoryName?: string): ProductRow {
+export function toProductRow(product: Product, t: ProductsTFunction, categoryName?: string): ProductRow {
   return {
     id: product.id,
     code: product.code,

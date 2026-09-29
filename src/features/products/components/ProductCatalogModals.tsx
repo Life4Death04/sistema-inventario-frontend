@@ -78,11 +78,11 @@ interface ProductFormValues {
 
 type MovementType = 'IN' | 'OUT' | 'ADJUSTMENT'
 
-const MOVEMENT_REASON_KEYS: Record<MovementType, readonly string[]> = {
+const MOVEMENT_REASON_KEYS = {
   IN: ['supplierReceipt', 'customerReturn', 'inventoryAdjustmentIncrease'],
   OUT: ['counterDispensing', 'lossOrExpiration', 'transferToOtherSite'],
   ADJUSTMENT: ['physicalCount', 'manualCorrection', 'internalAudit'],
-}
+} as const satisfies Record<MovementType, readonly string[]>
 
 // Stable, locale-independent values persisted to the backend. Display labels are
 // resolved separately via t() so the stored audit trail never changes meaning
@@ -115,6 +115,18 @@ function getUnitOptions(t: ProductsTFunction): Array<{ label: string; value: Pro
     { label: t('products:units.ML'), value: 'ML' },
     { label: t('products:units.L'), value: 'L' },
   ]
+}
+
+function getMovementReasonOptions(type: MovementType, t: ProductsTFunction): Array<{ label: string; value: string }> {
+  if (type === 'IN') {
+    return MOVEMENT_REASON_KEYS.IN.map((key) => ({ label: t(`products:modals.registerMovement.reasons.IN.${key}`), value: key }))
+  }
+
+  if (type === 'OUT') {
+    return MOVEMENT_REASON_KEYS.OUT.map((key) => ({ label: t(`products:modals.registerMovement.reasons.OUT.${key}`), value: key }))
+  }
+
+  return MOVEMENT_REASON_KEYS.ADJUSTMENT.map((key) => ({ label: t(`products:modals.registerMovement.reasons.ADJUSTMENT.${key}`), value: key }))
 }
 
 export function ProductCatalogModals({ modalType, product, onClose, onOpenModal, role }: ProductCatalogModalsProps) {
@@ -285,6 +297,7 @@ function ProductDetailModal({
   role: UserRole | undefined
 }) {
   const { t } = useTranslation(['products', 'common'])
+  const { t: commonT } = useTranslation(['common'])
   const canManage = canManageProducts(role)
   const canOpenMovement = canCreateMovementType(role, 'OUT')
   const canUseReplenishment = hasPermission(role, 'manage:replenishment')
@@ -322,7 +335,7 @@ function ProductDetailModal({
               {detail.category?.name ?? noCategoryLabel}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {getStockStatusLabel(product.status, t)}
+              {getStockStatusLabel(product.status, commonT)}
             </span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>
@@ -331,7 +344,7 @@ function ProductDetailModal({
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard label={t('products:modals.detail.summary.stock')} value={detail.stock.toLocaleString('es-VE')} />
           <SummaryCard label={t('products:modals.detail.summary.minStock')} value={detail.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label={t('products:modals.detail.summary.status')} value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard badge label={t('products:modals.detail.summary.status')} value={getStockStatusLabel(product.status, commonT)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -408,6 +421,7 @@ function ProductDetailModal({
 
 function EditProductModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
   const { t } = useTranslation(['products', 'common'])
+  const { t: commonT } = useTranslation(['common'])
   const queryClient = useQueryClient()
   const detailQuery = useProductDetail(product.id)
   const { data: categoriesResponse } = useCategories({ limit: 100 })
@@ -499,7 +513,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
               {detail.category?.name ?? t('products:fallback.noCategory')}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {getStockStatusLabel(product.status, t)}
+              {getStockStatusLabel(product.status, commonT)}
             </span>
           </div>
           <p className="mt-2 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>
@@ -730,10 +744,7 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
            <FieldGroup label={t('products:modals.registerMovement.fields.reason.label')}>
             <SelectField
               onChange={(value) => setReasonKey(value)}
-              options={MOVEMENT_REASON_KEYS[movementType].map((key) => ({
-                label: t(`products:modals.registerMovement.reasons.${movementType}.${key}`),
-                value: key,
-              }))}
+              options={getMovementReasonOptions(movementType, t)}
               placeholder={t('products:placeholders.select')}
               value={reasonKey}
             />
@@ -749,6 +760,7 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
                 result: <span className="font-data-mono font-semibold text-[var(--color-primary)]" />,
               }}
               i18nKey="products:modals.registerMovement.resultingStock"
+              ns={['products', 'common']}
               values={{ current: product.stock, result: resultingStock }}
             />
           </p>
@@ -831,6 +843,7 @@ function DeactivateProductModal({ onClose, product }: { onClose: () => void; pro
             <Trans
               components={{ bold: <span className="font-semibold text-[var(--color-text)]" /> }}
               i18nKey="products:modals.deactivate.confirmMessage"
+              ns={['products', 'common']}
               values={{ name: product.name }}
             />
           </p>
@@ -863,7 +876,7 @@ function ProductIdentitySection({
   showError: boolean
   values: ProductFormValues
 }) {
-  const { t } = useTranslation('products')
+  const { t } = useTranslation(['products'])
 
   return (
     <div className="space-y-4">
@@ -906,7 +919,7 @@ function ProductCommercialSection({
   suppliers: Array<{ id: string; name: string }>
   values: ProductFormValues
 }) {
-  const { t } = useTranslation('products')
+  const { t } = useTranslation(['products'])
 
   return (
     <div className="space-y-4">

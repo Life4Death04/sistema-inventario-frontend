@@ -295,7 +295,7 @@ function ActionsCell({
 }
 
 function StatusBadge({ status }: { status: StockStatus }) {
-  const { t } = useTranslation(['products', 'common'])
+  const { t } = useTranslation(['common'])
 
   if (status === 'healthy') {
     return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{getStockStatusLabel(status, t)}</span>

@@ -199,7 +199,7 @@ function SupplierIdentityCell({ supplier }: { supplier: SupplierRow }) {
 }
 
 function WhatsappCell({ whatsapp }: { whatsapp: string | null }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common'])
 
   if (!whatsapp) {
     return <span className="text-sm italic text-[var(--color-text-muted)]">{t('common:state.notAvailable')}</span>
@@ -222,7 +222,7 @@ function ProductsCell({ label }: { label: string }) {
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  const { t } = useTranslation('suppliers')
+  const { t } = useTranslation(['suppliers'])
 
   return (
     <span
@@ -246,7 +246,7 @@ function ActionsCell({
   onEdit: () => void
   onView: () => void
 }) {
-  const { t } = useTranslation('suppliers')
+  const { t } = useTranslation(['suppliers'])
 
   return (
     <div className="inline-flex items-center justify-end gap-1">

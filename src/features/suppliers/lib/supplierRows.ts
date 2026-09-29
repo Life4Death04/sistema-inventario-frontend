@@ -2,6 +2,8 @@ import type { TFunction } from 'i18next'
 
 import type { Supplier } from '@/types/api.types'
 
+export type SuppliersTFunction = TFunction<['suppliers', 'common']>
+
 export interface SupplierRow {
   id: string
   name: string
@@ -15,7 +17,7 @@ export interface SupplierRow {
   updatedAt: string
 }
 
-export function toSupplierRow(supplier: Supplier, t: TFunction): SupplierRow {
+export function toSupplierRow(supplier: Supplier, t: SuppliersTFunction): SupplierRow {
   const count = supplier.productsCount
   return {
     id: supplier.id,
@@ -31,7 +33,7 @@ export function toSupplierRow(supplier: Supplier, t: TFunction): SupplierRow {
   }
 }
 
-export function mergeSupplierRows(activeSuppliers: Supplier[], inactiveSuppliers: Supplier[], t: TFunction) {
+export function mergeSupplierRows(activeSuppliers: Supplier[], inactiveSuppliers: Supplier[], t: SuppliersTFunction) {
   const rowsById = new Map<string, SupplierRow>()
 
   for (const supplier of [...activeSuppliers, ...inactiveSuppliers]) {
