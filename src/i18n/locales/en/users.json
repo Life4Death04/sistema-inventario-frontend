@@ -1,1 +1,128 @@
-{}
+{
+  "page": {
+    "metrics": {
+      "active": "Active users",
+      "admins": "Administrators",
+      "managers": "Managers",
+      "operators": "Operators"
+    },
+    "searchPlaceholder": "Search by name or email",
+    "filters": {
+      "all": "All",
+      "admins": "Administrators",
+      "managers": "Managers",
+      "operators": "Operators"
+    },
+    "newUserButton": "New user",
+    "loadError": "The real users could not be loaded at this time."
+  },
+  "roles": {
+    "OPERATOR": "Operations staff",
+    "MANAGER": "Inventory manager",
+    "ADMIN": "Administrator"
+  },
+  "roleHelpers": {
+    "OPERATOR": "Read access to the catalog and stock levels, plus recording of authorized movements.",
+    "MANAGER": "Inherits the Operations staff views and adds inventory, alert, replenishment and supplier management.",
+    "ADMIN": "Full system management, access configuration and complete operational control."
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "state": {
+    "noRecentAccess": "No recent access"
+  },
+  "table": {
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "lastAccess": "Last access",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "editTitle": "Edit user"
+    },
+    "pagination": {
+      "summary": "Showing <strong>{{start}}-{{end}}</strong> of <strong>{{total}}</strong> users"
+    }
+  },
+  "modals": {
+    "frame": {
+      "defaultAriaLabel": "User modal"
+    },
+    "detail": {
+      "title": "User detail",
+      "roleLabel": "Role",
+      "statusLabel": "Status",
+      "closeButton": "Close",
+      "deactivateButton": "Deactivate",
+      "deactivatingButton": "Deactivating...",
+      "activateButton": "Activate",
+      "activatingButton": "Activating..."
+    },
+    "create": {
+      "title": "New user"
+    },
+    "edit": {
+      "title": "Edit user",
+      "meta": "Registered on {{createdAt}} · Last access {{lastAccess}}",
+      "sections": {
+        "basicData": "Basic data",
+        "accessData": "Access data"
+      }
+    }
+  },
+  "form": {
+    "fullNameLabel": "Full name",
+    "fullNamePlaceholder": "E.g. Ana Garcia",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "ana.garcia@highmeds.com",
+    "emailHelperCreate": "This will be the username for signing in.",
+    "emailHelperEdit": "Used to sign in.",
+    "roleLabel": "Role",
+    "statusLabel": "Status",
+    "statusHelper": "Controls whether the user can access the system",
+    "initialPasswordLabel": "Initial password",
+    "passwordMode": {
+      "define": "Set now",
+      "link": "Send link"
+    },
+    "passwordModeNotice": "Sending a link is not supported by the current backend yet. Actual creation uses a defined password.",
+    "passwordLabel": "Password",
+    "passwordHelper": "Minimum 8 characters.",
+    "confirmPasswordLabel": "Confirm password",
+    "changePasswordLabel": "Change password",
+    "newPasswordLabel": "New password",
+    "passwordRuleInline": "Minimum 8 characters",
+    "sendResetLinkButton": "Send reset link by email",
+    "deactivateButton": "Deactivate user",
+    "cancelButton": "Cancel",
+    "createButton": "Create user",
+    "saveButton": "Save changes"
+  },
+  "toasts": {
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deactivated": "User deactivated successfully"
+  },
+  "validation": {
+    "fullNameRequired": "The full name is required",
+    "emailRequired": "The email address is required",
+    "emailInvalid": "Enter a valid email address",
+    "roleRequired": "Select a valid role",
+    "passwordTooShort": "The password must be at least 8 characters long",
+    "newPasswordTooShort": "The new password must be at least 8 characters long",
+    "passwordMismatch": "The password confirmation does not match"
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred while managing users",
+    "duplicateEmail": "A user with that email already exists",
+    "lastAdmin": "The last administrator cannot be deactivated or demoted",
+    "notFound": "The user does not exist, is already inactive or could not be found",
+    "deactivateFailed": "The user could not be deactivated",
+    "invalidData": "Review the user data before saving",
+    "operationFailed": "The operation on users could not be completed"
+  }
+}

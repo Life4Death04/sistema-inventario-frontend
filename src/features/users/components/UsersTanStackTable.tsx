@@ -9,8 +9,9 @@ import {
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
-import type { UserRow } from '@/features/users/lib/userRows'
+import { getRoleLabel, type UserRow } from '@/features/users/lib/userRows'
 
 interface UsersTanStackTableProps {
   canManage: boolean
@@ -21,6 +22,7 @@ interface UsersTanStackTableProps {
 }
 
 export function UsersTanStackTable({ canManage, rows, globalFilter, onDetailUser, onEditUser }: UsersTanStackTableProps) {
+  const { t } = useTranslation(['users', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -33,29 +35,29 @@ export function UsersTanStackTable({ canManage, rows, globalFilter, onDetailUser
   const columns: ColumnDef<UserRow>[] = [
     {
       accessorKey: 'fullName',
-      header: 'Usuario',
+      header: t('users:table.columns.user'),
       cell: ({ row }) => <UserIdentityCell user={row.original} />,
     },
     {
-      accessorKey: 'role',
-      header: 'Rol',
-      cell: ({ row }) => <RoleBadge role={row.original.role} roleKey={row.original.roleKey} />,
+      accessorKey: 'roleKey',
+      header: t('users:table.columns.role'),
+      cell: ({ row }) => <RoleBadge roleKey={row.original.roleKey} />,
     },
     {
       accessorKey: 'lastAccess',
-      header: 'Ultimo acceso',
+      header: t('users:table.columns.lastAccess'),
       cell: ({ row }) => <LastAccessCell lastAccess={row.original.lastAccess} />,
     },
     {
       accessorKey: 'active',
-      header: 'Estado',
+      header: t('users:table.columns.status'),
       cell: ({ row }) => <StatusCell active={row.original.active} />,
     },
     ...(canManage
       ? [
           {
             id: 'actions',
-            header: 'Acciones',
+            header: t('users:table.columns.actions'),
             cell: ({ row }: { row: { original: UserRow } }) => (
               <ActionsCell onEdit={() => { onEditUser(row.original) }} />
             ),
@@ -77,7 +79,9 @@ export function UsersTanStackTable({ canManage, rows, globalFilter, onDetailUser
         return true
       }
 
-      return [row.original.fullName, row.original.email, row.original.role].some((value) => value.toLowerCase().includes(query))
+      return [row.original.fullName, row.original.email, getRoleLabel(row.original.roleKey, t)].some((value) =>
+        value.toLowerCase().includes(query),
+      )
     },
     onPaginationChange: setPagination,
     state: {
@@ -125,8 +129,12 @@ export function UsersTanStackTable({ canManage, rows, globalFilter, onDetailUser
 
       <div className="flex flex-col gap-4 border-t border-[var(--color-border)] bg-[color:rgba(245,248,251,0.2)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Mostrando <span className="font-medium text-[var(--color-text)]">{pageStart}-{pageEnd}</span> de{' '}
-          <span className="font-medium text-[var(--color-text)]">{totalRows}</span> usuarios
+          <Trans
+            components={{ strong: <span className="font-medium text-[var(--color-text)]" /> }}
+            i18nKey="users:table.pagination.summary"
+            t={t}
+            values={{ start: pageStart, end: pageEnd, total: totalRows }}
+          />
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -179,8 +187,14 @@ function UserIdentityCell({ user }: { user: UserRow }) {
   )
 }
 
-function RoleBadge({ role, roleKey }: { role: string; roleKey: UserRow['roleKey'] }) {
-  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleBadgeClasses(roleKey)}`}>{role}</span>
+function RoleBadge({ roleKey }: { roleKey: UserRow['roleKey'] }) {
+  const { t } = useTranslation(['users', 'common'])
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleBadgeClasses(roleKey)}`}>
+      {getRoleLabel(roleKey, t)}
+    </span>
+  )
 }
 
 function LastAccessCell({ lastAccess }: { lastAccess: string | null }) {
@@ -204,21 +218,27 @@ function LastAccessCell({ lastAccess }: { lastAccess: string | null }) {
 }
 
 function StatusCell({ active }: { active: boolean }) {
+  const { t } = useTranslation(['users', 'common'])
+
   return (
     <div className="flex items-center gap-2">
       <span className={`h-2 w-2 rounded-full ${active ? 'bg-[var(--color-success-text)]' : 'bg-[var(--color-text-muted)]'}`} />
-      <span className={`text-sm font-medium ${active ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}`}>{active ? 'Activo' : 'Inactivo'}</span>
+      <span className={`text-sm font-medium ${active ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}`}>
+        {active ? t('users:status.active') : t('users:status.inactive')}
+      </span>
     </div>
   )
 }
 
 function ActionsCell({ onEdit }: { onEdit: () => void }) {
+  const { t } = useTranslation(['users', 'common'])
+
   return (
     <div className="inline-flex items-center justify-end text-[var(--color-text-muted)]">
       <button
         className="rounded-[8px] p-1 transition hover:text-[var(--color-primary)]"
         onClick={(event) => { event.stopPropagation(); onEdit() }}
-        title="Editar usuario"
+        title={t('users:table.actions.editTitle')}
         type="button"
       >
         <SquarePen className="h-5 w-5" />

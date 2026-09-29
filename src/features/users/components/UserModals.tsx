@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios'
 import { Check, Eye, EyeOff, LoaderCircle, X } from 'lucide-react'
 import { useState, type ChangeEvent, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import {
@@ -12,7 +13,12 @@ import {
   type CreateUserInput,
   type UpdateUserInput,
 } from '@/features/users/api/users.api'
-import type { UserRow } from '@/features/users/lib/userRows'
+import {
+  getRoleHelper,
+  getRoleLabel,
+  type UserRow,
+  type UsersTFunction,
+} from '@/features/users/lib/userRows'
 import { queryKeys } from '@/lib/queryKeys'
 import type { ApiErrorEnvelope, UserRole } from '@/types/api.types'
 
@@ -42,25 +48,11 @@ interface EditUserFormValues {
   confirmPassword: string
 }
 
-const roleOptions = [
-  {
-    value: 'OPERATOR',
-    label: 'Personal operativo',
-    helper: 'Acceso de consulta al catalogo y existencias, y registro de movimientos autorizados.',
-  },
-  {
-    value: 'MANAGER',
-    label: 'Encargado de inventario',
-    helper: 'Hereda las vistas del Operativo y añade gestion de inventario, alertas, reposicion y proveedores.',
-  },
-  {
-    value: 'ADMIN',
-    label: 'Administrador',
-    helper: 'Gestion integral del sistema, configuracion de accesos y control operativo completo.',
-  },
-] as const
+/** Stable domain enum values, ordered as they appear in the role selector. */
+const roleOptions: readonly UserRole[] = ['OPERATOR', 'MANAGER', 'ADMIN']
 
 export function UserModals({ modalType, user, onClose }: UserModalsProps) {
+  const { t } = useTranslation(['users', 'common'])
   const queryClient = useQueryClient()
 
   const invalidateUsers = async () => {
@@ -71,11 +63,11 @@ export function UserModals({ modalType, user, onClose }: UserModalsProps) {
     mutationFn: (input: CreateUserInput) => createUser(input),
     onSuccess: async () => {
       await invalidateUsers()
-      toast.success('Usuario creado correctamente')
+      toast.success(t('users:toasts.created'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getUserErrorMessage(error, 'create'))
+      toast.error(getUserErrorMessage(error, 'create', t))
     },
   })
 
@@ -84,11 +76,11 @@ export function UserModals({ modalType, user, onClose }: UserModalsProps) {
       updateUser(userId, input),
     onSuccess: async () => {
       await invalidateUsers()
-      toast.success('Usuario actualizado correctamente')
+      toast.success(t('users:toasts.updated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getUserErrorMessage(error, 'update'))
+      toast.error(getUserErrorMessage(error, 'update', t))
     },
   })
 
@@ -96,11 +88,11 @@ export function UserModals({ modalType, user, onClose }: UserModalsProps) {
     mutationFn: (userId: string) => deleteUser(userId),
     onSuccess: async () => {
       await invalidateUsers()
-      toast.success('Usuario desactivado correctamente')
+      toast.success(t('users:toasts.deactivated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getUserErrorMessage(error, 'deactivate'))
+      toast.error(getUserErrorMessage(error, 'deactivate', t))
     },
   })
 
@@ -163,10 +155,11 @@ function UserDetailModal({
   onDeactivate: () => void
   user: UserRow
 }) {
+  const { t } = useTranslation(['users', 'common'])
   const isPending = isActivating || isDeactivating
 
   return (
-    <ModalFrame onClose={onClose} title="Detalle del usuario">
+    <ModalFrame onClose={onClose} title={t('users:modals.detail.title')}>
       <div className="space-y-4 px-6 py-5">
         <div className="flex items-center gap-4">
           <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-semibold ${user.active ? 'bg-[var(--color-surface-tint)]/18 text-[var(--color-primary)]' : 'bg-[var(--color-surface-strong)] text-[var(--color-text-muted)]'}`}>
@@ -180,13 +173,17 @@ function UserDetailModal({
 
         <div className="grid grid-cols-2 gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Rol</p>
-            <p className="mt-1 text-sm text-[var(--color-text)]">{user.role}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+              {t('users:modals.detail.roleLabel')}
+            </p>
+            <p className="mt-1 text-sm text-[var(--color-text)]">{getRoleLabel(user.roleKey, t)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Estado</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+              {t('users:modals.detail.statusLabel')}
+            </p>
             <p className={`mt-1 text-sm font-medium ${user.active ? 'text-[var(--color-success-text)]' : 'text-[var(--color-text-muted)]'}`}>
-              {user.active ? 'Activo' : 'Inactivo'}
+              {user.active ? t('users:status.active') : t('users:status.inactive')}
             </p>
           </div>
         </div>
@@ -194,7 +191,7 @@ function UserDetailModal({
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] px-6 py-4">
         <Button disabled={isPending} onClick={onClose} type="button" variant="ghost">
-          Cerrar
+          {t('users:modals.detail.closeButton')}
         </Button>
         {user.active ? (
           <button
@@ -204,11 +201,11 @@ function UserDetailModal({
             type="button"
           >
             {isDeactivating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {isDeactivating ? 'Desactivando...' : 'Desactivar'}
+            {isDeactivating ? t('users:modals.detail.deactivatingButton') : t('users:modals.detail.deactivateButton')}
           </button>
         ) : (
           <Button disabled={isPending} onClick={onActivate} type="button">
-            {isActivating ? 'Activando...' : 'Activar'}
+            {isActivating ? t('users:modals.detail.activatingButton') : t('users:modals.detail.activateButton')}
           </Button>
         )}
       </div>
@@ -225,6 +222,7 @@ function CreateUserModal({
   onClose: () => void
   onSubmit: (values: CreateUserFormValues) => void
 }) {
+  const { t } = useTranslation(['users', 'common'])
   const [values, setValues] = useState<CreateUserFormValues>({
     fullName: '',
     email: '',
@@ -236,10 +234,8 @@ function CreateUserModal({
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const currentRole = roleOptions.find((option) => option.value === values.role) ?? roleOptions[0]
-
   const handleSubmit = () => {
-    const validationError = validateCreateUserForm(values)
+    const validationError = validateCreateUserForm(values, t)
 
     if (validationError) {
       toast.error(validationError)
@@ -250,64 +246,64 @@ function CreateUserModal({
   }
 
   return (
-    <ModalFrame onClose={onClose} title="Nuevo usuario">
+    <ModalFrame onClose={onClose} title={t('users:modals.create.title')}>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
         <Field>
-          <FieldLabel>Nombre completo</FieldLabel>
-          <TextInput onChange={(event) => updateCreateField(setValues, 'fullName', event.target.value)} placeholder="Ej. Ana Garcia" value={values.fullName} />
+          <FieldLabel>{t('users:form.fullNameLabel')}</FieldLabel>
+          <TextInput onChange={(event) => updateCreateField(setValues, 'fullName', event.target.value)} placeholder={t('users:form.fullNamePlaceholder')} value={values.fullName} />
         </Field>
 
         <Field>
-          <FieldLabel>Correo electronico</FieldLabel>
-          <TextInput onChange={(event) => updateCreateField(setValues, 'email', event.target.value)} placeholder="ana.garcia@highmeds.com" type="email" value={values.email} />
-          <HelperText>Sera su usuario para iniciar sesion.</HelperText>
+          <FieldLabel>{t('users:form.emailLabel')}</FieldLabel>
+          <TextInput onChange={(event) => updateCreateField(setValues, 'email', event.target.value)} placeholder={t('users:form.emailPlaceholder')} type="email" value={values.email} />
+          <HelperText>{t('users:form.emailHelperCreate')}</HelperText>
         </Field>
 
         <Field>
           <div className="flex items-center justify-between gap-3">
-            <FieldLabel>Rol</FieldLabel>
+            <FieldLabel>{t('users:form.roleLabel')}</FieldLabel>
             <span className={`inline-flex rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getRoleTagClasses(values.role)}`}>
-              {currentRole.label}
+              {getRoleLabel(values.role, t)}
             </span>
           </div>
           <SelectField onChange={(event) => updateCreateField(setValues, 'role', event.target.value as UserRole)} value={values.role}>
             {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+              <option key={option} value={option}>
+                {getRoleLabel(option, t)}
               </option>
             ))}
           </SelectField>
-          <HelperText>{currentRole.helper}</HelperText>
+          <HelperText>{getRoleHelper(values.role, t)}</HelperText>
         </Field>
 
         <div className="space-y-4 border-t border-[var(--color-border)] pt-6">
-          <FieldLabel>Contrasena inicial</FieldLabel>
+          <FieldLabel>{t('users:form.initialPasswordLabel')}</FieldLabel>
           <div className="flex rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-1">
             <SegmentButton active={passwordMode === 'define'} onClick={() => {}}>
-              Definir ahora
+              {t('users:form.passwordMode.define')}
             </SegmentButton>
             <SegmentButton active={passwordMode === 'link'} disabled onClick={() => {}}>
-              Enviar enlace
+              {t('users:form.passwordMode.link')}
             </SegmentButton>
           </div>
 
           <div className="rounded-[8px] border border-[var(--color-border)] bg-[var(--color-page-bg)]/40 p-3 text-sm text-[var(--color-text-secondary)]">
-            El envío de enlace aún no está soportado por el backend actual. La creación real se hace con contraseña definida.
+            {t('users:form.passwordModeNotice')}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel>Contrasena</FieldLabel>
+              <FieldLabel>{t('users:form.passwordLabel')}</FieldLabel>
               <PasswordInput
                 onChange={(event) => updateCreateField(setValues, 'password', event.target.value)}
                 onToggleVisibility={() => setShowPassword((current) => !current)}
                 showPassword={showPassword}
                 value={values.password}
               />
-              <HelperText>Minimo 8 caracteres.</HelperText>
+              <HelperText>{t('users:form.passwordHelper')}</HelperText>
             </Field>
             <Field>
-              <FieldLabel>Confirmar contrasena</FieldLabel>
+              <FieldLabel>{t('users:form.confirmPasswordLabel')}</FieldLabel>
               <PasswordInput
                 onChange={(event) => updateCreateField(setValues, 'confirmPassword', event.target.value)}
                 onToggleVisibility={() => setShowConfirmPassword((current) => !current)}
@@ -321,7 +317,7 @@ function CreateUserModal({
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[color:rgba(245,248,251,0.5)] px-6 py-4">
         <Button disabled={isSubmitting} onClick={onClose} type="button" variant="ghost">
-          Cancelar
+          {t('users:form.cancelButton')}
         </Button>
         <button
           className="inline-flex min-h-10 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
@@ -330,7 +326,7 @@ function CreateUserModal({
           type="button"
         >
           {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Crear usuario
+          {t('users:form.createButton')}
         </button>
       </div>
     </ModalFrame>
@@ -352,6 +348,7 @@ function EditUserModal({
   onSubmit: (values: EditUserFormValues) => void
   user: UserRow
 }) {
+  const { t } = useTranslation(['users', 'common'])
   const [values, setValues] = useState<EditUserFormValues>({
     fullName: user.fullName,
     email: user.email,
@@ -364,13 +361,12 @@ function EditUserModal({
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const currentRole = roleOptions.find((option) => option.value === values.role) ?? roleOptions[0]
   const createdAt = formatDateTime(user.createdAt)
-  const lastAccess = user.lastAccess ? formatDateTime(user.lastAccess) : 'Sin acceso reciente'
+  const lastAccess = user.lastAccess ? formatDateTime(user.lastAccess) : t('users:state.noRecentAccess')
   const isPending = isSubmitting || isDeactivating
 
   const handleSubmit = () => {
-    const validationError = validateEditUserForm(values)
+    const validationError = validateEditUserForm(values, t)
 
     if (validationError) {
       toast.error(validationError)
@@ -388,9 +384,9 @@ function EditUserModal({
             {user.initials}
           </div>
           <div>
-            <h2 className="text-[20px] font-medium leading-7 text-[var(--color-text)]">Editar usuario</h2>
+            <h2 className="text-[20px] font-medium leading-7 text-[var(--color-text)]">{t('users:modals.edit.title')}</h2>
             <p className="mt-1 font-data-mono text-xs text-[var(--color-text-secondary)]">
-              Registrado el {createdAt} · Ultimo acceso {lastAccess}
+              {t('users:modals.edit.meta', { createdAt, lastAccess })}
             </p>
           </div>
         </div>
@@ -399,47 +395,49 @@ function EditUserModal({
     >
       <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
         <section className="space-y-5">
-          <SectionLabel>Datos basicos</SectionLabel>
+          <SectionLabel>{t('users:modals.edit.sections.basicData')}</SectionLabel>
           <Field>
-            <FieldLabel>Nombre completo</FieldLabel>
+            <FieldLabel>{t('users:form.fullNameLabel')}</FieldLabel>
             <TextInput onChange={(event) => updateEditField(setValues, 'fullName', event.target.value)} value={values.fullName} />
           </Field>
 
           <Field>
-            <FieldLabel>Rol</FieldLabel>
+            <FieldLabel>{t('users:form.roleLabel')}</FieldLabel>
             <SelectField onChange={(event) => updateEditField(setValues, 'role', event.target.value as UserRole)} value={values.role}>
               {roleOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+                <option key={option} value={option}>
+                  {getRoleLabel(option, t)}
                 </option>
               ))}
             </SelectField>
             <div className="flex items-start gap-2 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-3">
               <span className={`mt-0.5 inline-flex rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getRoleTagClasses(values.role)}`}>
-                {currentRole.label}
+                {getRoleLabel(values.role, t)}
               </span>
-              <p className="text-sm text-[var(--color-text-secondary)]">{currentRole.helper}</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">{getRoleHelper(values.role, t)}</p>
             </div>
           </Field>
 
           <div className="flex items-center justify-between border-b border-[var(--color-border)]/60 pb-4 pt-2">
             <div>
-              <p className="text-sm font-medium text-[var(--color-text)]">Estado</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">Controla si el usuario puede acceder al sistema</p>
+              <p className="text-sm font-medium text-[var(--color-text)]">{t('users:form.statusLabel')}</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">{t('users:form.statusHelper')}</p>
             </div>
             <div className="flex items-center gap-3">
               <Toggle checked={values.active} onChange={() => updateEditField(setValues, 'active', !values.active)} />
-              <span className="text-sm font-medium text-[var(--color-text)]">{values.active ? 'Activo' : 'Inactivo'}</span>
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                {values.active ? t('users:status.active') : t('users:status.inactive')}
+              </span>
             </div>
           </div>
         </section>
 
         <section className="space-y-5">
-          <SectionLabel>Datos de acceso</SectionLabel>
+          <SectionLabel>{t('users:modals.edit.sections.accessData')}</SectionLabel>
           <Field>
-            <FieldLabel>Correo electronico</FieldLabel>
+            <FieldLabel>{t('users:form.emailLabel')}</FieldLabel>
             <TextInput onChange={(event) => updateEditField(setValues, 'email', event.target.value)} type="email" value={values.email} />
-            <HelperText>Se usa para iniciar sesion.</HelperText>
+            <HelperText>{t('users:form.emailHelperEdit')}</HelperText>
           </Field>
 
           <div className="space-y-4 rounded-[8px] border border-[var(--color-primary)]/20 bg-[rgba(232,241,250,0.35)] p-4">
@@ -450,15 +448,15 @@ function EditUserModal({
                 onChange={() => updateEditField(setValues, 'changePassword', !values.changePassword)}
                 type="checkbox"
               />
-              <span className="text-sm font-medium text-[var(--color-text)]">Cambiar contrasena</span>
+              <span className="text-sm font-medium text-[var(--color-text)]">{t('users:form.changePasswordLabel')}</span>
             </label>
 
             {values.changePassword ? (
               <div className="space-y-4 border-t border-[var(--color-border)]/60 pt-4">
                 <Field>
                   <div className="flex items-center justify-between gap-3">
-                    <FieldLabel>Nueva contrasena</FieldLabel>
-                    <span className="text-sm text-[var(--color-text-secondary)]">Minimo 8 caracteres</span>
+                    <FieldLabel>{t('users:form.newPasswordLabel')}</FieldLabel>
+                    <span className="text-sm text-[var(--color-text-secondary)]">{t('users:form.passwordRuleInline')}</span>
                   </div>
                   <PasswordInput
                     onChange={(event) => updateEditField(setValues, 'password', event.target.value)}
@@ -470,7 +468,7 @@ function EditUserModal({
                 </Field>
 
                 <Field>
-                  <FieldLabel>Confirmar contrasena</FieldLabel>
+                  <FieldLabel>{t('users:form.confirmPasswordLabel')}</FieldLabel>
                   <PasswordInput
                     onChange={(event) => updateEditField(setValues, 'confirmPassword', event.target.value)}
                     onToggleVisibility={() => setShowConfirmPassword((current) => !current)}
@@ -481,7 +479,7 @@ function EditUserModal({
                 </Field>
 
                 <button className="cursor-not-allowed text-sm font-medium text-[var(--color-text-muted)]" disabled type="button">
-                  Enviar enlace de restablecimiento por correo
+                  {t('users:form.sendResetLinkButton')}
                 </button>
               </div>
             ) : null}
@@ -497,11 +495,11 @@ function EditUserModal({
           type="button"
         >
           {isDeactivating ? <LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" /> : null}
-          Desactivar usuario
+          {t('users:form.deactivateButton')}
         </button>
         <div className="flex gap-3">
           <Button disabled={isPending} onClick={onClose} type="button" variant="ghost">
-            Cancelar
+            {t('users:form.cancelButton')}
           </Button>
           <button
             className="inline-flex min-h-10 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
@@ -510,7 +508,7 @@ function EditUserModal({
             type="button"
           >
             {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Guardar cambios
+            {t('users:form.saveButton')}
           </button>
         </div>
       </div>
@@ -529,10 +527,12 @@ function ModalFrame({
   onClose: () => void
   title?: string
 }) {
+  const { t } = useTranslation(['users', 'common'])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-5">
       <button className="absolute inset-0 bg-[#0e1d27]/40 backdrop-blur-[2px]" onClick={onClose} type="button" />
-      <div aria-label={title ?? 'Modal de usuario'} aria-modal="true" className="relative flex max-h-[90vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.12)]" role="dialog">
+      <div aria-label={title ?? t('users:modals.frame.defaultAriaLabel')} aria-modal="true" className="relative flex max-h-[90vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.12)]" role="dialog">
         <div className="flex items-start justify-between border-b border-[var(--color-border)] px-6 py-5">
           {header ?? <h2 className="text-[20px] font-medium leading-7 text-[var(--color-text)]">{title}</h2>}
           <button className="rounded-full p-1 text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-text)]" onClick={onClose} type="button">
@@ -686,54 +686,54 @@ function updateEditField<K extends keyof EditUserFormValues>(
   setValues((current) => ({ ...current, [key]: value }))
 }
 
-function validateCreateUserForm(values: CreateUserFormValues) {
+function validateCreateUserForm(values: CreateUserFormValues, t: UsersTFunction) {
   if (!values.fullName.trim()) {
-    return 'El nombre completo es obligatorio'
+    return t('users:validation.fullNameRequired')
   }
 
   if (!values.email.trim()) {
-    return 'El correo electronico es obligatorio'
+    return t('users:validation.emailRequired')
   }
 
   if (!isValidEmail(values.email)) {
-    return 'Ingrese un correo electronico valido'
+    return t('users:validation.emailInvalid')
   }
 
   if (!values.role) {
-    return 'Seleccione un rol valido'
+    return t('users:validation.roleRequired')
   }
 
   if (values.password.length < 8) {
-    return 'La contrasena debe tener al menos 8 caracteres'
+    return t('users:validation.passwordTooShort')
   }
 
   if (values.password !== values.confirmPassword) {
-    return 'La confirmacion de contrasena no coincide'
+    return t('users:validation.passwordMismatch')
   }
 
   return null
 }
 
-function validateEditUserForm(values: EditUserFormValues) {
+function validateEditUserForm(values: EditUserFormValues, t: UsersTFunction) {
   if (!values.fullName.trim()) {
-    return 'El nombre completo es obligatorio'
+    return t('users:validation.fullNameRequired')
   }
 
   if (!values.email.trim()) {
-    return 'El correo electronico es obligatorio'
+    return t('users:validation.emailRequired')
   }
 
   if (!isValidEmail(values.email)) {
-    return 'Ingrese un correo electronico valido'
+    return t('users:validation.emailInvalid')
   }
 
   if (values.changePassword) {
     if (values.password.length < 8) {
-      return 'La nueva contrasena debe tener al menos 8 caracteres'
+      return t('users:validation.newPasswordTooShort')
     }
 
     if (values.password !== values.confirmPassword) {
-      return 'La confirmacion de contrasena no coincide'
+      return t('users:validation.passwordMismatch')
     }
   }
 
@@ -772,9 +772,9 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
-function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deactivate') {
+function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deactivate', t: UsersTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'Ocurrio un error inesperado al gestionar usuarios'
+    return t('users:errors.unexpected')
   }
 
   const apiError = error.response?.data
@@ -783,6 +783,8 @@ function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deac
   const message = apiError?.message?.trim()
   const normalizedMessage = message?.toLowerCase() ?? ''
 
+  // The Spanish substrings below are backend response matchers, not UI copy.
+  // They must stay raw literals or the error mapping silently stops matching.
   if (
     code.includes('EMAIL') &&
     (code.includes('DUPLICATE') ||
@@ -790,7 +792,7 @@ function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deac
       normalizedMessage.includes('ya existe') ||
       normalizedMessage.includes('duplicate'))
   ) {
-    return 'Ya existe un usuario con ese correo'
+    return t('users:errors.duplicateEmail')
   }
 
   if (
@@ -798,7 +800,7 @@ function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deac
     normalizedMessage.includes('ultimo administrador') ||
     normalizedMessage.includes('last admin')
   ) {
-    return 'No se puede desactivar o degradar el último administrador'
+    return t('users:errors.lastAdmin')
   }
 
   if (
@@ -808,7 +810,7 @@ function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deac
     normalizedMessage.includes('not found') ||
     normalizedMessage.includes('inactivo')
   ) {
-    return 'El usuario no existe, ya está inactivo o no pudo encontrarse'
+    return t('users:errors.notFound')
   }
 
   if (message) {
@@ -817,16 +819,16 @@ function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deac
 
   if (status === 400) {
     if (action === 'deactivate') {
-      return 'No fue posible desactivar el usuario'
+      return t('users:errors.deactivateFailed')
     }
 
-    return 'Revise los datos del usuario antes de guardar'
+    return t('users:errors.invalidData')
   }
 
-  return 'No fue posible completar la operacion sobre usuarios'
+  return t('users:errors.operationFailed')
 }
 
-function getRoleTagClasses(role: (typeof roleOptions)[number]['value']) {
+function getRoleTagClasses(role: UserRole) {
   if (role === 'ADMIN') {
     return 'bg-[var(--color-surface-tint)]/18 text-[var(--color-primary)]'
   }

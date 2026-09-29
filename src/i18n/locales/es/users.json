@@ -1,1 +1,128 @@
-{}
+{
+  "page": {
+    "metrics": {
+      "active": "Usuarios activos",
+      "admins": "Administradores",
+      "managers": "Encargados",
+      "operators": "Operativos"
+    },
+    "searchPlaceholder": "Buscar por nombre o correo",
+    "filters": {
+      "all": "Todos",
+      "admins": "Administradores",
+      "managers": "Encargados",
+      "operators": "Operativos"
+    },
+    "newUserButton": "Nuevo usuario",
+    "loadError": "No se pudieron cargar los usuarios reales en este momento."
+  },
+  "roles": {
+    "OPERATOR": "Personal operativo",
+    "MANAGER": "Encargado de inventario",
+    "ADMIN": "Administrador"
+  },
+  "roleHelpers": {
+    "OPERATOR": "Acceso de consulta al catálogo y existencias, y registro de movimientos autorizados.",
+    "MANAGER": "Hereda las vistas del Operativo y añade gestión de inventario, alertas, reposición y proveedores.",
+    "ADMIN": "Gestión integral del sistema, configuración de accesos y control operativo completo."
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "state": {
+    "noRecentAccess": "Sin acceso reciente"
+  },
+  "table": {
+    "columns": {
+      "user": "Usuario",
+      "role": "Rol",
+      "lastAccess": "Último acceso",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "editTitle": "Editar usuario"
+    },
+    "pagination": {
+      "summary": "Mostrando <strong>{{start}}-{{end}}</strong> de <strong>{{total}}</strong> usuarios"
+    }
+  },
+  "modals": {
+    "frame": {
+      "defaultAriaLabel": "Modal de usuario"
+    },
+    "detail": {
+      "title": "Detalle del usuario",
+      "roleLabel": "Rol",
+      "statusLabel": "Estado",
+      "closeButton": "Cerrar",
+      "deactivateButton": "Desactivar",
+      "deactivatingButton": "Desactivando...",
+      "activateButton": "Activar",
+      "activatingButton": "Activando..."
+    },
+    "create": {
+      "title": "Nuevo usuario"
+    },
+    "edit": {
+      "title": "Editar usuario",
+      "meta": "Registrado el {{createdAt}} · Último acceso {{lastAccess}}",
+      "sections": {
+        "basicData": "Datos básicos",
+        "accessData": "Datos de acceso"
+      }
+    }
+  },
+  "form": {
+    "fullNameLabel": "Nombre completo",
+    "fullNamePlaceholder": "Ej. Ana García",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "ana.garcia@highmeds.com",
+    "emailHelperCreate": "Será su usuario para iniciar sesión.",
+    "emailHelperEdit": "Se usa para iniciar sesión.",
+    "roleLabel": "Rol",
+    "statusLabel": "Estado",
+    "statusHelper": "Controla si el usuario puede acceder al sistema",
+    "initialPasswordLabel": "Contraseña inicial",
+    "passwordMode": {
+      "define": "Definir ahora",
+      "link": "Enviar enlace"
+    },
+    "passwordModeNotice": "El envío de enlace aún no está soportado por el backend actual. La creación real se hace con contraseña definida.",
+    "passwordLabel": "Contraseña",
+    "passwordHelper": "Mínimo 8 caracteres.",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "changePasswordLabel": "Cambiar contraseña",
+    "newPasswordLabel": "Nueva contraseña",
+    "passwordRuleInline": "Mínimo 8 caracteres",
+    "sendResetLinkButton": "Enviar enlace de restablecimiento por correo",
+    "deactivateButton": "Desactivar usuario",
+    "cancelButton": "Cancelar",
+    "createButton": "Crear usuario",
+    "saveButton": "Guardar cambios"
+  },
+  "toasts": {
+    "created": "Usuario creado correctamente",
+    "updated": "Usuario actualizado correctamente",
+    "deactivated": "Usuario desactivado correctamente"
+  },
+  "validation": {
+    "fullNameRequired": "El nombre completo es obligatorio",
+    "emailRequired": "El correo electrónico es obligatorio",
+    "emailInvalid": "Ingrese un correo electrónico válido",
+    "roleRequired": "Seleccione un rol válido",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "newPasswordTooShort": "La nueva contraseña debe tener al menos 8 caracteres",
+    "passwordMismatch": "La confirmación de contraseña no coincide"
+  },
+  "errors": {
+    "unexpected": "Ocurrió un error inesperado al gestionar usuarios",
+    "duplicateEmail": "Ya existe un usuario con ese correo",
+    "lastAdmin": "No se puede desactivar o degradar el último administrador",
+    "notFound": "El usuario no existe, ya está inactivo o no pudo encontrarse",
+    "deactivateFailed": "No fue posible desactivar el usuario",
+    "invalidData": "Revise los datos del usuario antes de guardar",
+    "operationFailed": "No fue posible completar la operación sobre usuarios"
+  }
+}
