@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, Minus, View } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
 import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
 import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
@@ -21,6 +22,7 @@ interface InventoryTanStackTableProps {
 }
 
 export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpenSalida }: InventoryTanStackTableProps) {
+  const { t } = useTranslation(['inventory', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -33,7 +35,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
   const columns: ColumnDef<InventoryRow>[] = [
     {
       accessorKey: 'name',
-      header: 'Producto',
+      header: t('inventory:table.columns.product'),
       cell: ({ row }) => (
         <div>
           <div className="font-medium text-[var(--color-text)]">{row.original.name}</div>
@@ -43,12 +45,12 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
     },
     {
       accessorKey: 'category',
-      header: 'Categoria',
+      header: t('inventory:table.columns.category'),
       cell: ({ row }) => <span className="text-sm text-[var(--color-text-secondary)]">{row.original.category}</span>,
     },
     {
       accessorKey: 'stock',
-      header: 'Existencias',
+      header: t('inventory:table.columns.stock'),
       cell: ({ row }) => (
         <span className={`font-data-mono text-sm ${row.original.status === 'out' ? 'text-[var(--color-danger-text)]' : 'text-[var(--color-text)]'}`}>
           {row.original.stock.toLocaleString('es-VE')}
@@ -57,17 +59,17 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
     },
     {
       accessorKey: 'minStock',
-      header: 'Stock min.',
+      header: t('inventory:table.columns.minStock'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text-muted)]">{row.original.minStock.toLocaleString('es-VE')}</span>,
     },
     {
       accessorKey: 'status',
-      header: 'Estado',
+      header: t('inventory:table.columns.status'),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       id: 'actions',
-      header: 'Accion',
+      header: t('inventory:table.columns.actions'),
       enableColumnFilter: false,
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
@@ -77,7 +79,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
               event.stopPropagation()
               onOpenSalida(row.original)
             }}
-            title="Registrar salida"
+            title={t('inventory:table.actions.registerOutput')}
             type="button"
           >
             <Minus className="h-4 w-4" />
@@ -88,7 +90,7 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
               event.stopPropagation()
               onOpenDetail(row.original)
             }}
-            title="Ver detalle"
+            title={t('inventory:table.actions.viewDetail')}
             type="button"
           >
             <View className="h-4 w-4" />
@@ -158,7 +160,14 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
 
       <div className="flex flex-col gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-secondary)] md:flex-row md:items-center md:justify-between">
         <span>
-          Mostrando <span className="font-medium text-[var(--color-text)]">{pageStart}-{pageEnd}</span> de <span className="font-medium text-[var(--color-text)]">{totalRows}</span> productos
+          <Trans
+            components={{
+              range: <span className="font-medium text-[var(--color-text)]" />,
+              total: <span className="font-medium text-[var(--color-text)]" />,
+            }}
+            i18nKey="inventory:table.pagination.summary"
+            values={{ end: pageEnd, start: pageStart, total: totalRows }}
+          />
         </span>
         <div className="flex items-center gap-1 self-end md:self-auto">
           <button
@@ -196,13 +205,15 @@ export function InventoryTanStackTable({ rows, globalFilter, onOpenDetail, onOpe
 }
 
 function StatusBadge({ status }: { status: StockStatus }) {
+  const { t } = useTranslation('common')
+
   if (status === 'healthy') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-success-text)]">{getStockStatusLabel(status)}</span>
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-success-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
   if (status === 'low') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-warning-text)]">{getStockStatusLabel(status)}</span>
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-warning-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
-  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-danger-text)]">{getStockStatusLabel(status)}</span>
+  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-3 py-1 text-sm font-semibold uppercase text-[var(--color-danger-text)]">{getStockStatusLabel(status, t)}</span>
 }

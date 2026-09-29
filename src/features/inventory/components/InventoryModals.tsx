@@ -1,7 +1,9 @@
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
 import { ArrowDown, ArrowLeftRight, ArrowUp, Lock, TriangleAlert, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import {
@@ -12,6 +14,8 @@ import type { InventoryRow } from '@/features/inventory/lib/inventoryRows'
 import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { ApiErrorEnvelope, InventoryMovement } from '@/types/api.types'
+
+type InventoryTFunction = TFunction<['inventory', 'common']>
 
 export type InventoryModalType = 'detail' | 'output'
 
@@ -51,52 +55,54 @@ function ModalFrame({ children, title, onClose, maxWidth = 'max-w-[560px]' }: { 
 }
 
 function InventoryDetailModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
+  const { t } = useTranslation(['inventory', 'common'])
   const { data, error, isLoading } = useProductInventoryMovements(product.id, { limit: 3 })
   const history = data?.data ?? []
   const latestUpdate = history[0]?.createdAt
+  const notAvailable = t('common:state.notAvailable')
 
   return (
-    <ModalFrame maxWidth="max-w-[560px]" onClose={onClose} title="Detalle del producto">
+    <ModalFrame maxWidth="max-w-[560px]" onClose={onClose} title={t('inventory:modals.detail.title')}>
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-lg font-medium text-[var(--color-text)]">{product.name}</h4>
             <span className="rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">{product.category}</span>
-            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{getStockStatusLabel(product.status)}</span>
+            <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>{getStockStatusLabel(product.status, t)}</span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{product.code}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <SummaryCard label="Existencias" value={product.stock.toLocaleString('es-VE')} />
-          <SummaryCard label="Stock minimo" value={product.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status)} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard label={t('inventory:modals.detail.summary.stock')} value={product.stock.toLocaleString('es-VE')} />
+          <SummaryCard label={t('inventory:modals.detail.summary.minStock')} value={product.minStock.toLocaleString('es-VE')} />
+          <SummaryCard badge label={t('inventory:modals.detail.summary.status')} value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-          <DetailItem label="Categoria" value={product.category} />
-          <DetailItem label="Precio unitario" mono value={product.price != null ? formatCurrency(Number(product.price)) : 'Sin precio'} />
-          <DetailItem label="Proveedor" value={product.suppliers.join(', ') || 'No asignado'} />
-          <DetailItem label="Ultima actualizacion" mono value={latestUpdate ? formatDate(latestUpdate) : 'Sin movimientos'} />
-          <DetailItem label="Presentacion" value={`${product.brandLabel} · ${product.presentationLabel}`} />
-          <DetailItem label="Contenido" mono value={`${product.unitContent} ${product.unit}`} />
-          <DetailItem label="Principio activo" value={product.activeIngredientLabel} />
+          <DetailItem label={t('inventory:modals.detail.fields.category')} value={product.category} />
+          <DetailItem label={t('inventory:modals.detail.fields.unitPrice')} mono value={product.price != null ? formatCurrency(Number(product.price)) : notAvailable} />
+          <DetailItem label={t('inventory:modals.detail.fields.supplier')} value={product.suppliers.join(', ') || notAvailable} />
+          <DetailItem label={t('inventory:modals.detail.fields.lastUpdate')} mono value={latestUpdate ? formatDate(latestUpdate) : notAvailable} />
+          <DetailItem label={t('inventory:modals.detail.fields.presentation')} value={`${product.brandLabel} · ${product.presentationLabel}`} />
+          <DetailItem label={t('inventory:modals.detail.fields.content')} mono value={`${product.unitContent} ${product.unit}`} />
+          <DetailItem label={t('inventory:modals.detail.fields.activeIngredient')} value={product.activeIngredientLabel} />
         </div>
 
         <div className="space-y-3">
-          <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Movimientos recientes</h5>
+          <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('inventory:modals.detail.recentMovements.heading')}</h5>
           <div className="space-y-2">
-            {isLoading ? <MovementStateMessage label="Cargando historial real..." /> : null}
-            {!isLoading && error ? <MovementStateMessage label="No fue posible cargar el historial real." tone="error" /> : null}
-            {!isLoading && !error && history.length === 0 ? <MovementStateMessage label="Sin movimientos recientes." /> : null}
+            {isLoading ? <MovementStateMessage label={t('inventory:modals.detail.recentMovements.loading')} /> : null}
+            {!isLoading && error ? <MovementStateMessage label={t('inventory:modals.detail.recentMovements.loadError')} tone="error" /> : null}
+            {!isLoading && !error && history.length === 0 ? <MovementStateMessage label={t('inventory:modals.detail.recentMovements.empty')} /> : null}
             {!isLoading && !error
               ? history.map((movement) => (
                   <div key={movement.id} className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <MovementIcon type={movement.type} />
                       <div>
-                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type)}</p>
-                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement)}</p>
+                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type, t)}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement, t)}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -115,25 +121,44 @@ function InventoryDetailModal({ onClose, product }: { onClose: () => void; produ
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-strong)] px-5 py-4 sm:px-6">
         <Button onClick={onClose} type="button" variant="ghost">
-          Cerrar
+          {t('inventory:modals.detail.closeButton')}
         </Button>
       </div>
     </ModalFrame>
   )
 }
 
+const OUTPUT_REASON_KEYS = ['dispensing', 'expiration', 'damage', 'lossOrShrinkage', 'inventoryAdjustment', 'supplierReturn'] as const
+
+type OutputReasonKey = (typeof OUTPUT_REASON_KEYS)[number]
+
+// Stable, locale-independent values persisted to the backend. Display labels are
+// resolved separately via t() so the stored audit trail never changes meaning
+// depending on which UI language was active when the movement was submitted
+// (same key/label split already established in src/lib/stockStatus.ts).
+const OUTPUT_REASON_BACKEND_VALUES: Record<OutputReasonKey, string> = {
+  dispensing: 'Dispensación por Ventanilla',
+  expiration: 'Vencimiento',
+  damage: 'Daño',
+  lossOrShrinkage: 'Pérdida/Merma',
+  inventoryAdjustment: 'Ajuste de inventario',
+  supplierReturn: 'Devolución a proveedor',
+}
+
 function RegisterOutputModal({ onClose, product }: { onClose: () => void; product: InventoryRow }) {
+  const { t } = useTranslation(['inventory', 'common'])
   const [quantity, setQuantity] = useState(0)
-  const [reason, setReason] = useState('Dispensación por Ventanilla')
+  const [reasonKey, setReasonKey] = useState<OutputReasonKey>('dispensing')
+  const reason = OUTPUT_REASON_BACKEND_VALUES[reasonKey]
   const createMovementMutation = useCreateInventoryMovement()
   const resultingStock = Math.max(product.stock - quantity, 0)
   const warning = resultingStock < product.minStock
 
   return (
-    <ModalFrame maxWidth="max-w-[480px]" onClose={onClose} title="Registrar salida">
+    <ModalFrame maxWidth="max-w-[480px]" onClose={onClose} title={t('inventory:modals.output.title')}>
       <div className="space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Producto</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('inventory:modals.output.fields.product')}</label>
           <div className="flex items-center justify-between rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-3">
             <div>
               <div className="text-sm font-medium text-[var(--color-text)]">{product.name}</div>
@@ -145,7 +170,7 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Cantidad</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('inventory:modals.output.fields.quantity')}</label>
             <input
               className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 font-data-mono text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]"
               onChange={(event) => setQuantity(Number(event.target.value) || 0)}
@@ -154,18 +179,17 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Motivo</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('inventory:modals.output.fields.reason')}</label>
             <select
               className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[color:rgba(0,71,130,0.10)]"
-              onChange={(event) => setReason(event.target.value)}
-              value={reason}
+              onChange={(event) => setReasonKey(event.target.value as OutputReasonKey)}
+              value={reasonKey}
             >
-              <option>Dispensación por Ventanilla</option>
-              <option>Vencimiento</option>
-              <option>Daño</option>
-              <option>Pérdida/Merma</option>
-              <option>Ajuste de inventario</option>
-              <option>Devolución a proveedor</option>
+              {OUTPUT_REASON_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {t(`inventory:modals.output.reasons.${key}`)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -173,8 +197,14 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
         <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-[var(--color-text-secondary)]">
-              Existencias actuales: <span className="font-data-mono">{product.stock}</span> {'->'} resultado:{' '}
-              <span className="font-data-mono font-medium text-[var(--color-text)]">{resultingStock}</span>
+              <Trans
+                components={{
+                  mono: <span className="font-data-mono" />,
+                  result: <span className="font-data-mono font-medium text-[var(--color-text)]" />,
+                }}
+                i18nKey="inventory:modals.output.resultingStock"
+                values={{ current: product.stock, result: resultingStock }}
+              />
             </span>
             <span className="font-data-mono text-sm font-medium text-[var(--color-danger-text)]">-{quantity}</span>
           </div>
@@ -182,7 +212,7 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
           {warning ? (
             <div className="mt-3 flex items-start gap-2 rounded-[6px] bg-[var(--color-warning-bg)] p-3">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-warning-text)]" />
-              <span className="text-sm text-[var(--color-warning-text)]">El resultado quedará por debajo del stock mínimo ({product.minStock})</span>
+              <span className="text-sm text-[var(--color-warning-text)]">{t('inventory:modals.output.belowMinimumWarning', { minStock: product.minStock })}</span>
             </div>
           ) : null}
         </div>
@@ -190,18 +220,18 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 sm:px-6">
         <Button disabled={createMovementMutation.isPending} onClick={onClose} type="button" variant="ghost">
-          Cancelar
+          {t('inventory:modals.output.cancelButton')}
         </Button>
         <Button
           disabled={createMovementMutation.isPending}
           onClick={() => {
             if (quantity <= 0) {
-              toast.error('La cantidad debe ser mayor que cero')
+              toast.error(t('inventory:validation.quantityPositive'))
               return
             }
 
             if (!reason.trim()) {
-              toast.error('Seleccione un motivo para la salida')
+              toast.error(t('inventory:validation.reasonRequired'))
               return
             }
 
@@ -214,10 +244,10 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
               },
               {
                 onError: (error: unknown) => {
-                  toast.error(getInventoryMovementErrorMessage(error))
+                  toast.error(getInventoryMovementErrorMessage(error, t))
                 },
                 onSuccess: () => {
-                  toast.success('Salida registrada correctamente')
+                  toast.success(t('inventory:toasts.outputRegistered'))
                   onClose()
                 },
               },
@@ -225,7 +255,7 @@ function RegisterOutputModal({ onClose, product }: { onClose: () => void; produc
           }}
           type="button"
         >
-          {createMovementMutation.isPending ? 'Registrando...' : 'Registrar salida'}
+          {createMovementMutation.isPending ? t('inventory:modals.output.submitting') : t('inventory:modals.output.submitButton')}
         </Button>
       </div>
     </ModalFrame>
@@ -292,20 +322,20 @@ function getStatusClasses(status: StockStatus) {
   return 'bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]'
 }
 
-function getMovementLabel(type: InventoryMovement['type']) {
+function getMovementLabel(type: InventoryMovement['type'], t: InventoryTFunction) {
   if (type === 'IN') {
-    return 'Entrada'
+    return t('inventory:modals.detail.recentMovements.types.in')
   }
 
   if (type === 'OUT') {
-    return 'Salida'
+    return t('inventory:modals.detail.recentMovements.types.out')
   }
 
-  return 'Ajuste'
+  return t('inventory:modals.detail.recentMovements.types.adjustment')
 }
 
-function getMovementSubtitle(movement: InventoryMovement) {
-  const userLabel = `Usuario ${shortId(movement.userId)}`
+function getMovementSubtitle(movement: InventoryMovement, t: InventoryTFunction) {
+  const userLabel = t('inventory:modals.detail.recentMovements.userLabel', { id: shortId(movement.userId) })
 
   return movement.reason ? `${movement.reason} · ${userLabel}` : userLabel
 }
@@ -322,12 +352,12 @@ function getMovementSignal(movement: InventoryMovement) {
   return movement.adjustmentDirection === 'DECREASE' ? '-' : '+'
 }
 
-function getInventoryMovementErrorMessage(error: unknown) {
+function getInventoryMovementErrorMessage(error: unknown, t: InventoryTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'No fue posible registrar la salida'
+    return t('inventory:errors.registerOutputFailed')
   }
 
-  return error.response?.data.message?.trim() || 'No fue posible registrar la salida'
+  return error.response?.data.message?.trim() || t('inventory:errors.registerOutputFailed')
 }
 
 function shortId(value: string) {
