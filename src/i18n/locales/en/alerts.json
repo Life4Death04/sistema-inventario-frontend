@@ -1,1 +1,26 @@
-{}
+{
+  "page": {
+    "title": "Inventory alerts",
+    "metrics": {
+      "active": "Active alerts",
+      "critical": "Critical",
+      "out": "Out of stock"
+    },
+    "loadError": "The alerts could not be loaded from real products."
+  },
+  "empty": {
+    "noActiveAlerts": "There are no active alerts. All products are above the minimum stock level."
+  },
+  "level": {
+    "critical": "Critical",
+    "out": "Out of stock"
+  },
+  "card": {
+    "generatedAt": "Generated: {{date}}",
+    "currentStockLabel": "Current stock:",
+    "actions": {
+      "generateReplenishment": "Generate replenishment",
+      "viewProduct": "View product"
+    }
+  }
+}
