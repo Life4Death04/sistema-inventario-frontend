@@ -1,1 +1,163 @@
-{}
+{
+  "page": {
+    "metrics": {
+      "pending": "Pending",
+      "sent": "Sent",
+      "receivedThisMonth": "Received (month)",
+      "cancelledThisMonth": "Cancelled (month)"
+    },
+    "newRequestButton": "New request",
+    "searchPlaceholder": "Search by no., product, or supplier",
+    "loadError": "The real replenishment requests could not be loaded.",
+    "empty": "There are no replenishment requests to show."
+  },
+  "filters": {
+    "all": "All"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "SENT": "Sent",
+    "RECEIVED": "Received",
+    "CANCELLED": "Cancelled"
+  },
+  "fallback": {
+    "notSent": "Not sent"
+  },
+  "table": {
+    "columns": {
+      "id": "No.",
+      "products": "Products",
+      "supplier": "Supplier",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "itemsCount": {
+      "none": "No summary",
+      "one": "1 product",
+      "other": "{{count}} products"
+    },
+    "actions": {
+      "viewDetailTitle": "View detail",
+      "changeStatusTitle": "Change status"
+    },
+    "pagination": {
+      "summary": "Showing {{start}}-{{end}} of {{total}} requests"
+    }
+  },
+  "modals": {
+    "generate": {
+      "title": "New replenishment request",
+      "supplier": {
+        "label": "Supplier",
+        "placeholder": "Select supplier",
+        "hintWithSupplier": "Showing only products associated with this supplier. If you omit the unit price, the backend will resolve it from the reference.",
+        "hintWithoutSupplier": "Select a supplier to see its associated products."
+      },
+      "productsHeading": "Products to request",
+      "table": {
+        "product": "Product",
+        "stock": "Stock",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "unitPricePlaceholder": "Auto",
+        "empty": "No products selected."
+      },
+      "addProductButton": "Add product",
+      "noteLabel": "Note for the supplier (Optional)",
+      "notePlaceholder": "Write additional instructions here...",
+      "summary": {
+        "lines": "Total lines:",
+        "units": "Units:"
+      },
+      "cancelButton": "Cancel",
+      "saveAsPendingButton": "Save as pending",
+      "generateAndSendButton": "Generate and send"
+    },
+    "associateProducts": {
+      "title": "Add products",
+      "description": "Supplier-product validation is resolved when the request is saved.",
+      "searchPlaceholder": "Search by name, SKU, or active ingredient...",
+      "showingCount": "Showing {{count}} products",
+      "onlyLowStockLabel": "Low stock only",
+      "alreadyAdded": "Already added",
+      "suggestedLabel": "Suggested:",
+      "stockLabel": "Stock: {{value}}",
+      "minLabel": "Min: {{value}}",
+      "selectedCount": "{{count}} products selected",
+      "cancelButton": "Cancel",
+      "addButton": "Add ({{count}})"
+    },
+    "detail": {
+      "title": "Replenishment detail",
+      "requestTitle": "Request {{code}}",
+      "loadError": "Unable to load the real request detail.",
+      "whatsappBadge": "WhatsApp",
+      "metadata": {
+        "createdBy": "Created by",
+        "createdByValue": "{{name}} · {{date}}",
+        "sent": "Sent",
+        "sentValue": "{{date}} · via WhatsApp",
+        "notSent": "Not sent",
+        "received": "Received",
+        "notReceived": "—",
+        "notes": "Notes",
+        "noNotes": "No notes"
+      },
+      "itemsHeading": "Requested products",
+      "table": {
+        "product": "Product",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "subtotal": "Subtotal"
+      },
+      "totalEstimated": "Estimated total:",
+      "pricesNote": "Prices recorded at the time of the request",
+      "timelineHeading": "Status history",
+      "timeline": {
+        "pending": "pending",
+        "closed": "closed"
+      },
+      "changeStatusButton": "Change status",
+      "confirmReceiptButton": "Confirm receipt"
+    },
+    "changeStatus": {
+      "title": "Change status",
+      "loadError": "Unable to load the real request.",
+      "currentStatusLabel": "Current status:",
+      "newStatusLabel": "New Status",
+      "receivedProductsLabel": "Received products",
+      "productColumn": "Product",
+      "receivedQuantityColumn": "Qty. Received",
+      "cancelWarning": "The request will be closed and <bold>will not affect inventory</bold>. This action cannot be undone.",
+      "cancelButton": "Cancel",
+      "submit": {
+        "cancel": "Cancel request",
+        "receive": "Confirm receipt",
+        "send": "Mark as sent"
+      }
+    }
+  },
+  "toasts": {
+    "requestSent": "Request sent successfully",
+    "requestCreated": "Request created successfully",
+    "requestCancelled": "Request cancelled successfully",
+    "receiptConfirmed": "Receipt confirmed successfully"
+  },
+  "validation": {
+    "supplierRequired": "Select a valid supplier",
+    "productsRequired": "You must select at least one product",
+    "quantityPositive": "The requested quantity for {{name}} must be greater than zero",
+    "unitPricePositive": "The unit price of {{name}} must be greater than zero",
+    "receivedQuantityNegative": "The received quantity of {{name}} cannot be negative"
+  },
+  "errors": {
+    "unexpected": "Unable to complete the replenishment operation",
+    "unitPriceRequired": "You must provide the unit price or configure a reference for that supplier",
+    "invalidStateTransition": "The request is no longer in a valid state for that action",
+    "sendFailed": "Unable to send the request",
+    "receiveFailed": "Unable to confirm the receipt",
+    "cancelFailed": "Unable to cancel the request",
+    "createFailed": "Unable to create the request"
+  }
+}
