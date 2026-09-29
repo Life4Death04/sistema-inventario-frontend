@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, ArrowDownLeft, ArrowUpRight, RefreshCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { formatDate } from '@/lib/utils'
 
@@ -17,7 +18,7 @@ export interface MovementTableRow {
   product: string
   code: string
   type: 'IN' | 'OUT' | 'ADJUSTMENT'
-  typeLabel: 'Entrada' | 'Salida' | 'Ajuste'
+  typeLabel: string
   adjustmentDirection: 'INCREASE' | 'DECREASE' | null
   adjustmentLabel: string | null
   quantity: number
@@ -34,6 +35,7 @@ interface MovementsTanStackTableProps {
 }
 
 export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStackTableProps) {
+  const { t } = useTranslation(['movements', 'common'])
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 6,
@@ -46,12 +48,12 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
   const columns: ColumnDef<MovementTableRow>[] = [
     {
       accessorKey: 'createdAt',
-      header: 'Fecha y hora',
+      header: t('movements:fields.createdAt'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text)]">{formatDate(row.original.createdAt)}</span>,
     },
     {
       accessorKey: 'product',
-      header: 'Producto',
+      header: t('movements:fields.product'),
       cell: ({ row }) => (
         <div>
           <div className="text-sm text-[var(--color-text)]">{row.original.product}</div>
@@ -61,24 +63,24 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
     },
     {
       accessorKey: 'type',
-      header: 'Tipo',
+      header: t('movements:fields.type'),
       cell: ({ row }) => <MovementTypeBadge type={row.original.type} />,
     },
     {
       accessorKey: 'quantity',
-      header: 'Cantidad',
+      header: t('movements:fields.quantity'),
       cell: ({ row }) => (
         <QuantityValue adjustmentDirection={row.original.adjustmentDirection} quantity={row.original.quantity} type={row.original.type} />
       ),
     },
     {
       accessorKey: 'resultingStock',
-      header: 'Resultante',
+      header: t('movements:fields.resultingStock'),
       cell: ({ row }) => <span className="font-data-mono text-sm text-[var(--color-text)]">{row.original.resultingStock}</span>,
     },
     {
       accessorKey: 'user',
-      header: 'Responsable',
+      header: t('movements:fields.user'),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-tint)] text-[10px] font-semibold text-[var(--color-primary)]">
@@ -90,7 +92,7 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
     },
     {
       accessorKey: 'reason',
-      header: 'Motivo',
+      header: t('movements:fields.reason'),
       cell: ({ row }) => (
         <div>
           <div className="text-sm text-[var(--color-text)]">{row.original.reason}</div>
@@ -168,7 +170,7 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
 
       <div className="flex flex-col gap-4 border-t border-[var(--color-border)] bg-[color:rgba(245,248,251,0.2)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-sm text-[var(--color-text-secondary)]">
-          Mostrando {pageStart}-{pageEnd} de {totalRows} movimientos
+          {t('movements:table.pagination', { start: pageStart, end: pageEnd, total: totalRows })}
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -208,11 +210,13 @@ export function MovementsTanStackTable({ rows, globalFilter }: MovementsTanStack
 }
 
 function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
+  const { t } = useTranslation(['movements', 'common'])
+
   if (type === 'IN') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">
         <ArrowDownLeft className="h-3.5 w-3.5" />
-        Entrada
+        {t('movements:types.IN')}
       </span>
     )
   }
@@ -221,7 +225,7 @@ function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">
         <ArrowUpRight className="h-3.5 w-3.5" />
-        Salida
+        {t('movements:types.OUT')}
       </span>
     )
   }
@@ -229,7 +233,7 @@ function MovementTypeBadge({ type }: { type: MovementTableRow['type'] }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">
       <RefreshCcw className="h-3.5 w-3.5" />
-      Ajuste
+      {t('movements:types.ADJUSTMENT')}
     </span>
   )
 }

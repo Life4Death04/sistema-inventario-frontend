@@ -1,0 +1,48 @@
+{
+  "title": "Movement History",
+  "subtitle": "Transaction and general inventory log.",
+  "fields": {
+    "createdAt": "Date and time",
+    "product": "Product",
+    "type": "Type",
+    "quantity": "Quantity",
+    "resultingStock": "Resulting",
+    "user": "Performed by",
+    "reason": "Reason"
+  },
+  "types": {
+    "IN": "Inbound",
+    "OUT": "Outbound",
+    "ADJUSTMENT": "Adjustment"
+  },
+  "adjustmentDirections": {
+    "INCREASE": "Increase",
+    "DECREASE": "Decrease"
+  },
+  "metrics": {
+    "entries": "Inbound",
+    "outputs": "Outbound",
+    "adjustments": "Adjustments",
+    "period": "in the last 7 days"
+  },
+  "filters": {
+    "all": "All",
+    "searchPlaceholder": "Search by product or user..."
+  },
+  "reasons": {
+    "receivedFromReplenishmentRequest": "Received from replenishment request",
+    "replenishmentReceived": "Replenishment received",
+    "stockAdjustment": "Stock adjustment",
+    "manualEntry": "Manual entry",
+    "manualOutput": "Manual output"
+  },
+  "table": {
+    "pagination": "Showing {{start}}-{{end}} of {{total}} movements"
+  },
+  "state": {
+    "loading": "Loading real movements..."
+  },
+  "errors": {
+    "loadFailed": "Real movements could not be loaded."
+  }
+}

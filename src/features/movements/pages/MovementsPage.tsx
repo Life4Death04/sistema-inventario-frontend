@@ -1,18 +1,23 @@
+import type { TFunction } from 'i18next'
 import { ArrowDownLeft, ArrowUpRight, RefreshCcw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useInventoryMovements } from '@/features/inventory-movements/api/useInventoryMovements'
 import { MovementsTanStackTable, type MovementTableRow } from '@/features/movements/components/MovementsTanStackTable'
 import type { InventoryMovement } from '@/types/api.types'
 
+type MovementsTFunction = TFunction<['movements', 'common']>
+
 export function MovementsPage() {
+  const { t } = useTranslation(['movements', 'common'])
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'Todos' | 'IN' | 'OUT' | 'ADJUSTMENT'>('Todos')
   const { data, error, isLoading } = useInventoryMovements({ limit: 100 })
 
   const movementRows: MovementTableRow[] = useMemo(
-    () => (data?.data ?? []).map(toMovementTableRow),
-    [data],
+    () => (data?.data ?? []).map((movement) => toMovementTableRow(movement, t)),
+    [data, t],
   )
 
   const filteredRows = useMemo(
@@ -29,14 +34,14 @@ export function MovementsPage() {
   return (
     <section className="space-y-8">
       <div>
-        <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">Historial de Movimientos</h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Registro de transacciones e inventario general.</p>
+        <h2 className="text-[30px] font-semibold leading-[38px] text-[var(--color-text)]">{t('movements:title')}</h2>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t('movements:subtitle')}</p>
       </div>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <MovementMetricCard accent="success" icon="entry" label="Entradas" value={metrics.entries} />
-        <MovementMetricCard accent="danger" icon="output" label="Salidas" value={metrics.outputs} />
-        <MovementMetricCard accent="info" icon="adjustment" label="Ajustes" value={metrics.adjustments} />
+        <MovementMetricCard accent="success" icon="entry" label={t('movements:metrics.entries')} value={metrics.entries} />
+        <MovementMetricCard accent="danger" icon="output" label={t('movements:metrics.outputs')} value={metrics.outputs} />
+        <MovementMetricCard accent="info" icon="adjustment" label={t('movements:metrics.adjustments')} value={metrics.adjustments} />
       </section>
 
       <section className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
@@ -47,7 +52,7 @@ export function MovementsPage() {
               <input
                 className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] pl-10 pr-4 py-2 text-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por producto o responsable..."
+                placeholder={t('movements:filters.searchPlaceholder')}
                 type="text"
                 value={query}
               />
@@ -66,10 +71,10 @@ export function MovementsPage() {
           <div className="flex items-center gap-4">
             <div className="hidden rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-page-bg)] p-1 md:flex">
               {([
-                { key: 'Todos', label: 'Todos' },
-                { key: 'IN', label: 'Entrada' },
-                { key: 'OUT', label: 'Salida' },
-                { key: 'ADJUSTMENT', label: 'Ajuste' },
+                { key: 'Todos', label: t('movements:filters.all') },
+                { key: 'IN', label: t('movements:types.IN') },
+                { key: 'OUT', label: t('movements:types.OUT') },
+                { key: 'ADJUSTMENT', label: t('movements:types.ADJUSTMENT') },
               ] as const).map((item) => (
                 <button
                   key={item.key}
@@ -88,15 +93,15 @@ export function MovementsPage() {
           </div>
         </div>
 
-        {isLoading ? <MovementStateMessage label="Cargando movimientos reales..." /> : null}
-        {!isLoading && error ? <MovementStateMessage label="No fue posible cargar los movimientos reales." tone="error" /> : null}
+        {isLoading ? <MovementStateMessage label={t('movements:state.loading')} /> : null}
+        {!isLoading && error ? <MovementStateMessage label={t('movements:errors.loadFailed')} tone="error" /> : null}
         {!isLoading && !error ? <MovementsTanStackTable globalFilter={query} rows={filteredRows} /> : null}
       </section>
     </section>
   )
 }
 
-function toMovementTableRow(movement: InventoryMovement): MovementTableRow {
+function toMovementTableRow(movement: InventoryMovement, t: MovementsTFunction): MovementTableRow {
   const productName = movement.product.name
   const productCode = movement.product.code
   const userFullName = movement.user.fullName
@@ -106,52 +111,45 @@ function toMovementTableRow(movement: InventoryMovement): MovementTableRow {
     product: productName,
     code: productCode,
     type: movement.type,
-    typeLabel: getMovementTypeLabel(movement.type),
+    typeLabel: t(`movements:types.${movement.type}`),
     adjustmentDirection: movement.adjustmentDirection,
-    adjustmentLabel: getAdjustmentLabel(movement.adjustmentDirection),
+    adjustmentLabel: getAdjustmentLabel(movement.adjustmentDirection, t),
     quantity: movement.quantity,
     resultingStock: movement.resultingStock,
-    reason: translateMovementReason(movement.reason),
+    reason: translateMovementReason(movement.reason, t),
     user: userFullName,
     createdAt: movement.createdAt,
     initials: getInitials(userFullName),
   }
 }
 
-const MOVEMENT_REASON_TRANSLATIONS: Record<string, string> = {
-  'Received from replenishment request': 'Recibido por solicitud de reposicion',
-  'Replenishment received': 'Reposicion recibida',
-  'Stock adjustment': 'Ajuste de stock',
-  'Manual entry': 'Entrada manual',
-  'Manual output': 'Salida manual',
+type MovementReasonKey =
+  | 'receivedFromReplenishmentRequest'
+  | 'replenishmentReceived'
+  | 'stockAdjustment'
+  | 'manualEntry'
+  | 'manualOutput'
+
+const MOVEMENT_REASON_KEYS: Record<string, MovementReasonKey> = {
+  'Received from replenishment request': 'receivedFromReplenishmentRequest',
+  'Replenishment received': 'replenishmentReceived',
+  'Stock adjustment': 'stockAdjustment',
+  'Manual entry': 'manualEntry',
+  'Manual output': 'manualOutput',
 }
 
-function translateMovementReason(reason: string): string {
-  return MOVEMENT_REASON_TRANSLATIONS[reason] ?? reason
+function translateMovementReason(reason: string, t: MovementsTFunction): string {
+  const reasonKey = MOVEMENT_REASON_KEYS[reason]
+
+  return reasonKey ? t(`movements:reasons.${reasonKey}`) : reason
 }
 
-function getMovementTypeLabel(type: InventoryMovement['type']): MovementTableRow['typeLabel'] {
-  if (type === 'IN') {
-    return 'Entrada'
+function getAdjustmentLabel(direction: InventoryMovement['adjustmentDirection'], t: MovementsTFunction) {
+  if (direction === null) {
+    return null
   }
 
-  if (type === 'OUT') {
-    return 'Salida'
-  }
-
-  return 'Ajuste'
-}
-
-function getAdjustmentLabel(direction: InventoryMovement['adjustmentDirection']) {
-  if (direction === 'INCREASE') {
-    return 'Incremento'
-  }
-
-  if (direction === 'DECREASE') {
-    return 'Disminucion'
-  }
-
-  return null
+  return t(`movements:adjustmentDirections.${direction}`)
 }
 
 function getInitials(fullName: string) {
@@ -185,6 +183,7 @@ function MovementMetricCard({
   label: string
   value: number
 }) {
+  const { t } = useTranslation(['movements', 'common'])
   const palette = {
     success: {
       border: 'border-l-[var(--color-success-text)]',
@@ -211,7 +210,7 @@ function MovementMetricCard({
       <div className="flex items-baseline gap-2">
         <span className={`text-[30px] font-semibold leading-[38px] ${palette[accent].text}`}>{value}</span>
       </div>
-      <div className="mt-2 font-data-mono text-xs text-[var(--color-text-muted)]">en los ultimos 7 dias</div>
+      <div className="mt-2 font-data-mono text-xs text-[var(--color-text-muted)]">{t('movements:metrics.period')}</div>
     </div>
   )
 }

@@ -1,0 +1,48 @@
+{
+  "title": "Historial de Movimientos",
+  "subtitle": "Registro de transacciones e inventario general.",
+  "fields": {
+    "createdAt": "Fecha y hora",
+    "product": "Producto",
+    "type": "Tipo",
+    "quantity": "Cantidad",
+    "resultingStock": "Resultante",
+    "user": "Responsable",
+    "reason": "Motivo"
+  },
+  "types": {
+    "IN": "Entrada",
+    "OUT": "Salida",
+    "ADJUSTMENT": "Ajuste"
+  },
+  "adjustmentDirections": {
+    "INCREASE": "Incremento",
+    "DECREASE": "Disminución"
+  },
+  "metrics": {
+    "entries": "Entradas",
+    "outputs": "Salidas",
+    "adjustments": "Ajustes",
+    "period": "en los últimos 7 días"
+  },
+  "filters": {
+    "all": "Todos",
+    "searchPlaceholder": "Buscar por producto o responsable..."
+  },
+  "reasons": {
+    "receivedFromReplenishmentRequest": "Recibido por solicitud de reposición",
+    "replenishmentReceived": "Reposición recibida",
+    "stockAdjustment": "Ajuste de stock",
+    "manualEntry": "Entrada manual",
+    "manualOutput": "Salida manual"
+  },
+  "table": {
+    "pagination": "Mostrando {{start}}-{{end}} de {{total}} movimientos"
+  },
+  "state": {
+    "loading": "Cargando movimientos reales..."
+  },
+  "errors": {
+    "loadFailed": "No fue posible cargar los movimientos reales."
+  }
+}
