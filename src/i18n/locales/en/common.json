@@ -3,5 +3,8 @@
   "language": {
     "spanish": "Español",
     "english": "English"
+  },
+  "state": {
+    "notAvailable": "Not available"
   }
 }

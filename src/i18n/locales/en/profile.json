@@ -1,0 +1,15 @@
+{
+  "pageLabel": "My Profile",
+  "title": "User information",
+  "fields": {
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role"
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "MANAGER": "Inventory manager",
+    "OPERATOR": "Operations staff"
+  }
+}
