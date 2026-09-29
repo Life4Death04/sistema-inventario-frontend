@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios'
 import { AlertTriangle, Circle, CircleDot, LoaderCircle, MessageCircle, Plus, Send, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -81,6 +82,7 @@ export function GenerateReplenishmentModal({
   initialSupplierId?: string
   onClose: () => void
 }) {
+  const { t } = useTranslation('products')
   const user = useAuthStore((state) => state.user)
   const canManage = hasPermission(user?.role, 'manage:replenishment')
   const queryClient = useQueryClient()
@@ -99,7 +101,7 @@ export function GenerateReplenishmentModal({
     supplierId: selectedSupplierId || undefined,
   })
   const supplierOptions = suppliersResponse?.data ?? []
-  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product))
+  const productOptions = (productsResponse?.data ?? []).map((product) => toProductRow(product, t))
 
   const handleSupplierChange = (supplierId: string) => {
     setSelectedSupplierId(supplierId)

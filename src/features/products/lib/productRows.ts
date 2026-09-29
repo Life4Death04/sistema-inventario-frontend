@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import { getStockStatus, type StockStatus } from '@/lib/stockStatus'
 import type { Product } from '@/types/api.types'
 
@@ -27,23 +29,23 @@ export interface ProductRow {
   status: StockStatus
 }
 
-export function toProductRow(product: Product, categoryName?: string): ProductRow {
+export function toProductRow(product: Product, t: TFunction, categoryName?: string): ProductRow {
   return {
     id: product.id,
     code: product.code,
     name: product.name,
     activeIngredient: product.activeIngredient,
-    activeIngredientLabel: product.activeIngredient ?? 'Sin principio activo',
+    activeIngredientLabel: product.activeIngredient ?? t('products:fallback.noActiveIngredient'),
     description: product.description,
-    descriptionLabel: product.description ?? 'Sin descripcion',
+    descriptionLabel: product.description ?? t('products:fallback.noDescription'),
     categoryId: product.categoryId,
-    category: categoryName ?? 'Sin categoria',
+    category: categoryName ?? t('products:fallback.noCategory'),
     stock: product.stock,
     minStock: product.minStock,
     presentation: product.presentation,
-    presentationLabel: product.presentation ?? 'Sin presentacion',
+    presentationLabel: product.presentation ?? t('products:fallback.noPresentation'),
     brand: product.brand,
-    brandLabel: product.brand ?? 'Sin marca',
+    brandLabel: product.brand ?? t('products:fallback.noBrand'),
     unit: product.unit,
     unitContent: product.unitContent,
     price: product.price,

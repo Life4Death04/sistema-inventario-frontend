@@ -1,1 +1,262 @@
-{}
+{
+  "page": {
+    "title": "Product Catalog",
+    "subtitle": "Manage and view the general inventory.",
+    "searchPlaceholder": "Search by code, name, or active ingredient...",
+    "categoriesButton": "Categories",
+    "newProductButton": "New product",
+    "metrics": {
+      "products": "Products",
+      "critical": "Critical",
+      "outOfStock": "Out of stock"
+    },
+    "loadError": "The real products could not be loaded at this time.",
+    "actionsMenu": {
+      "viewDetail": "View detail",
+      "edit": "Edit",
+      "registerMovement": "Register movement",
+      "generateReplenishment": "Generate replenishment",
+      "deactivate": "Deactivate"
+    }
+  },
+  "table": {
+    "columns": {
+      "code": "Code",
+      "product": "Product",
+      "activeIngredient": "Active ingredient",
+      "content": "Content",
+      "category": "Category",
+      "stock": "Stock",
+      "minStockPrefix": "Min.",
+      "status": "Status"
+    },
+    "pagination": {
+      "summary": "Showing {{start}} to {{end}} of {{total}} products"
+    }
+  },
+  "fallback": {
+    "noActiveIngredient": "No active ingredient",
+    "noDescription": "No description",
+    "noCategory": "No category",
+    "noPresentation": "No presentation",
+    "noBrand": "No brand",
+    "noPrice": "No price",
+    "notAssigned": "Not assigned"
+  },
+  "placeholders": {
+    "select": "Select"
+  },
+  "units": {
+    "UNIT": "Unit",
+    "MG": "Milligrams",
+    "G": "Grams",
+    "KG": "Kilograms",
+    "ML": "Milliliters",
+    "L": "Liters"
+  },
+  "modals": {
+    "new": {
+      "title": "New Product",
+      "inventorySectionHeading": "Inventory",
+      "fields": {
+        "name": {
+          "label": "Product name",
+          "placeholder": "E.g. Amoxicillin 500mg",
+          "requiredError": "The name is required"
+        },
+        "sku": {
+          "label": "SKU / Code",
+          "placeholder": "SKU-"
+        },
+        "activeIngredient": {
+          "label": "Active ingredient",
+          "placeholder": "E.g. Ibuprofen"
+        },
+        "category": {
+          "label": "Category"
+        },
+        "price": {
+          "label": "Price (USD)",
+          "placeholder": "0.00"
+        },
+        "initialSupplier": {
+          "label": "Initial supplier"
+        },
+        "brand": {
+          "label": "Brand"
+        },
+        "presentation": {
+          "label": "Presentation"
+        },
+        "initialStock": {
+          "label": "Initial stock",
+          "placeholder": "0"
+        },
+        "minStock": {
+          "label": "Minimum stock",
+          "placeholder": "10"
+        },
+        "unit": {
+          "label": "Unit"
+        },
+        "unitContent": {
+          "label": "Content per unit",
+          "placeholder": "E.g. 500"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Additional product details"
+        }
+      },
+      "cancelButton": "Cancel",
+      "submitButton": "Save product"
+    },
+    "detail": {
+      "title": "Product detail",
+      "loadingLabel": "Loading product detail...",
+      "loadErrorLabel": "Unable to load the real product detail.",
+      "summary": {
+        "stock": "Stock",
+        "minStock": "Minimum stock",
+        "status": "Status"
+      },
+      "fields": {
+        "category": "Category",
+        "unitPrice": "Unit price",
+        "supplier": "Supplier",
+        "lastUpdate": "Last update",
+        "presentation": "Presentation",
+        "content": "Content",
+        "activeIngredient": "Active ingredient",
+        "description": "Description"
+      },
+      "recentMovements": {
+        "heading": "Recent movements",
+        "loading": "Loading history...",
+        "loadError": "Unable to load the history.",
+        "empty": "No recent movements.",
+        "userLabel": "User {{id}}",
+        "types": {
+          "in": "Inbound",
+          "out": "Outbound",
+          "adjustment": "Adjustment"
+        }
+      },
+      "actions": {
+        "registerMovement": "Register movement",
+        "generateReplenishment": "Generate replenishment"
+      },
+      "closeButton": "Close",
+      "editButton": "Edit"
+    },
+    "edit": {
+      "title": "Edit Product",
+      "loadingLabel": "Loading product data...",
+      "loadErrorLabel": "Unable to load the real product data.",
+      "fields": {
+        "name": { "label": "Product name" },
+        "code": { "label": "Code" },
+        "brand": { "label": "Brand" },
+        "presentation": { "label": "Presentation" },
+        "activeIngredient": { "label": "Active ingredient" },
+        "description": { "label": "Description" },
+        "currentStock": { "label": "Current stock" },
+        "minStock": { "label": "Minimum stock" },
+        "category": { "label": "Category" },
+        "unitPrice": { "label": "Unit price" },
+        "unit": { "label": "Unit" },
+        "content": { "label": "Content" },
+        "lastUpdate": { "label": "Last update" }
+      },
+      "suppliers": {
+        "heading": "Associated suppliers",
+        "description": "Real associations are stored by `supplierId`.",
+        "empty": "No suppliers associated yet.",
+        "referencePrice": "Reference price: {{price}}",
+        "pricePending": "Pending",
+        "removeButton": "Remove",
+        "associateLabel": "Associate supplier",
+        "associatePlaceholder": "Select supplier",
+        "associateButton": "Associate"
+      },
+      "deactivateFromMenuButton": "Deactivate from menu",
+      "cancelButton": "Cancel",
+      "saveButton": "Save changes"
+    },
+    "registerMovement": {
+      "title": "Register movement",
+      "codeLabel": "CODE: {{code}}",
+      "types": {
+        "IN": "Inbound",
+        "OUT": "Outbound",
+        "ADJUSTMENT": "Adjustment"
+      },
+      "adjustmentDirection": {
+        "label": "Adjustment direction",
+        "increase": "Increase",
+        "decrease": "Decrease"
+      },
+      "fields": {
+        "quantity": { "label": "Quantity" },
+        "reason": { "label": "Reason" }
+      },
+      "reasons": {
+        "IN": {
+          "supplierReceipt": "Supplier receipt",
+          "customerReturn": "Customer return",
+          "inventoryAdjustmentIncrease": "Inventory adjustment (+)"
+        },
+        "OUT": {
+          "counterDispensing": "Counter dispensing",
+          "lossOrExpiration": "Loss or expiration",
+          "transferToOtherSite": "Transfer to another site"
+        },
+        "ADJUSTMENT": {
+          "physicalCount": "Physical count",
+          "manualCorrection": "Manual correction",
+          "internalAudit": "Internal audit"
+        }
+      },
+      "resultingStock": "Current stock: <mono>{{current}}</mono> -> result: <result>{{result}}</result>",
+      "cancelButton": "Cancel",
+      "submitButton": "Register"
+    },
+    "deactivate": {
+      "title": "Deactivate product",
+      "confirmMessage": "Deactivate <bold>{{name}}</bold>? It will no longer appear in the active catalog, but its movement history will be preserved.",
+      "cancelButton": "Cancel",
+      "deactivateButton": "Deactivate"
+    }
+  },
+  "toasts": {
+    "productCreated": "Product created successfully",
+    "productUpdated": "Product updated successfully",
+    "productDeactivated": "Product deactivated successfully",
+    "supplierAttached": "Supplier associated successfully",
+    "supplierDetached": "Supplier disassociated successfully",
+    "movementRegistered": "Movement registered successfully"
+  },
+  "validation": {
+    "nameRequired": "The product name is required",
+    "codeRequired": "The product code is required",
+    "categoryRequired": "Select a valid category",
+    "unitContentRequired": "The content per unit is required",
+    "pricePositive": "The price cannot be negative",
+    "minStockPositive": "The minimum stock cannot be negative",
+    "initialStockPositive": "The initial stock cannot be negative",
+    "quantityPositive": "The quantity must be greater than zero",
+    "reasonRequired": "Select a reason for the movement"
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred while managing products",
+    "duplicateCode": "A product with that code already exists",
+    "categoryNotFound": "The selected category no longer exists",
+    "supplierAssociationFailed": "The selected supplier no longer exists or could not be associated",
+    "supplierNotFound": "The selected supplier no longer exists",
+    "deactivateConflict": "The product could not be deactivated due to a backend restriction",
+    "notFound": "The product no longer exists or could not be found",
+    "supplierUpdateFailed": "Unable to update the product's associated suppliers",
+    "operationFailed": "Unable to complete the operation on products",
+    "registerMovementFailed": "Unable to register the movement"
+  }
+}

@@ -1,6 +1,7 @@
 import { AlertTriangle, CircleAlert, Eye, Package2 } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -14,6 +15,7 @@ import { ProductCatalogModals, type ProductModalType } from '@/features/products
 import { toProductRow, type ProductRow } from '@/features/products/lib/productRows'
 
 export function AlertsPage() {
+  const { t } = useTranslation('products')
   const user = useAuthStore((state) => state.user)
   const [activeModal, setActiveModal] = useState<ProductModalType | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<ProductRow | null>(null)
@@ -26,8 +28,8 @@ export function AlertsPage() {
   )
 
   const activeProducts = useMemo(
-    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, categoryNames.get(product.categoryId))),
-    [categoryNames, activeProductsResponse],
+    () => (activeProductsResponse?.data ?? []).map((product) => toProductRow(product, t, categoryNames.get(product.categoryId))),
+    [categoryNames, activeProductsResponse, t],
   )
 
   const generatedAt = new Date(dataUpdatedAt || Date.now()).toISOString()

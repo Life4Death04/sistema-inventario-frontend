@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -17,7 +18,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import toast from 'react-hot-toast'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
@@ -47,6 +48,8 @@ import type {
   UserRole,
 } from '@/types/api.types'
 
+type ProductsTFunction = TFunction<['products', 'common']>
+
 export type ProductModalType = 'create' | 'detail' | 'edit' | 'movement' | 'replenishment' | 'deactivate'
 
 interface ProductCatalogModalsProps {
@@ -73,20 +76,46 @@ interface ProductFormValues {
   supplierId: string
 }
 
-const movementTypeOptions = {
-  IN: ['Recepcion de proveedor', 'Devolucion de cliente', 'Ajuste de inventario (+)'],
-  OUT: ['Dispensacion en ventanilla', 'Merma o vencimiento', 'Traslado a otra sede'],
-  ADJUSTMENT: ['Conteo fisico', 'Correccion manual', 'Auditoria interna'],
-} as const
+type MovementType = 'IN' | 'OUT' | 'ADJUSTMENT'
 
-const unitOptions: Array<{ label: string; value: ProductUnit }> = [
-  { label: 'Unidad', value: 'UNIT' },
-  { label: 'Miligramos', value: 'MG' },
-  { label: 'Gramos', value: 'G' },
-  { label: 'Kilogramos', value: 'KG' },
-  { label: 'Mililitros', value: 'ML' },
-  { label: 'Litros', value: 'L' },
-]
+const MOVEMENT_REASON_KEYS: Record<MovementType, readonly string[]> = {
+  IN: ['supplierReceipt', 'customerReturn', 'inventoryAdjustmentIncrease'],
+  OUT: ['counterDispensing', 'lossOrExpiration', 'transferToOtherSite'],
+  ADJUSTMENT: ['physicalCount', 'manualCorrection', 'internalAudit'],
+}
+
+// Stable, locale-independent values persisted to the backend. Display labels are
+// resolved separately via t() so the stored audit trail never changes meaning
+// depending on which UI language was active when the movement was submitted
+// (same key/label split established in src/features/inventory/components/InventoryModals.tsx).
+const MOVEMENT_REASON_BACKEND_VALUES: Record<MovementType, Record<string, string>> = {
+  IN: {
+    supplierReceipt: 'Recepcion de proveedor',
+    customerReturn: 'Devolucion de cliente',
+    inventoryAdjustmentIncrease: 'Ajuste de inventario (+)',
+  },
+  OUT: {
+    counterDispensing: 'Dispensacion en ventanilla',
+    lossOrExpiration: 'Merma o vencimiento',
+    transferToOtherSite: 'Traslado a otra sede',
+  },
+  ADJUSTMENT: {
+    physicalCount: 'Conteo fisico',
+    manualCorrection: 'Correccion manual',
+    internalAudit: 'Auditoria interna',
+  },
+}
+
+function getUnitOptions(t: ProductsTFunction): Array<{ label: string; value: ProductUnit }> {
+  return [
+    { label: t('products:units.UNIT'), value: 'UNIT' },
+    { label: t('products:units.MG'), value: 'MG' },
+    { label: t('products:units.G'), value: 'G' },
+    { label: t('products:units.KG'), value: 'KG' },
+    { label: t('products:units.ML'), value: 'ML' },
+    { label: t('products:units.L'), value: 'L' },
+  ]
+}
 
 export function ProductCatalogModals({ modalType, product, onClose, onOpenModal, role }: ProductCatalogModalsProps) {
   if (!modalType) {
@@ -141,6 +170,7 @@ export function ProductCatalogModals({ modalType, product, onClose, onOpenModal,
 }
 
 function NewProductModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation(['products', 'common'])
   const queryClient = useQueryClient()
   const { data: categoriesResponse } = useCategories({ limit: 100 })
   const { data: suppliersResponse } = useSuppliers({ limit: 100, active: true })
@@ -170,16 +200,16 @@ function NewProductModal({ onClose }: { onClose: () => void }) {
     },
     onSuccess: async () => {
       await invalidateProductCollections(queryClient)
-      toast.success('Producto creado correctamente')
+      toast.success(t('products:toasts.productCreated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getProductErrorMessage(error, 'create'))
+      toast.error(getProductErrorMessage(error, 'create', t))
     },
   })
 
   const handleSubmit = () => {
-    const validationError = validateProductForm(values, { requireStock: true })
+    const validationError = validateProductForm(values, { requireStock: true }, t)
 
     if (validationError) {
       toast.error(validationError)
@@ -190,7 +220,7 @@ function NewProductModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Nuevo Producto">
+    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.new.title')}>
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <ProductIdentitySection showError={!values.name.trim()} values={values} onChange={setValues} />
 
@@ -203,39 +233,41 @@ function NewProductModal({ onClose }: { onClose: () => void }) {
 
         <div className="border-t border-[var(--color-border)] pt-6">
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-[var(--color-text)]">Inventario</h4>
+            <h4 className="text-sm font-semibold text-[var(--color-text)]">{t('products:modals.new.inventorySectionHeading')}</h4>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FieldGroup label="Stock inicial">
-                <NumberField onChange={(value) => setValues((current) => ({ ...current, stock: value }))} placeholder="0" value={values.stock} />
+              <FieldGroup label={t('products:modals.new.fields.initialStock.label')}>
+                <NumberField onChange={(value) => setValues((current) => ({ ...current, stock: value }))} placeholder={t('products:modals.new.fields.initialStock.placeholder')} value={values.stock} />
               </FieldGroup>
-              <FieldGroup label="Stock minimo">
-                <NumberField onChange={(value) => setValues((current) => ({ ...current, minStock: value }))} placeholder="10" value={values.minStock} />
+              <FieldGroup label={t('products:modals.new.fields.minStock.label')}>
+                <NumberField onChange={(value) => setValues((current) => ({ ...current, minStock: value }))} placeholder={t('products:modals.new.fields.minStock.placeholder')} value={values.minStock} />
               </FieldGroup>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FieldGroup label="Unidad">
+              <FieldGroup label={t('products:modals.new.fields.unit.label')}>
                 <SelectField
                   onChange={(value) => setValues((current) => ({ ...current, unit: value as ProductUnit }))}
-                  options={unitOptions}
+                  options={getUnitOptions(t)}
+                  placeholder={t('products:placeholders.select')}
                   value={values.unit}
                 />
               </FieldGroup>
-              <FieldGroup label="Contenido por unidad">
-                <TextField mono onChange={(value) => setValues((current) => ({ ...current, unitContent: value }))} placeholder="Ej. 500" value={values.unitContent} />
+              <FieldGroup label={t('products:modals.new.fields.unitContent.label')}>
+                <TextField mono onChange={(value) => setValues((current) => ({ ...current, unitContent: value }))} placeholder={t('products:modals.new.fields.unitContent.placeholder')} value={values.unitContent} />
               </FieldGroup>
             </div>
-            <FieldGroup label="Descripcion">
-              <TextAreaField onChange={(value) => setValues((current) => ({ ...current, description: value }))} placeholder="Detalles adicionales del producto" value={values.description} />
+            <FieldGroup label={t('products:modals.new.fields.description.label')}>
+              <TextAreaField onChange={(value) => setValues((current) => ({ ...current, description: value }))} placeholder={t('products:modals.new.fields.description.placeholder')} value={values.description} />
             </FieldGroup>
           </div>
         </div>
       </div>
 
       <ModalFooter
+        cancelLabel={t('products:modals.new.cancelButton')}
         isPending={createMutation.isPending}
         onClose={onClose}
         onConfirm={handleSubmit}
-        primaryLabel="Guardar producto"
+        primaryLabel={t('products:modals.new.submitButton')}
       />
     </ModalFrame>
   )
@@ -252,7 +284,7 @@ function ProductDetailModal({
   product: ProductRow
   role: UserRole | undefined
 }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['products', 'common'])
   const canManage = canManageProducts(role)
   const canOpenMovement = canCreateMovementType(role, 'OUT')
   const canUseReplenishment = hasPermission(role, 'manage:replenishment')
@@ -262,31 +294,32 @@ function ProductDetailModal({
 
   if (detailQuery.isLoading) {
     return (
-      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Detalle del producto">
-        <LoadingState label="Cargando detalle del producto..." />
+      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.detail.title')}>
+        <LoadingState label={t('products:modals.detail.loadingLabel')} />
       </ModalFrame>
     )
   }
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Detalle del producto">
-        <InlineError label="No fue posible cargar el detalle real del producto." />
+      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.detail.title')}>
+        <InlineError label={t('products:modals.detail.loadErrorLabel')} />
       </ModalFrame>
     )
   }
 
   const detail = detailQuery.data
   const supplierNames = detail.suppliers.map((entry) => entry.supplier.name)
+  const noCategoryLabel = t('products:fallback.noCategory')
 
   return (
-    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Detalle del producto">
+    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.detail.title')}>
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-lg font-medium text-[var(--color-text)]">{detail.name}</h4>
             <span className="rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">
-              {detail.category?.name ?? 'Sin categoria'}
+              {detail.category?.name ?? noCategoryLabel}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
               {getStockStatusLabel(product.status, t)}
@@ -296,36 +329,36 @@ function ProductDetailModal({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <SummaryCard label="Existencias" value={detail.stock.toLocaleString('es-VE')} />
-          <SummaryCard label="Stock minimo" value={detail.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard label={t('products:modals.detail.summary.stock')} value={detail.stock.toLocaleString('es-VE')} />
+          <SummaryCard label={t('products:modals.detail.summary.minStock')} value={detail.minStock.toLocaleString('es-VE')} />
+          <SummaryCard badge label={t('products:modals.detail.summary.status')} value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-          <DetailItem label="Categoria" value={detail.category?.name ?? 'Sin categoria'} />
-          <DetailItem label="Precio unitario" mono value={detail.price != null ? formatCurrency(Number(detail.price)) : 'Sin precio'} />
-          <DetailItem label="Proveedor" value={supplierNames.join(', ') || 'No asignado'} />
-          <DetailItem label="Ultima actualizacion" mono value={formatDate(detail.updatedAt)} />
-          <DetailItem label="Presentacion" value={`${detail.brand ?? 'Sin marca'} · ${detail.presentation ?? 'Sin presentacion'}`} />
-          <DetailItem label="Contenido" mono value={`${detail.unitContent} ${detail.unit}`} />
-          <DetailItem label="Principio activo" value={detail.activeIngredient ?? 'Sin principio activo'} />
-          <DetailItem label="Descripcion" value={detail.description ?? 'Sin descripcion'} />
+          <DetailItem label={t('products:modals.detail.fields.category')} value={detail.category?.name ?? noCategoryLabel} />
+          <DetailItem label={t('products:modals.detail.fields.unitPrice')} mono value={detail.price != null ? formatCurrency(Number(detail.price)) : t('products:fallback.noPrice')} />
+          <DetailItem label={t('products:modals.detail.fields.supplier')} value={supplierNames.join(', ') || t('products:fallback.notAssigned')} />
+          <DetailItem label={t('products:modals.detail.fields.lastUpdate')} mono value={formatDate(detail.updatedAt)} />
+          <DetailItem label={t('products:modals.detail.fields.presentation')} value={`${detail.brand ?? t('products:fallback.noBrand')} · ${detail.presentation ?? t('products:fallback.noPresentation')}`} />
+          <DetailItem label={t('products:modals.detail.fields.content')} mono value={`${detail.unitContent} ${detail.unit}`} />
+          <DetailItem label={t('products:modals.detail.fields.activeIngredient')} value={detail.activeIngredient ?? t('products:fallback.noActiveIngredient')} />
+          <DetailItem label={t('products:modals.detail.fields.description')} value={detail.description ?? t('products:fallback.noDescription')} />
         </div>
 
         <div className="space-y-3">
-          <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">Movimientos recientes</h5>
+          <h5 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('products:modals.detail.recentMovements.heading')}</h5>
           <div className="space-y-2">
-            {movementsQuery.isLoading ? <MovementStateMessage label="Cargando historial real..." /> : null}
-            {!movementsQuery.isLoading && movementsQuery.error ? <MovementStateMessage label="No fue posible cargar el historial real." tone="error" /> : null}
-            {!movementsQuery.isLoading && !movementsQuery.error && movementHistory.length === 0 ? <MovementStateMessage label="Sin movimientos recientes." /> : null}
+            {movementsQuery.isLoading ? <MovementStateMessage label={t('products:modals.detail.recentMovements.loading')} /> : null}
+            {!movementsQuery.isLoading && movementsQuery.error ? <MovementStateMessage label={t('products:modals.detail.recentMovements.loadError')} tone="error" /> : null}
+            {!movementsQuery.isLoading && !movementsQuery.error && movementHistory.length === 0 ? <MovementStateMessage label={t('products:modals.detail.recentMovements.empty')} /> : null}
             {!movementsQuery.isLoading && !movementsQuery.error
               ? movementHistory.map((movement) => (
                   <div key={movement.id} className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <MovementIcon type={movement.type} />
                       <div>
-                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type)}</p>
-                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement)}</p>
+                        <p className="text-sm font-medium text-[var(--color-text)]">{getMovementLabel(movement.type, t)}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{getMovementSubtitle(movement, t)}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -347,24 +380,24 @@ function ProductDetailModal({
           {canOpenMovement ? (
             <Button onClick={() => onOpenModal('movement', product)} type="button" variant="secondary">
               <ArrowLeftRight className="mr-2 h-4 w-4" />
-              Registrar movimiento
+              {t('products:modals.detail.actions.registerMovement')}
             </Button>
           ) : null}
           {canUseReplenishment ? (
             <Button onClick={() => onOpenModal('replenishment', product)} type="button" variant="secondary">
               <Package2 className="mr-2 h-4 w-4" />
-              Generar reposicion
+              {t('products:modals.detail.actions.generateReplenishment')}
             </Button>
           ) : null}
         </div>
         <div className="flex justify-end gap-3">
           <Button onClick={onClose} type="button" variant="ghost">
-            Cerrar
+            {t('products:modals.detail.closeButton')}
           </Button>
           {canManage ? (
             <Button onClick={() => onOpenModal('edit', product)} type="button">
               <SquarePen className="mr-2 h-4 w-4" />
-              Editar
+              {t('products:modals.detail.editButton')}
             </Button>
           ) : null}
         </div>
@@ -374,7 +407,7 @@ function ProductDetailModal({
 }
 
 function EditProductModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['products', 'common'])
   const queryClient = useQueryClient()
   const detailQuery = useProductDetail(product.id)
   const { data: categoriesResponse } = useCategories({ limit: 100 })
@@ -394,11 +427,11 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
     mutationFn: () => updateProduct(product.id, toUpdateProductInput(values!)),
     onSuccess: async () => {
       await invalidateProductCollections(queryClient, product.id)
-      toast.success('Producto actualizado correctamente')
+      toast.success(t('products:toasts.productUpdated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getProductErrorMessage(error, 'update'))
+      toast.error(getProductErrorMessage(error, 'update', t))
     },
   })
 
@@ -407,10 +440,10 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
     onSuccess: async () => {
       await invalidateProductCollections(queryClient, product.id, true)
       setSelectedSupplierId('')
-      toast.success('Proveedor asociado correctamente')
+      toast.success(t('products:toasts.supplierAttached'))
     },
     onError: (error: unknown) => {
-      toast.error(getProductErrorMessage(error, 'attach-supplier'))
+      toast.error(getProductErrorMessage(error, 'attach-supplier', t))
     },
   })
 
@@ -418,25 +451,25 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
     mutationFn: (supplierId: string) => detachProductSupplier(product.id, supplierId),
     onSuccess: async () => {
       await invalidateProductCollections(queryClient, product.id, true)
-      toast.success('Proveedor desasociado correctamente')
+      toast.success(t('products:toasts.supplierDetached'))
     },
     onError: (error: unknown) => {
-      toast.error(getProductErrorMessage(error, 'detach-supplier'))
+      toast.error(getProductErrorMessage(error, 'detach-supplier', t))
     },
   })
 
   if (detailQuery.isLoading || !values) {
     return (
-      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Editar Producto">
-        <LoadingState label="Cargando datos del producto..." />
+      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.edit.title')}>
+        <LoadingState label={t('products:modals.edit.loadingLabel')} />
       </ModalFrame>
     )
   }
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Editar Producto">
-        <InlineError label="No fue posible cargar los datos reales del producto." />
+      <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.edit.title')}>
+        <InlineError label={t('products:modals.edit.loadErrorLabel')} />
       </ModalFrame>
     )
   }
@@ -447,7 +480,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
   const isPending = updateMutation.isPending || attachSupplierMutation.isPending || detachSupplierMutation.isPending
 
   const handleSubmit = () => {
-    const validationError = validateProductForm(values, { requireStock: false })
+    const validationError = validateProductForm(values, { requireStock: false }, t)
 
     if (validationError) {
       toast.error(validationError)
@@ -458,12 +491,12 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
   }
 
   return (
-    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title="Editar Producto">
+    <ModalFrame maxWidth="max-w-[620px]" onClose={onClose} title={t('products:modals.edit.title')}>
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-[4px] bg-[var(--color-surface-tint)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-primary)]">
-              {detail.category?.name ?? 'Sin categoria'}
+              {detail.category?.name ?? t('products:fallback.noCategory')}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
               {getStockStatusLabel(product.status, t)}
@@ -473,56 +506,58 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
         </div>
 
         <div className="grid gap-4">
-          <FieldGroup label="Nombre del producto">
+          <FieldGroup label={t('products:modals.edit.fields.name.label')}>
             <TextField onChange={(value) => setValues((current) => ({ ...current!, name: value }))} value={values.name} />
           </FieldGroup>
-          <FieldGroup label="Codigo">
+          <FieldGroup label={t('products:modals.edit.fields.code.label')}>
             <TextField mono onChange={(value) => setValues((current) => ({ ...current!, code: value }))} value={values.code} />
           </FieldGroup>
-          <FieldGroup label="Marca">
+          <FieldGroup label={t('products:modals.edit.fields.brand.label')}>
             <TextField onChange={(value) => setValues((current) => ({ ...current!, brand: value }))} value={values.brand} />
           </FieldGroup>
-          <FieldGroup label="Presentacion">
+          <FieldGroup label={t('products:modals.edit.fields.presentation.label')}>
             <TextField onChange={(value) => setValues((current) => ({ ...current!, presentation: value }))} value={values.presentation} />
           </FieldGroup>
-          <FieldGroup label="Principio activo">
+          <FieldGroup label={t('products:modals.edit.fields.activeIngredient.label')}>
             <TextField onChange={(value) => setValues((current) => ({ ...current!, activeIngredient: value }))} value={values.activeIngredient} />
           </FieldGroup>
-          <FieldGroup label="Descripcion">
+          <FieldGroup label={t('products:modals.edit.fields.description.label')}>
             <TextAreaField onChange={(value) => setValues((current) => ({ ...current!, description: value }))} value={values.description} />
           </FieldGroup>
-          <FieldGroup label="Stock actual">
+          <FieldGroup label={t('products:modals.edit.fields.currentStock.label')}>
             <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-2 font-data-mono text-sm text-[var(--color-text)]">
               {detail.stock}
             </div>
           </FieldGroup>
-          <FieldGroup label="Stock minimo">
+          <FieldGroup label={t('products:modals.edit.fields.minStock.label')}>
             <NumberField onChange={(value) => setValues((current) => ({ ...current!, minStock: value }))} value={values.minStock} />
           </FieldGroup>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <FieldGroup label="Categoria">
+          <FieldGroup label={t('products:modals.edit.fields.category.label')}>
             <SelectField
               onChange={(value) => setValues((current) => ({ ...current!, categoryId: value }))}
               options={(categoriesResponse?.data ?? []).map((category) => ({ label: category.name, value: category.id }))}
+              placeholder={t('products:placeholders.select')}
               value={values.categoryId}
             />
           </FieldGroup>
-          <FieldGroup label="Precio unitario">
+          <FieldGroup label={t('products:modals.edit.fields.unitPrice.label')}>
             <NumberField onChange={(value) => setValues((current) => ({ ...current!, price: value }))} value={values.price} />
           </FieldGroup>
-          <FieldGroup label="Unidad">
+          <FieldGroup label={t('products:modals.edit.fields.unit.label')}>
             <SelectField
               onChange={(value) => setValues((current) => ({ ...current!, unit: value as ProductUnit }))}
-              options={unitOptions}
+              options={getUnitOptions(t)}
+              placeholder={t('products:placeholders.select')}
               value={values.unit}
             />
           </FieldGroup>
-          <FieldGroup label="Contenido">
+          <FieldGroup label={t('products:modals.edit.fields.content.label')}>
             <TextField mono onChange={(value) => setValues((current) => ({ ...current!, unitContent: value }))} value={values.unitContent} />
           </FieldGroup>
-          <FieldGroup label="Ultima actualizacion">
+          <FieldGroup label={t('products:modals.edit.fields.lastUpdate.label')}>
             <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] px-3 py-2 font-data-mono text-sm text-[var(--color-text-secondary)]">
               {formatDate(detail.updatedAt)}
             </div>
@@ -531,20 +566,22 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
 
         <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-4">
           <div>
-            <h4 className="text-sm font-semibold text-[var(--color-text)]">Proveedores asociados</h4>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Las asociaciones reales se guardan por `supplierId`.</p>
+            <h4 className="text-sm font-semibold text-[var(--color-text)]">{t('products:modals.edit.suppliers.heading')}</h4>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t('products:modals.edit.suppliers.description')}</p>
           </div>
 
           <div className="space-y-2">
             {detail.suppliers.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-secondary)]">No hay proveedores asociados todavía.</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">{t('products:modals.edit.suppliers.empty')}</p>
             ) : (
               detail.suppliers.map((entry) => (
                 <div key={entry.supplier.id} className="flex items-center justify-between rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
                   <div>
                     <p className="text-sm font-medium text-[var(--color-text)]">{entry.supplier.name}</p>
                     <p className="text-xs text-[var(--color-text-secondary)]">
-                      Precio de referencia: {entry.referencePrice ? formatCurrency(Number(entry.referencePrice)) : 'Pendiente'}
+                      {t('products:modals.edit.suppliers.referencePrice', {
+                        price: entry.referencePrice ? formatCurrency(Number(entry.referencePrice)) : t('products:modals.edit.suppliers.pricePending'),
+                      })}
                     </p>
                   </div>
                   <button
@@ -554,7 +591,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
                     type="button"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Quitar
+                    {t('products:modals.edit.suppliers.removeButton')}
                   </button>
                 </div>
               ))
@@ -562,11 +599,11 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-            <FieldGroup label="Asociar proveedor">
+            <FieldGroup label={t('products:modals.edit.suppliers.associateLabel')}>
               <SelectField
                 onChange={(value) => setSelectedSupplierId(value)}
                 options={availableSuppliers.map((supplierOption) => ({ label: supplierOption.name, value: supplierOption.id }))}
-                placeholder="Seleccionar proveedor"
+                placeholder={t('products:modals.edit.suppliers.associatePlaceholder')}
                 value={selectedSupplierId}
               />
             </FieldGroup>
@@ -577,7 +614,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
               variant="secondary"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Asociar
+              {t('products:modals.edit.suppliers.associateButton')}
             </Button>
           </div>
         </div>
@@ -591,15 +628,15 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
           type="button"
         >
           <TriangleAlert className="h-4 w-4" />
-          Desactivar desde menu
+          {t('products:modals.edit.deactivateFromMenuButton')}
         </button>
         <div className="flex justify-end gap-3">
           <Button disabled={isPending} onClick={onClose} type="button" variant="ghost">
-            Cancelar
+            {t('products:modals.edit.cancelButton')}
           </Button>
           <Button disabled={isPending} onClick={handleSubmit} type="button">
             {updateMutation.isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Guardar cambios
+            {t('products:modals.edit.saveButton')}
           </Button>
         </div>
       </div>
@@ -608,15 +645,17 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
 }
 
 function RegisterMovementModal({ onClose, product, role }: { onClose: () => void; product: ProductRow; role: UserRole | undefined }) {
+  const { t } = useTranslation(['products', 'common'])
   const availableMovementTypes = (['IN', 'OUT', 'ADJUSTMENT'] as const).filter((type) => canCreateMovementType(role, type))
-  const [movementType, setMovementType] = useState<'IN' | 'OUT' | 'ADJUSTMENT'>(availableMovementTypes[0] ?? 'OUT')
+  const [movementType, setMovementType] = useState<MovementType>(availableMovementTypes[0] ?? 'OUT')
   const [adjustmentDirection, setAdjustmentDirection] = useState<'INCREASE' | 'DECREASE'>('INCREASE')
   const [quantity, setQuantity] = useState(10)
-  const [reason, setReason] = useState<string>(movementTypeOptions[availableMovementTypes[0] ?? 'OUT'][0])
+  const [reasonKey, setReasonKey] = useState<string>(MOVEMENT_REASON_KEYS[availableMovementTypes[0] ?? 'OUT'][0])
+  const reason = MOVEMENT_REASON_BACKEND_VALUES[movementType][reasonKey] ?? MOVEMENT_REASON_BACKEND_VALUES[movementType][MOVEMENT_REASON_KEYS[movementType][0]]
   const createMovementMutation = useCreateInventoryMovement()
 
   useEffect(() => {
-    setReason(movementTypeOptions[movementType][0])
+    setReasonKey(MOVEMENT_REASON_KEYS[movementType][0])
   }, [movementType])
 
   if (availableMovementTypes.length === 0) {
@@ -633,14 +672,14 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
           : Math.max(product.stock - quantity, 0)
 
   return (
-    <ModalFrame maxWidth="max-w-[420px]" onClose={onClose} title="Registrar movimiento">
+    <ModalFrame maxWidth="max-w-[420px]" onClose={onClose} title={t('products:modals.registerMovement.title')}>
       <div className="space-y-6 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[#e1f5ee] text-[#086b53]">
             <Pill className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">COD: {product.code}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-secondary)]">{t('products:modals.registerMovement.codeLabel', { code: product.code })}</p>
             <p className="text-sm font-medium text-[var(--color-text)]">{product.name}</p>
           </div>
         </div>
@@ -655,7 +694,7 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
               onClick={() => setMovementType(type)}
               type="button"
             >
-              {type === 'IN' ? 'Entrada' : type === 'OUT' ? 'Salida' : 'Ajuste'}
+              {t(`products:modals.registerMovement.types.${type}`)}
             </button>
           ))}
         </div>
@@ -663,11 +702,11 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
         <div className="space-y-4">
           {movementType === 'ADJUSTMENT' ? (
             <div className="space-y-1.5">
-              <FieldLabel>Direccion del ajuste</FieldLabel>
+              <FieldLabel>{t('products:modals.registerMovement.adjustmentDirection.label')}</FieldLabel>
               <div className="flex rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-1">
                 {([
-                  { value: 'INCREASE', label: 'Incrementar' },
-                  { value: 'DECREASE', label: 'Disminuir' },
+                  { value: 'INCREASE', label: t('products:modals.registerMovement.adjustmentDirection.increase') },
+                  { value: 'DECREASE', label: t('products:modals.registerMovement.adjustmentDirection.decrease') },
                 ] as const).map((option) => (
                   <button
                     key={option.value}
@@ -684,15 +723,19 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
             </div>
           ) : null}
 
-          <FieldGroup label="Cantidad">
+          <FieldGroup label={t('products:modals.registerMovement.fields.quantity.label')}>
             <NumberField onChange={(value) => setQuantity(Number(value) || 0)} value={String(quantity)} />
           </FieldGroup>
 
-           <FieldGroup label="Motivo">
+           <FieldGroup label={t('products:modals.registerMovement.fields.reason.label')}>
             <SelectField
-              onChange={(value) => setReason(value)}
-              options={[...movementTypeOptions[movementType]].map((option) => ({ label: option, value: option }))}
-              value={reason}
+              onChange={(value) => setReasonKey(value)}
+              options={MOVEMENT_REASON_KEYS[movementType].map((key) => ({
+                label: t(`products:modals.registerMovement.reasons.${movementType}.${key}`),
+                value: key,
+              }))}
+              placeholder={t('products:placeholders.select')}
+              value={reasonKey}
             />
            </FieldGroup>
          </div>
@@ -700,26 +743,32 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
         <div className="flex items-center gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-strong)] p-3">
           <Info className="h-4 w-4 text-[var(--color-text-secondary)]" />
           <p className="text-sm text-[var(--color-text-secondary)]">
-            Existencias actuales: <span className="font-data-mono">{product.stock}</span> {'->'} resultado:{' '}
-            <span className="font-data-mono font-semibold text-[var(--color-primary)]">{resultingStock}</span>
+            <Trans
+              components={{
+                mono: <span className="font-data-mono" />,
+                result: <span className="font-data-mono font-semibold text-[var(--color-primary)]" />,
+              }}
+              i18nKey="products:modals.registerMovement.resultingStock"
+              values={{ current: product.stock, result: resultingStock }}
+            />
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 sm:px-6">
         <Button disabled={createMovementMutation.isPending} onClick={onClose} type="button" variant="secondary">
-          Cancelar
+          {t('products:modals.registerMovement.cancelButton')}
         </Button>
         <Button
           disabled={createMovementMutation.isPending}
           onClick={() => {
             if (quantity <= 0) {
-              toast.error('La cantidad debe ser mayor que cero')
+              toast.error(t('products:validation.quantityPositive'))
               return
             }
 
             if (!reason.trim()) {
-              toast.error('Seleccione un motivo para el movimiento')
+              toast.error(t('products:validation.reasonRequired'))
               return
             }
 
@@ -732,10 +781,10 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
               },
               {
                 onError: (error: unknown) => {
-                  toast.error(getInventoryMovementErrorMessage(error))
+                  toast.error(getInventoryMovementErrorMessage(error, t))
                 },
                 onSuccess: () => {
-                  toast.success('Movimiento registrado correctamente')
+                  toast.success(t('products:toasts.movementRegistered'))
                   onClose()
                 },
               },
@@ -744,7 +793,7 @@ function RegisterMovementModal({ onClose, product, role }: { onClose: () => void
           type="button"
         >
           {createMovementMutation.isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Registrar
+          {t('products:modals.registerMovement.submitButton')}
         </Button>
       </div>
     </ModalFrame>
@@ -756,35 +805,40 @@ function ReplenishmentModal({ onClose, product }: { onClose: () => void; product
 }
 
 function DeactivateProductModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
+  const { t } = useTranslation(['products', 'common'])
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteProduct(product.id),
     onSuccess: async () => {
       await invalidateProductCollections(queryClient, product.id)
-      toast.success('Producto desactivado correctamente')
+      toast.success(t('products:toasts.productDeactivated'))
       onClose()
     },
     onError: (error: unknown) => {
-      toast.error(getProductErrorMessage(error, 'delete'))
+      toast.error(getProductErrorMessage(error, 'delete', t))
     },
   })
 
   return (
-    <ModalFrame maxWidth="max-w-[420px]" onClose={onClose} title="Desactivar producto">
+    <ModalFrame maxWidth="max-w-[420px]" onClose={onClose} title={t('products:modals.deactivate.title')}>
       <div className="space-y-5 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]">
             <TriangleAlert className="h-5 w-5" />
           </div>
           <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-            ¿Desactivar <span className="font-semibold text-[var(--color-text)]">{product.name}</span>? Dejara de aparecer en el catalogo activo, pero se conservara su historial de movimientos.
+            <Trans
+              components={{ bold: <span className="font-semibold text-[var(--color-text)]" /> }}
+              i18nKey="products:modals.deactivate.confirmMessage"
+              values={{ name: product.name }}
+            />
           </p>
         </div>
       </div>
       <div className="flex items-center justify-end gap-3 px-5 pb-5 sm:px-6">
         <Button disabled={deleteMutation.isPending} onClick={onClose} type="button" variant="secondary">
-          Cancelar
+          {t('products:modals.deactivate.cancelButton')}
         </Button>
         <button
           className="inline-flex min-h-10 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-danger-text)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
@@ -793,7 +847,7 @@ function DeactivateProductModal({ onClose, product }: { onClose: () => void; pro
           type="button"
         >
           {deleteMutation.isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Desactivar
+          {t('products:modals.deactivate.deactivateButton')}
         </button>
       </div>
     </ModalFrame>
@@ -809,30 +863,32 @@ function ProductIdentitySection({
   showError: boolean
   values: ProductFormValues
 }) {
+  const { t } = useTranslation('products')
+
   return (
     <div className="space-y-4">
-      <FieldGroup label="Nombre del producto">
+      <FieldGroup label={t('products:modals.new.fields.name.label')}>
         <input
           className={`w-full rounded-[var(--radius-control)] border px-3 py-2 text-sm text-[var(--color-text)] outline-none ${showError ? 'border-[var(--color-danger-text)] bg-[color:rgba(176,48,31,0.04)]' : 'border-[var(--color-border)] bg-[var(--color-surface)]'}`}
           onChange={(event) => onChange((current) => ({ ...current, name: event.target.value }))}
-          placeholder="Ej. Amoxicilina 500mg"
+          placeholder={t('products:modals.new.fields.name.placeholder')}
           type="text"
           value={values.name}
         />
         {showError ? (
           <p className="flex items-center gap-1 text-xs text-[var(--color-danger-text)]">
             <CircleAlert className="h-3.5 w-3.5" />
-            El nombre es obligatorio
+            {t('products:modals.new.fields.name.requiredError')}
           </p>
         ) : null}
       </FieldGroup>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FieldGroup label="SKU / Codigo">
-          <TextField mono onChange={(value) => onChange((current) => ({ ...current, code: value }))} placeholder="SKU-" value={values.code} />
+        <FieldGroup label={t('products:modals.new.fields.sku.label')}>
+          <TextField mono onChange={(value) => onChange((current) => ({ ...current, code: value }))} placeholder={t('products:modals.new.fields.sku.placeholder')} value={values.code} />
         </FieldGroup>
-        <FieldGroup label="Principio activo">
-          <TextField onChange={(value) => onChange((current) => ({ ...current, activeIngredient: value }))} placeholder="Ej. Ibuprofeno" value={values.activeIngredient} />
+        <FieldGroup label={t('products:modals.new.fields.activeIngredient.label')}>
+          <TextField onChange={(value) => onChange((current) => ({ ...current, activeIngredient: value }))} placeholder={t('products:modals.new.fields.activeIngredient.placeholder')} value={values.activeIngredient} />
         </FieldGroup>
       </div>
     </div>
@@ -850,37 +906,39 @@ function ProductCommercialSection({
   suppliers: Array<{ id: string; name: string }>
   values: ProductFormValues
 }) {
+  const { t } = useTranslation('products')
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <FieldGroup label="Categoria">
+        <FieldGroup label={t('products:modals.new.fields.category.label')}>
           <SelectField
             onChange={(value) => onChange((current) => ({ ...current, categoryId: value }))}
             options={categories.map((category) => ({ label: category.name, value: category.id }))}
-            placeholder="Seleccionar"
+            placeholder={t('products:placeholders.select')}
             value={values.categoryId}
           />
         </FieldGroup>
-        <FieldGroup label="Precio (USD)">
-          <NumberField onChange={(value) => onChange((current) => ({ ...current, price: value }))} placeholder="0.00" value={values.price} />
+        <FieldGroup label={t('products:modals.new.fields.price.label')}>
+          <NumberField onChange={(value) => onChange((current) => ({ ...current, price: value }))} placeholder={t('products:modals.new.fields.price.placeholder')} value={values.price} />
         </FieldGroup>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FieldGroup label="Proveedor inicial">
+        <FieldGroup label={t('products:modals.new.fields.initialSupplier.label')}>
           <SelectField
             onChange={(value) => onChange((current) => ({ ...current, supplierId: value }))}
             options={suppliers.map((supplierOption) => ({ label: supplierOption.name, value: supplierOption.id }))}
-            placeholder="Seleccionar"
+            placeholder={t('products:placeholders.select')}
             value={values.supplierId}
           />
         </FieldGroup>
-        <FieldGroup label="Marca">
+        <FieldGroup label={t('products:modals.new.fields.brand.label')}>
           <TextField onChange={(value) => onChange((current) => ({ ...current, brand: value }))} value={values.brand} />
         </FieldGroup>
       </div>
 
-      <FieldGroup label="Presentacion">
+      <FieldGroup label={t('products:modals.new.fields.presentation.label')}>
         <TextField onChange={(value) => onChange((current) => ({ ...current, presentation: value }))} value={values.presentation} />
       </FieldGroup>
     </div>
@@ -1009,7 +1067,7 @@ function SelectField({
       onChange={(event) => onChange?.(event.target.value)}
       value={value}
     >
-      <option value="">{placeholder ?? 'Seleccionar'}</option>
+      <option value="">{placeholder}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -1020,11 +1078,13 @@ function SelectField({
 }
 
 function ModalFooter({
+  cancelLabel,
   isPending,
   onClose,
   onConfirm,
   primaryLabel,
 }: {
+  cancelLabel: string
   isPending: boolean
   onClose: () => void
   onConfirm: () => void
@@ -1033,7 +1093,7 @@ function ModalFooter({
   return (
     <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] bg-[var(--color-surface-strong)] px-5 py-4 sm:px-6">
       <Button disabled={isPending} onClick={onClose} type="button" variant="ghost">
-        Cancelar
+        {cancelLabel}
       </Button>
       <Button disabled={isPending} onClick={onConfirm} type="button">
         {isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -1134,20 +1194,20 @@ function getStatusClasses(status: StockStatus) {
   return 'bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]'
 }
 
-function getMovementLabel(type: InventoryMovement['type']) {
+function getMovementLabel(type: InventoryMovement['type'], t: ProductsTFunction) {
   if (type === 'IN') {
-    return 'Entrada'
+    return t('products:modals.detail.recentMovements.types.in')
   }
 
   if (type === 'OUT') {
-    return 'Salida'
+    return t('products:modals.detail.recentMovements.types.out')
   }
 
-  return 'Ajuste'
+  return t('products:modals.detail.recentMovements.types.adjustment')
 }
 
-function getMovementSubtitle(movement: InventoryMovement) {
-  const userLabel = `Usuario ${shortId(movement.userId)}`
+function getMovementSubtitle(movement: InventoryMovement, t: ProductsTFunction) {
+  const userLabel = t('products:modals.detail.recentMovements.userLabel', { id: shortId(movement.userId) })
 
   return movement.reason ? `${movement.reason} · ${userLabel}` : userLabel
 }
@@ -1219,33 +1279,33 @@ function toProductFormValues(detail: ProductDetail): ProductFormValues {
   }
 }
 
-function validateProductForm(values: ProductFormValues, options: { requireStock: boolean }) {
+function validateProductForm(values: ProductFormValues, options: { requireStock: boolean }, t: ProductsTFunction) {
   if (!values.name.trim()) {
-    return 'El nombre del producto es obligatorio'
+    return t('products:validation.nameRequired')
   }
 
   if (!values.code.trim()) {
-    return 'El código del producto es obligatorio'
+    return t('products:validation.codeRequired')
   }
 
   if (!values.categoryId) {
-    return 'Seleccione una categoría válida'
+    return t('products:validation.categoryRequired')
   }
 
   if (!values.unitContent.trim()) {
-    return 'El contenido por unidad es obligatorio'
+    return t('products:validation.unitContentRequired')
   }
 
   if (values.price.trim() && Number(values.price) < 0) {
-    return 'El precio no puede ser negativo'
+    return t('products:validation.pricePositive')
   }
 
   if (Number(values.minStock || 0) < 0) {
-    return 'El stock mínimo no puede ser negativo'
+    return t('products:validation.minStockPositive')
   }
 
   if (options.requireStock && Number(values.stock || 0) < 0) {
-    return 'El stock inicial no puede ser negativo'
+    return t('products:validation.initialStockPositive')
   }
 
   return null
@@ -1284,9 +1344,10 @@ async function invalidateProductCollections(
 function getProductErrorMessage(
   error: unknown,
   action: 'create' | 'update' | 'delete' | 'attach-supplier' | 'detach-supplier',
+  t: ProductsTFunction,
 ) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'Ocurrió un error inesperado al gestionar productos'
+    return t('products:errors.unexpected')
   }
 
   const apiError = error.response?.data
@@ -1302,7 +1363,7 @@ function getProductErrorMessage(
     normalizedMessage.includes('sku')
   ) {
     if (code.includes('DUPLICATE') || code.includes('ALREADY_EXISTS') || normalizedMessage.includes('ya existe') || normalizedMessage.includes('duplicate')) {
-      return 'Ya existe un producto con ese código'
+      return t('products:errors.duplicateCode')
     }
   }
 
@@ -1310,7 +1371,7 @@ function getProductErrorMessage(
     code.includes('CATEGORY') ||
     normalizedMessage.includes('categor')
   ) {
-    return 'La categoría seleccionada ya no existe'
+    return t('products:errors.categoryNotFound')
   }
 
   if (
@@ -1318,16 +1379,16 @@ function getProductErrorMessage(
     normalizedMessage.includes('proveedor')
   ) {
     return action === 'attach-supplier' || action === 'detach-supplier'
-      ? 'El proveedor seleccionado ya no existe o no se pudo asociar'
-      : 'El proveedor seleccionado ya no existe'
+      ? t('products:errors.supplierAssociationFailed')
+      : t('products:errors.supplierNotFound')
   }
 
   if (status === 409) {
-    return 'No se pudo desactivar el producto por una restricción del backend'
+    return t('products:errors.deactivateConflict')
   }
 
   if (status === 404 || code.includes('NOT_FOUND')) {
-    return 'El producto ya no existe o no pudo encontrarse'
+    return t('products:errors.notFound')
   }
 
   if (message) {
@@ -1335,18 +1396,18 @@ function getProductErrorMessage(
   }
 
   if (action === 'attach-supplier' || action === 'detach-supplier') {
-    return 'No fue posible actualizar los proveedores asociados del producto'
+    return t('products:errors.supplierUpdateFailed')
   }
 
-  return 'No fue posible completar la operación sobre productos'
+  return t('products:errors.operationFailed')
 }
 
-function getInventoryMovementErrorMessage(error: unknown) {
+function getInventoryMovementErrorMessage(error: unknown, t: ProductsTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
-    return 'No fue posible registrar el movimiento'
+    return t('products:errors.registerMovementFailed')
   }
 
-  return error.response?.data.message?.trim() || 'No fue posible registrar el movimiento'
+  return error.response?.data.message?.trim() || t('products:errors.registerMovementFailed')
 }
 
 function toMovementQuantity(
