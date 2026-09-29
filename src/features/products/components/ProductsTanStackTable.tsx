@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, ArrowRight, ArrowUpDown, MoreVertical, Pill } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import type { ProductRow } from '@/features/products/lib/productRows'
 import { getStockStatusLabel, type StockStatus } from '@/lib/stockStatus'
@@ -293,13 +294,15 @@ function ActionsCell({
 }
 
 function StatusBadge({ status }: { status: StockStatus }) {
+  const { t } = useTranslation('common')
+
   if (status === 'healthy') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{getStockStatusLabel(status)}</span>
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-success-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-success-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
   if (status === 'low') {
-    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{getStockStatusLabel(status)}</span>
+    return <span className="inline-flex rounded-[4px] bg-[var(--color-warning-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-warning-text)]">{getStockStatusLabel(status, t)}</span>
   }
 
-  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{getStockStatusLabel(status)}</span>
+  return <span className="inline-flex rounded-[4px] bg-[var(--color-danger-bg)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-danger-text)]">{getStockStatusLabel(status, t)}</span>
 }

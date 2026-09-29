@@ -6,5 +6,10 @@
   },
   "state": {
     "notAvailable": "No disponible"
+  },
+  "stockStatus": {
+    "healthy": "Normal",
+    "low": "Crítico",
+    "out": "Agotado"
   }
 }

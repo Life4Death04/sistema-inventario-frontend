@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
@@ -251,6 +252,7 @@ function ProductDetailModal({
   product: ProductRow
   role: UserRole | undefined
 }) {
+  const { t } = useTranslation('common')
   const canManage = canManageProducts(role)
   const canOpenMovement = canCreateMovementType(role, 'OUT')
   const canUseReplenishment = hasPermission(role, 'manage:replenishment')
@@ -287,7 +289,7 @@ function ProductDetailModal({
               {detail.category?.name ?? 'Sin categoria'}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {getStockStatusLabel(product.status)}
+              {getStockStatusLabel(product.status, t)}
             </span>
           </div>
           <p className="mt-1 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>
@@ -296,7 +298,7 @@ function ProductDetailModal({
         <div className="grid gap-4 sm:grid-cols-3">
           <SummaryCard label="Existencias" value={detail.stock.toLocaleString('es-VE')} />
           <SummaryCard label="Stock minimo" value={detail.minStock.toLocaleString('es-VE')} />
-          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status)} valueClassName={getStatusClasses(product.status)} />
+          <SummaryCard badge label="Estado" value={getStockStatusLabel(product.status, t)} valueClassName={getStatusClasses(product.status)} />
         </div>
 
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -372,6 +374,7 @@ function ProductDetailModal({
 }
 
 function EditProductModal({ onClose, product }: { onClose: () => void; product: ProductRow }) {
+  const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const detailQuery = useProductDetail(product.id)
   const { data: categoriesResponse } = useCategories({ limit: 100 })
@@ -463,7 +466,7 @@ function EditProductModal({ onClose, product }: { onClose: () => void; product: 
               {detail.category?.name ?? 'Sin categoria'}
             </span>
             <span className={`rounded-[4px] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.05em] ${getStatusClasses(product.status)}`}>
-              {getStockStatusLabel(product.status)}
+              {getStockStatusLabel(product.status, t)}
             </span>
           </div>
           <p className="mt-2 font-data-mono text-sm text-[var(--color-text-muted)]">{detail.code}</p>

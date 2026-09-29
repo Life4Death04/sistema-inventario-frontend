@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 export type StockStatus = 'healthy' | 'low' | 'out'
 
 export function getStockStatus(stock: number, minStock: number): StockStatus {
@@ -12,12 +14,6 @@ export function getStockStatus(stock: number, minStock: number): StockStatus {
   return 'healthy'
 }
 
-const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
-  healthy: 'Normal',
-  low: 'Crítico',
-  out: 'Agotado',
-}
-
-export function getStockStatusLabel(status: StockStatus): string {
-  return STOCK_STATUS_LABELS[status]
+export function getStockStatusLabel(status: StockStatus, t: TFunction<'common'>): string {
+  return t(`common:stockStatus.${status}`)
 }
