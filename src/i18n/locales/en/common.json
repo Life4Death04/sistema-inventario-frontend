@@ -7,6 +7,9 @@
   "state": {
     "notAvailable": "Not available"
   },
+  "errors": {
+    "demoReadOnly": "The demo account is read-only. Changes are not allowed."
+  },
   "stockStatus": {
     "healthy": "Normal",
     "low": "Critical",

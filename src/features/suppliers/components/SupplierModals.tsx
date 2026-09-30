@@ -16,6 +16,7 @@ import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import { useCategories } from '@/features/categories/api/useCategories'
 import { canManageSuppliers } from '@/features/auth/lib/permissions'
 import { GenerateReplenishmentModal } from '@/features/replenishment/components/ReplenishmentModals'
@@ -1038,6 +1039,12 @@ function getSupplierErrorMessage(
     return t('suppliers:errors.unexpected')
   }
 
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
+  }
+
   const apiError = error.response?.data
   const status = error.response?.status
   const code = apiError?.error?.toUpperCase() ?? ''
@@ -1074,6 +1081,12 @@ function getSupplierErrorMessage(
 function getProductAssociationErrorMessage(error: unknown, t: SuppliersTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('suppliers:errors.associationSaveFailed')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   return error.response?.data.message ?? t('suppliers:errors.associationSaveFailed')
