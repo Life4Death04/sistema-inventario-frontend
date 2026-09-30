@@ -21,6 +21,7 @@ import toast from 'react-hot-toast'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import { canCreateMovementType, canManageProducts, hasPermission } from '@/features/auth/lib/permissions'
 import { useCategories } from '@/features/categories/api/useCategories'
 import { useCreateInventoryMovement, useProductInventoryMovements } from '@/features/inventory-movements/api/useInventoryMovements'
@@ -1363,6 +1364,12 @@ function getProductErrorMessage(
     return t('products:errors.unexpected')
   }
 
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
+  }
+
   const apiError = error.response?.data
   const status = error.response?.status
   const code = apiError?.error?.toUpperCase() ?? ''
@@ -1418,6 +1425,12 @@ function getProductErrorMessage(
 function getInventoryMovementErrorMessage(error: unknown, t: ProductsTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('products:errors.registerMovementFailed')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   return error.response?.data.message?.trim() || t('products:errors.registerMovementFailed')

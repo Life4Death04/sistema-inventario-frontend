@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 import { Button } from '@/components/ui/Button'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { loginSchema } from '@/features/auth/schemas/auth.schema'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { LoginFormValues } from '@/types/common.types'
@@ -135,6 +136,7 @@ export function LoginPage() {
               <span className="text-[13px] text-[#004782]">{t('auth:forgotPassword')}</span>
             </div>
 
+          <div className="flex flex-col text-center gap-2">
             <Button
               className="mt-1 h-10 w-full rounded-[8px] bg-[#185fa5] text-sm font-medium text-white hover:bg-[#004782]"
               disabled={isSubmitting}
@@ -144,7 +146,7 @@ export function LoginPage() {
             </Button>
 
             <Button
-              className="h-10 w-full rounded-[8px] text-sm font-medium"
+              className="h-10 w-full rounded-lg text-sm font-medium"
               disabled={isSubmitting}
               onClick={handleGuestLogin}
               type="button"
@@ -152,6 +154,10 @@ export function LoginPage() {
             >
               {t('auth:actions.guestLogin')}
             </Button>
+            <div>
+            <LanguageSwitcher />
+            </div>
+          </div>
           </form>
 
         </div>

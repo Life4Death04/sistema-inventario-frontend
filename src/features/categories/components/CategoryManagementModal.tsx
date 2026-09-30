@@ -16,6 +16,7 @@ import {
   type UpdateCategoryInput,
 } from '@/features/categories/api/categories.api'
 import { useCategories } from '@/features/categories/api/useCategories'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import { queryKeys } from '@/lib/queryKeys'
 import type { Category, ApiErrorEnvelope } from '@/types/api.types'
 
@@ -382,6 +383,12 @@ export function CategoryManagementModal({ open, onClose }: CategoryManagementMod
 function getCategoryErrorMessage(error: unknown, action: 'create' | 'update' | 'delete', t: CategoriesTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('categories:errors.unexpected')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   const apiError = error.response?.data

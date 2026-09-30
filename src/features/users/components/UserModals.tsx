@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import {
   createUser,
   deleteUser,
@@ -775,6 +776,12 @@ function isValidEmail(value: string) {
 function getUserErrorMessage(error: unknown, action: 'create' | 'update' | 'deactivate', t: UsersTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('users:errors.unexpected')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   const apiError = error.response?.data

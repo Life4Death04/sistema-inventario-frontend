@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
 import { hasPermission } from '@/features/auth/lib/permissions'
@@ -913,6 +914,12 @@ async function invalidateReplenishmentReceiveQueries(queryClient: ReturnType<typ
 function getReplenishmentErrorMessage(error: unknown, action: 'cancel' | 'create' | 'receive' | 'send', t: ReplenishmentTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('replenishment:errors.unexpected')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   const message = error.response?.data.message?.trim()

@@ -7,6 +7,9 @@
   "state": {
     "notAvailable": "No disponible"
   },
+  "errors": {
+    "demoReadOnly": "La cuenta de demostración es de solo lectura. No se permiten cambios."
+  },
   "stockStatus": {
     "healthy": "Normal",
     "low": "Crítico",

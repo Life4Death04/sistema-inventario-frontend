@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
+import { getDemoReadOnlyErrorMessage } from '@/lib/apiErrors'
 import {
   useCreateInventoryMovement,
   useProductInventoryMovements,
@@ -357,6 +358,12 @@ function getMovementSignal(movement: InventoryMovement) {
 function getInventoryMovementErrorMessage(error: unknown, t: InventoryTFunction) {
   if (!isAxiosError<ApiErrorEnvelope>(error)) {
     return t('inventory:errors.registerOutputFailed')
+  }
+
+  const demoReadOnlyMessage = getDemoReadOnlyErrorMessage(error, t('common:errors.demoReadOnly'))
+
+  if (demoReadOnlyMessage) {
+    return demoReadOnlyMessage
   }
 
   return error.response?.data.message?.trim() || t('inventory:errors.registerOutputFailed')
